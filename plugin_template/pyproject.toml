@@ -1,0 +1,8 @@
+[project]
+name = "forgesyte-plugin-template"
+version = "1.0.0"
+description = "Template plugin for ForgeSyte"
+dependencies = []
+
+[project.entry-points."forgesyte.plugins"]
+template_plugin = "forgesyte_plugin_template.plugin:Plugin"

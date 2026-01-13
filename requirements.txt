@@ -1,0 +1,14 @@
+# ForgeSyte Plugins - Base Dependencies
+# Pin versions for reproducibility
+
+# Core plugin interfaces
+pydantic>=2.0.0,<3.0.0
+python-dotenv>=1.0.0
+
+# Image processing
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Optional: plugin-specific
+# opencv-python>=4.8.0  # Uncomment for computer vision plugins
+# pytesseract>=0.3.10   # Uncomment for OCR plugins

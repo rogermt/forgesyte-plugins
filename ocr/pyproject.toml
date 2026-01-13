@@ -1,0 +1,8 @@
+[project]
+name = "forgesyte-ocr"
+version = "1.0.0"
+description = "OCR plugin for ForgeSyte"
+dependencies = []
+
+[project.entry-points."forgesyte.plugins"]
+ocr = "forgesyte_ocr.plugin:Plugin"

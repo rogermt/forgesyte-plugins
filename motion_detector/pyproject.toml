@@ -1,0 +1,8 @@
+[project]
+name = "forgesyte-motion-detector"
+version = "1.0.0"
+description = "Motion detection plugin for ForgeSyte"
+dependencies = []
+
+[project.entry-points."forgesyte.plugins"]
+motion_detector = "forgesyte_motion.plugin:Plugin"

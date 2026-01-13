@@ -1,0 +1,8 @@
+[project]
+name = "forgesyte-moderation"
+version = "1.0.0"
+description = "Content moderation plugin for ForgeSyte"
+dependencies = []
+
+[project.entry-points."forgesyte.plugins"]
+moderation = "forgesyte_moderation.plugin:Plugin"
