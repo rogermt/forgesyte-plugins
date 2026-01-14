@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "forgesyte-ocr"
 version = "1.0.0"
 description = "OCR plugin for ForgeSyte"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "Pillow>=10.0.0",
     "pytesseract>=0.3.10",

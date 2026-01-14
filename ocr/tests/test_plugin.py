@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from PIL import Image
 
-from forgesyte_ocr.plugin import Plugin, TextBlock, ImageSize, OCRResponse
+from forgesyte_ocr.plugin import Plugin, TextBlock, ImageSize
 
 
 class TestOCRPlugin:
@@ -348,3 +348,38 @@ class TestOCRPlugin:
 
         assert response.error is None
         assert response.text == "test"
+
+    @patch("forgesyte_ocr.plugin.pytesseract")
+    @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
+    def test_analyze_returns_dict_not_pydantic_model(
+        self, mock_tesseract, plugin, sample_image_bytes, mock_pytesseract_data
+    ):
+        """Test that analyze() returns dict (for ForgeSyte server compatibility).
+
+        The server expects: def analyze() -> Dict[str, Any]
+        NOT: def analyze() -> OCRResponse
+
+        Server code unpacks result with: {**result, "processing_time_ms": ...}
+        This fails if result is a Pydantic model (not a mapping).
+        """
+        mock_tesseract.image_to_string.return_value = "hello world"
+        mock_tesseract.image_to_data.return_value = mock_pytesseract_data
+        mock_tesseract.Output.DICT = mock_pytesseract_data
+
+        result = plugin.analyze(sample_image_bytes)
+
+        # Must be dict, not Pydantic model
+        assert isinstance(result, dict), (
+            f"Expected dict, got {type(result).__name__}. "
+            "Plugin.analyze() must return dict for server compatibility."
+        )
+
+        # Can unpack with ** operator (server requirement)
+        unpacked = {**result, "processing_time_ms": 123.45}
+        assert unpacked["processing_time_ms"] == 123.45
+        assert unpacked["text"] == "hello world"
+
+        # Must have required fields
+        assert "text" in result
+        assert "blocks" in result
+        assert "confidence" in result

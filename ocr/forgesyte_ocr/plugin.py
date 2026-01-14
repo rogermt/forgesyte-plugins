@@ -12,7 +12,7 @@ from typing import Any, Optional
 from PIL import Image
 from pydantic import BaseModel, Field
 
-from app.models import PluginMetadata
+from app.models import AnalysisResult, PluginMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +130,7 @@ class Plugin:
 
     def analyze(
         self, image_bytes: bytes, options: Optional[dict[str, Any]] = None
-    ) -> OCRResponse:
+    ) -> dict[str, Any]:
         """Extract text from an image using OCR.
 
         Performs OCR using Tesseract with configurable language and
@@ -142,7 +142,7 @@ class Plugin:
             options: Configuration with language and PSM (page segmentation mode).
 
         Returns:
-            OCRResponse with extracted text, text blocks with bboxes, confidence,
+            Dictionary (AnalysisResult.model_dump()) with extracted text, text blocks with bboxes, confidence,
             and image metadata. On error, returns OCRResponse with error field set.
         """
         if not HAS_TESSERACT:
@@ -199,32 +199,46 @@ class Plugin:
                 sum(confidences) / len(confidences) if confidences else 0.0
             )
 
-            return OCRResponse(
+            # Convert blocks to dict format for AnalysisResult
+            # Note: TextBlock confidence is 0-100, keep as-is for blocks detail
+            blocks_dict = [
+                {
+                    "text": b.text,
+                    "confidence": b.confidence,  # Keep 0-100 for granular info
+                    "bbox": b.bbox,
+                    "level": b.level,
+                    "block_num": b.block_num,
+                    "line_num": b.line_num,
+                }
+                for b in blocks
+            ]
+
+            result = AnalysisResult(
                 text=text.strip(),
-                blocks=blocks,
-                confidence=avg_confidence,
+                blocks=blocks_dict,
+                confidence=avg_confidence / 100.0,  # AnalysisResult expects 0.0-1.0
                 language=lang,
-                image_size=ImageSize(width=img.width, height=img.height),
                 error=None,
             )
+            return result.model_dump()
 
         except Exception as e:
             logger.error(
                 "OCR execution failed",
                 extra={"error": str(e), "error_type": type(e).__name__},
             )
-            return OCRResponse(
+            result = AnalysisResult(
                 text="",
                 blocks=[],
                 confidence=0.0,
                 language=None,
-                image_size=None,
                 error=str(e),
             )
+            return result.model_dump()
 
     def _fallback_analyze(
         self, image_bytes: bytes, options: Optional[dict[str, Any]] = None
-    ) -> OCRResponse:
+    ) -> dict[str, Any]:
         """Fallback when Tesseract is not available.
 
         Returns placeholder results with diagnostic information.
@@ -234,16 +248,16 @@ class Plugin:
             options: Configuration options (unused in fallback).
 
         Returns:
-            OCRResponse with empty results and installation instructions.
+            Dictionary (AnalysisResult.model_dump()) with empty results and installation instructions.
         """
-        return OCRResponse(
+        result = AnalysisResult(
             text="",
             blocks=[],
             confidence=0.0,
             language=None,
-            image_size=None,
             error="Tesseract not installed. Install with: pip install pytesseract",
         )
+        return result.model_dump()
 
     def on_load(self) -> None:
         """Called when plugin is loaded by the plugin loader.
