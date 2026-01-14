@@ -108,7 +108,10 @@ class Plugin:
         """
         return PluginMetadata(
             name=self.name,
-            description="Extracts structured text and positions from images with confidence scores.",
+            description=(
+                "Extracts structured text and positions from images "
+                "with confidence scores."
+            ),
             version=self.version,
             inputs=["image"],
             outputs=["text", "blocks", "confidence"],

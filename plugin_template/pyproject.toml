@@ -12,4 +12,6 @@ template_plugin = "forgesyte_plugin_template.plugin:Plugin"
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "black",
+    "ruff",
 ]

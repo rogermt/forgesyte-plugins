@@ -10,6 +10,7 @@ Tests cover:
 """
 
 import io
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -22,12 +23,12 @@ class TestOCRPlugin:
     """Test suite for OCR Plugin."""
 
     @pytest.fixture
-    def plugin(self):
+    def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()
 
     @pytest.fixture
-    def sample_image_bytes(self):
+    def sample_image_bytes(self) -> bytes:
         """Generate sample image bytes for testing."""
         img = Image.new("RGB", (100, 100), color="white")
         img_bytes = io.BytesIO()
@@ -35,7 +36,7 @@ class TestOCRPlugin:
         return img_bytes.getvalue()
 
     @pytest.fixture
-    def mock_pytesseract_data(self):
+    def mock_pytesseract_data(self) -> dict[str, Any]:
         """Mock pytesseract output data."""
         return {
             "level": [3, 4, 4],
@@ -51,7 +52,9 @@ class TestOCRPlugin:
 
     # Metadata tests
     @patch("forgesyte_ocr.plugin.PluginMetadata")
-    def test_metadata_returns_plugin_metadata(self, mock_metadata_cls, plugin):
+    def test_metadata_returns_plugin_metadata(
+        self, mock_metadata_cls: Any, plugin: Plugin
+    ) -> None:
         """Test metadata endpoint returns valid PluginMetadata."""
         mock_instance = mock_metadata_cls.return_value
         mock_instance.name = "ocr"
@@ -67,7 +70,9 @@ class TestOCRPlugin:
         assert "text" in metadata.outputs
 
     @patch("forgesyte_ocr.plugin.PluginMetadata")
-    def test_metadata_includes_config_schema(self, mock_metadata_cls, plugin):
+    def test_metadata_includes_config_schema(
+        self, mock_metadata_cls: Any, plugin: Plugin
+    ) -> None:
         """Test metadata includes language and PSM configuration."""
         mock_instance = mock_metadata_cls.return_value
         mock_instance.config_schema = {
@@ -88,12 +93,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_successful_ocr(
         self,
-        mock_analysis_cls,
-        mock_tesseract,
-        plugin,
-        sample_image_bytes,
-        mock_pytesseract_data,
-    ):
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test successful OCR analysis returns valid AnalysisResult."""
         mock_tesseract.image_to_string.return_value = "hello world !"
         mock_tesseract.image_to_data.return_value = mock_pytesseract_data
@@ -116,12 +121,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_with_custom_language(
         self,
-        mock_analysis_cls,
-        mock_tesseract,
-        plugin,
-        sample_image_bytes,
-        mock_pytesseract_data,
-    ):
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test OCR with custom language option."""
         mock_tesseract.image_to_string.return_value = "Bonjour"
         mock_tesseract.image_to_data.return_value = mock_pytesseract_data
@@ -143,8 +148,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_filters_low_confidence_blocks(
-        self, mock_analysis_cls, mock_tesseract, plugin, sample_image_bytes
-    ):
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+    ) -> None:
         """Test that blocks with confidence <= 0 are filtered out."""
         data = {
             "level": [3, 4, 4, 4],
@@ -175,12 +184,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_calculates_average_confidence(
         self,
-        mock_analysis_cls,
-        mock_tesseract,
-        plugin,
-        sample_image_bytes,
-        mock_pytesseract_data,
-    ):
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test average confidence is calculated correctly."""
         mock_tesseract.image_to_string.return_value = "hello world !"
         mock_tesseract.image_to_data.return_value = mock_pytesseract_data
@@ -199,8 +208,8 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_handles_invalid_image_data(
-        self, mock_analysis_cls, mock_tesseract, plugin
-    ):
+        self, mock_analysis_cls: Any, mock_tesseract: Any, plugin: Plugin
+    ) -> None:
         """Test error handling for invalid image bytes."""
         invalid_bytes = b"not an image"
 
@@ -219,8 +228,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_handles_tesseract_exception(
-        self, mock_analysis_cls, mock_tesseract, plugin, sample_image_bytes
-    ):
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+    ) -> None:
         """Test error handling when pytesseract raises exception."""
         mock_tesseract.image_to_string.side_effect = Exception("Tesseract error")
 
@@ -236,8 +249,8 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", False)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_fallback_when_tesseract_unavailable(
-        self, mock_analysis_cls, plugin, sample_image_bytes
-    ):
+        self, mock_analysis_cls: Any, plugin: Plugin, sample_image_bytes: bytes
+    ) -> None:
         """Test fallback response when Tesseract is not installed."""
         expected_instance = mock_analysis_cls.return_value
         expected_instance.error = "Tesseract not installed"
@@ -251,24 +264,24 @@ class TestOCRPlugin:
         assert "Tesseract not installed" in call_kwargs["error"]
 
     # Lifecycle tests
-    def test_on_load_with_tesseract_available(self, plugin):
+    def test_on_load_with_tesseract_available(self, plugin: Plugin) -> None:
         """Test on_load lifecycle hook with Tesseract available."""
         with patch("forgesyte_ocr.plugin.HAS_TESSERACT", True):
             with patch("forgesyte_ocr.plugin.pytesseract") as mock_tesseract:
                 mock_tesseract.get_tesseract_version.return_value = "5.0.0"
                 plugin.on_load()
 
-    def test_on_load_without_tesseract(self, plugin):
+    def test_on_load_without_tesseract(self, plugin: Plugin) -> None:
         """Test on_load when Tesseract is not available."""
         with patch("forgesyte_ocr.plugin.HAS_TESSERACT", False):
             plugin.on_load()
 
-    def test_on_unload(self, plugin):
+    def test_on_unload(self, plugin: Plugin) -> None:
         """Test on_unload lifecycle hook."""
         plugin.on_unload()
 
     # Pydantic model tests
-    def test_text_block_model_validation(self):
+    def test_text_block_model_validation(self) -> None:
         """Test TextBlock Pydantic model validates fields."""
         block = TextBlock(
             text="hello",
@@ -283,14 +296,14 @@ class TestOCRPlugin:
         assert block.confidence == 95.5
         assert block.bbox["x"] == 10
 
-    def test_image_size_model_validation(self):
+    def test_image_size_model_validation(self) -> None:
         """Test ImageSize Pydantic model validates fields."""
         size = ImageSize(width=100, height=200)
 
         assert size.width == 100
         assert size.height == 200
 
-    def test_ocr_response_model_validation(self, sample_image_bytes):
+    def test_ocr_response_model_validation(self, sample_image_bytes: bytes) -> None:
         """Test OCRResponse Pydantic model validates."""
         block = TextBlock(
             text="test",
@@ -316,7 +329,7 @@ class TestOCRPlugin:
         assert response.language == "eng"
         assert response.error is None
 
-    def test_ocr_response_serialization(self):
+    def test_ocr_response_serialization(self) -> None:
         """Test OCRResponse can be serialized."""
         response = OCRResponse(
             text="test",
@@ -337,8 +350,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_grayscale_image_conversion(
-        self, mock_analysis_cls, mock_tesseract, plugin, mock_pytesseract_data
-    ):
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test grayscale images are converted to RGB."""
         img = Image.new("L", (100, 100), color=200)
         img_bytes = io.BytesIO()
@@ -360,8 +377,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_rgba_image_conversion(
-        self, mock_analysis_cls, mock_tesseract, plugin, mock_pytesseract_data
-    ):
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test RGBA images are converted to RGB."""
         img = Image.new("RGBA", (100, 100), color=(255, 255, 255, 255))
         img_bytes = io.BytesIO()
@@ -384,12 +405,12 @@ class TestOCRPlugin:
     @patch("forgesyte_ocr.plugin.AnalysisResult")
     def test_analyze_returns_pydantic_model_not_dict(
         self,
-        mock_analysis_cls,
-        mock_tesseract,
-        plugin,
-        sample_image_bytes,
-        mock_pytesseract_data,
-    ):
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+        mock_pytesseract_data: dict[str, Any],
+    ) -> None:
         """Test that analyze() returns Pydantic model (AnalysisResult)."""
         mock_tesseract.image_to_string.return_value = "hello world"
         mock_tesseract.image_to_data.return_value = mock_pytesseract_data
