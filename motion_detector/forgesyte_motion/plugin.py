@@ -102,7 +102,7 @@ class Plugin:
 
     def analyze(
         self, image_bytes: bytes, options: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    ) -> MotionAnalysisResult | Dict[str, Any]:
         """
         Calculates frame differences and updates adaptive baseline.
         """
@@ -165,7 +165,7 @@ class Plugin:
             ]
 
             # 9. Validated Output Construction
-            result = MotionAnalysisResult(
+            return MotionAnalysisResult(
                 motion_detected=motion_detected,
                 motion_score=round(motion_score * 100, 2),
                 regions=regions,
@@ -178,7 +178,6 @@ class Plugin:
                 ),
                 recent_motion_events_count=len(recent_events),
             )
-            return result.model_dump()
 
         except Exception as e:
             logger.exception("Motion analysis failed", extra={"plugin": self.name})

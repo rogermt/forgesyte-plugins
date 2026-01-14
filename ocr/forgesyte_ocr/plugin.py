@@ -12,7 +12,17 @@ from typing import Any, Optional
 from PIL import Image
 from pydantic import BaseModel, Field
 
-from app.models import AnalysisResult, PluginMetadata
+
+
+
+
+
+
+
+
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +140,7 @@ class Plugin:
 
     def analyze(
         self, image_bytes: bytes, options: Optional[dict[str, Any]] = None
-    ) -> dict[str, Any]:
+    ) -> AnalysisResult:
         """Extract text from an image using OCR.
 
         Performs OCR using Tesseract with configurable language and
@@ -142,8 +152,8 @@ class Plugin:
             options: Configuration with language and PSM (page segmentation mode).
 
         Returns:
-            Dictionary (AnalysisResult.model_dump()) with extracted text, text blocks with bboxes, confidence,
-            and image metadata. On error, returns OCRResponse with error field set.
+            AnalysisResult with extracted text, text blocks with bboxes, confidence,
+            and image metadata. On error, returns AnalysisResult with error field set.
         """
         if not HAS_TESSERACT:
             return self._fallback_analyze(image_bytes, options)
@@ -213,32 +223,30 @@ class Plugin:
                 for b in blocks
             ]
 
-            result = AnalysisResult(
+            return AnalysisResult(
                 text=text.strip(),
                 blocks=blocks_dict,
                 confidence=avg_confidence / 100.0,  # AnalysisResult expects 0.0-1.0
                 language=lang,
                 error=None,
             )
-            return result.model_dump()
 
         except Exception as e:
             logger.error(
                 "OCR execution failed",
                 extra={"error": str(e), "error_type": type(e).__name__},
             )
-            result = AnalysisResult(
+            return AnalysisResult(
                 text="",
                 blocks=[],
                 confidence=0.0,
                 language=None,
                 error=str(e),
             )
-            return result.model_dump()
 
     def _fallback_analyze(
         self, image_bytes: bytes, options: Optional[dict[str, Any]] = None
-    ) -> dict[str, Any]:
+    ) -> AnalysisResult:
         """Fallback when Tesseract is not available.
 
         Returns placeholder results with diagnostic information.
@@ -248,16 +256,15 @@ class Plugin:
             options: Configuration options (unused in fallback).
 
         Returns:
-            Dictionary (AnalysisResult.model_dump()) with empty results and installation instructions.
+            AnalysisResult with empty results and installation instructions.
         """
-        result = AnalysisResult(
+        return AnalysisResult(
             text="",
             blocks=[],
             confidence=0.0,
             language=None,
             error="Tesseract not installed. Install with: pip install pytesseract",
         )
-        return result.model_dump()
 
     def on_load(self) -> None:
         """Called when plugin is loaded by the plugin loader.

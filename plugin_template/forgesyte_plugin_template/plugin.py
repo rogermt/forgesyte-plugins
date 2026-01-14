@@ -68,7 +68,7 @@ class Plugin:
         self,
         image_bytes: bytes,
         options: Optional[dict[str, Any]] = None,
-    ) -> dict[str, Any]:
+    ) -> AnalysisResult:
         """
         Main plugin logic.
 
@@ -77,7 +77,7 @@ class Plugin:
             options: Configuration parameters from metadata.config_schema
 
         Returns:
-            Dictionary from AnalysisResult.model_dump()
+            AnalysisResult with extracted text, blocks, etc.
         """
         options = options or {}
 
@@ -85,28 +85,26 @@ class Plugin:
             # -------------------------------------------------
             # TODO: Replace this with your actual logic
             # -------------------------------------------------
-            result = AnalysisResult(
+            return AnalysisResult(
                 text="",
                 blocks=[],
                 confidence=0.0,
                 language=None,
                 error="Template plugin has no implementation.",
             )
-            return result.model_dump()
 
         except Exception as e:
             logger.error(
                 "Plugin execution failed",
                 extra={"error": str(e), "error_type": type(e).__name__},
             )
-            result = AnalysisResult(
+            return AnalysisResult(
                 text="",
                 blocks=[],
                 confidence=0.0,
                 language=None,
                 error=str(e),
             )
-            return result.model_dump()
 
     # ---------------------------------------------------------
     # Lifecycle Hooks

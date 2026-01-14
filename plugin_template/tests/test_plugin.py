@@ -22,22 +22,26 @@ class TestTemplatePlugin:
         return Plugin()
 
     @patch('forgesyte_plugin_template.plugin.PluginMetadata')
-    def test_metadata_returns_plugin_metadata(self, mock_metadata, plugin):
+    def test_metadata_returns_plugin_metadata(self, mock_metadata_cls, plugin):
         """Test metadata endpoint returns valid PluginMetadata."""
-        mock_metadata.return_value.name = "template_plugin"
-        mock_metadata.return_value.version = "1.0.0"
-        mock_metadata.return_value.inputs = ["image"]
-        mock_metadata.return_value.outputs = ["json"]
+        mock_instance = mock_metadata_cls.return_value
+        mock_instance.name = "template_plugin"
+        mock_instance.version = "1.0.0"
+        mock_instance.inputs = ["image"]
+        mock_instance.outputs = ["json"]
+        
         metadata = plugin.metadata()
+        
         assert metadata.name == "template_plugin"
         assert metadata.version == "1.0.0"
         assert "image" in metadata.inputs
         assert "json" in metadata.outputs
 
     @patch('forgesyte_plugin_template.plugin.PluginMetadata')
-    def test_metadata_includes_config_schema(self, mock_metadata, plugin):
+    def test_metadata_includes_config_schema(self, mock_metadata_cls, plugin):
         """Test metadata includes configuration schema."""
-        mock_metadata.return_value.config_schema = {
+        mock_instance = mock_metadata_cls.return_value
+        mock_instance.config_schema = {
             "mode": {
                 "type": "string",
                 "default": "default",
@@ -45,6 +49,7 @@ class TestTemplatePlugin:
                 "description": "Processing mode for this plugin",
             }
         }
+        
         metadata = plugin.metadata()
         config = metadata.config_schema
         assert "mode" in config
@@ -52,48 +57,31 @@ class TestTemplatePlugin:
         assert "default" in config["mode"]["enum"]
 
     @patch('forgesyte_plugin_template.plugin.AnalysisResult')
-    def test_analyze_returns_template_error(self, mock_analysis, plugin):
+    def test_analyze_returns_template_error(self, mock_analysis_cls, plugin):
         """Test analyze returns template error response."""
-        mock_analysis.return_value.model_dump.return_value = {
-            "text": "",
-            "blocks": [],
-            "confidence": 0.0,
-            "language": None,
-            "error": "Template plugin has no implementation.",
-        }
+        expected_instance = mock_analysis_cls.return_value
+        expected_instance.error = "Template plugin has no implementation."
+        expected_instance.text = ""
+        expected_instance.blocks = []
+        expected_instance.confidence = 0.0
+        expected_instance.language = None
+
         result = plugin.analyze(b"dummy image bytes")
 
-        assert isinstance(result, dict)
-        assert result["error"] == "Template plugin has no implementation."
-        assert result["text"] == ""
-        assert result["blocks"] == []
-        assert result["confidence"] == 0.0
-        assert result["language"] is None
+        assert result == expected_instance
+        assert result.error == "Template plugin has no implementation."
+        assert result.text == ""
 
     @patch('forgesyte_plugin_template.plugin.AnalysisResult')
-    def test_analyze_with_options(self, mock_analysis, plugin):
+    def test_analyze_with_options(self, mock_analysis_cls, plugin):
         """Test analyze handles options parameter."""
-        mock_analysis.return_value.model_dump.return_value = {
-            "text": "",
-            "blocks": [],
-            "confidence": 0.0,
-            "language": None,
-            "error": "Template plugin has no implementation.",
-        }
+        expected_instance = mock_analysis_cls.return_value
+        expected_instance.error = "Template plugin has no implementation."
+
         result = plugin.analyze(b"dummy", options={"mode": "default"})
 
-        assert isinstance(result, dict)
-        assert result["error"] == "Template plugin has no implementation."
-
-    def test_analyze_handles_exception(self, plugin):
-        """Test analyze error handling."""
-        # The template catches exceptions, so this tests the try-except
-        # In template, it's AnalysisResult with error=str(e)
-        # But since no real logic, it goes to the except? No, it has try: ... result = AnalysisResult(..., error="Template...")
-
-        # To test exception, perhaps mock AnalysisResult to raise, but since it's template, maybe not necessary.
-
-        # For now, the test above covers.
+        assert result == expected_instance
+        assert result.error == "Template plugin has no implementation."
 
     def test_on_load(self, plugin):
         """Test on_load lifecycle hook."""

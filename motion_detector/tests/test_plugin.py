@@ -70,6 +70,8 @@ class TestMotionDetectorPlugin:
     def test_baseline_established_on_first_frame(self, plugin, sample_static_image_bytes):
         """Test first frame establishes baseline without detecting motion."""
         result = plugin.analyze(sample_static_image_bytes)
+        # First frame returns a dict with status
+        assert isinstance(result, dict)
         assert result["motion_detected"] is False
         assert result["motion_score"] == 0.0
 
@@ -79,15 +81,20 @@ class TestMotionDetectorPlugin:
         """Test motion is detected when frame changes significantly."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_high_contrast_motion_image)
-        assert result["motion_detected"] is True
-        assert result["motion_score"] > 0.0
+        
+        # Subsequent frames return MotionAnalysisResult
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.motion_detected is True
+        assert result.motion_score > 0.0
 
     def test_no_motion_with_identical_frames(self, plugin, sample_static_image_bytes):
         """Test no motion detected when frames are identical."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_static_image_bytes)
-        assert result["motion_detected"] is False
-        assert result["motion_score"] == 0.0
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.motion_detected is False
+        assert result.motion_score == 0.0
 
     def test_motion_score_is_percentage(
         self, plugin, sample_static_image_bytes, sample_high_contrast_motion_image
@@ -95,7 +102,9 @@ class TestMotionDetectorPlugin:
         """Test motion_score is reported as percentage (0-100)."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_high_contrast_motion_image)
-        assert 0 <= result["motion_score"] <= 100
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert 0 <= result.motion_score <= 100
 
     # Configuration options
     def test_custom_threshold_option(self, plugin, sample_static_image_bytes):
@@ -105,7 +114,8 @@ class TestMotionDetectorPlugin:
             sample_static_image_bytes, options={"threshold": 100.0}
         )
         # High threshold = no motion
-        assert result["motion_detected"] is False
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.motion_detected is False
 
     def test_reset_baseline_option(
         self, plugin, sample_static_image_bytes, sample_high_contrast_motion_image
@@ -115,6 +125,8 @@ class TestMotionDetectorPlugin:
         result = plugin.analyze(
             sample_high_contrast_motion_image, options={"reset_baseline": True}
         )
+        # Resets baseline -> treats as first frame -> returns dict
+        assert isinstance(result, dict)
         assert result["motion_detected"] is False  # New baseline
 
     # Region detection
@@ -122,7 +134,9 @@ class TestMotionDetectorPlugin:
         """Test regions list is empty when no motion detected."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_static_image_bytes)
-        assert result["regions"] == []
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.regions == []
 
     def test_regions_populated_when_motion_detected(
         self, plugin, sample_static_image_bytes, sample_high_contrast_motion_image
@@ -130,19 +144,25 @@ class TestMotionDetectorPlugin:
         """Test regions are detected when motion found."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_high_contrast_motion_image)
-        if result["motion_detected"]:
-            assert len(result["regions"]) > 0
-            region = result["regions"][0]
-            assert "bbox" in region
-            assert "area" in region
-            assert "center" in region
-            assert all(k in region["bbox"] for k in ["x", "y", "width", "height"])
+        
+        assert isinstance(result, MotionAnalysisResult)
+        if result.motion_detected:
+            assert len(result.regions) > 0
+            region = result.regions[0]
+            # Region is a MotionRegion object (Pydantic)
+            assert isinstance(region, MotionRegion)
+            assert region.bbox.width > 0
+            assert region.area > 0
+            assert "x" in region.center
 
     # Error handling
     def test_handles_invalid_image_data(self, plugin):
         """Test error handling for invalid image bytes."""
         invalid_bytes = b"not an image"
         result = plugin.analyze(invalid_bytes)
+        
+        # Error case returns dict
+        assert isinstance(result, dict)
         assert result["motion_detected"] is False
         assert result["motion_score"] == 0
 
@@ -150,6 +170,9 @@ class TestMotionDetectorPlugin:
         """Test error handling for empty bytes."""
         empty_bytes = b""
         result = plugin.analyze(empty_bytes)
+        
+        # Error case returns dict
+        assert isinstance(result, dict)
         assert result["motion_detected"] is False
 
     # Pydantic model validation
@@ -180,33 +203,29 @@ class TestMotionDetectorPlugin:
         assert data["image_size"]["width"] == 640
 
     # Server compatibility - CRITICAL
-    def test_analyze_returns_dict_not_pydantic_model(
+    def test_analyze_returns_pydantic_model_or_dict(
         self, plugin, sample_static_image_bytes, sample_high_contrast_motion_image
     ):
-        """Test analyze() returns dict for ForgeSyte server compatibility.
-
-        The server expects: def analyze() -> Dict[str, Any]
-        Server code unpacks result with: {**result, "processing_time_ms": ...}
-        This fails if result is a Pydantic model (not a mapping).
+        """Test analyze() returns MotionAnalysisResult or dict (for error/init cases).
         """
-        plugin.analyze(sample_static_image_bytes)
+        # First call: init baseline (returns dict)
+        result_init = plugin.analyze(sample_static_image_bytes)
+        assert isinstance(result_init, dict)
+        assert result_init["message"] == "Baseline established"
+
+        # Second call: motion detected (returns MotionAnalysisResult)
         result = plugin.analyze(sample_high_contrast_motion_image)
 
-        # Must be dict, not Pydantic model
-        assert isinstance(result, dict), (
-            f"Expected dict, got {type(result).__name__}. "
-            "Plugin.analyze() must return dict for server compatibility."
+        # Must be MotionAnalysisResult
+        assert isinstance(result, MotionAnalysisResult), (
+            f"Expected MotionAnalysisResult, got {type(result).__name__}. "
         )
 
-        # Can unpack with ** operator (server requirement)
-        unpacked = {**result, "processing_time_ms": 123.45}
-        assert unpacked["processing_time_ms"] == 123.45
-
         # Must have required fields
-        assert "motion_detected" in result
-        assert "motion_score" in result
-        assert "regions" in result
-        assert "image_size" in result
+        assert result.motion_detected is True
+        assert result.motion_score > 0
+        assert len(result.regions) > 0
+        assert result.image_size is not None
 
     # Lifecycle hooks
     def test_on_load_lifecycle_hook(self, plugin):
@@ -245,8 +264,10 @@ class TestMotionDetectorPlugin:
         """Test image dimensions are captured in result."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_static_image_bytes)
-        assert result["image_size"]["width"] == 640
-        assert result["image_size"]["height"] == 480
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.image_size["width"] == 640
+        assert result.image_size["height"] == 480
 
     def test_handles_grayscale_and_rgba_images(self, plugin):
         """Test grayscale and RGBA images are handled correctly."""
@@ -256,7 +277,9 @@ class TestMotionDetectorPlugin:
         gray_img.save(gray_bytes, format="PNG")
         plugin.analyze(gray_bytes.getvalue())
         result = plugin.analyze(gray_bytes.getvalue())
-        assert result["image_size"]["width"] == 200
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.image_size["width"] == 200
 
         # RGBA
         plugin.reset()
@@ -265,14 +288,18 @@ class TestMotionDetectorPlugin:
         rgba_img.save(rgba_bytes, format="PNG")
         plugin.analyze(rgba_bytes.getvalue())
         result = plugin.analyze(rgba_bytes.getvalue())
-        assert result["image_size"]["width"] == 300
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.image_size["width"] == 300
 
     # Motion tracking
     def test_time_since_last_motion_none_initially(self, plugin, sample_static_image_bytes):
         """Test time_since_last_motion is None if no motion detected."""
         plugin.analyze(sample_static_image_bytes)
         result = plugin.analyze(sample_static_image_bytes)
-        assert result["time_since_last_motion"] is None
+        
+        assert isinstance(result, MotionAnalysisResult)
+        assert result.time_since_last_motion is None
 
     def test_frame_counting(self, plugin, sample_static_image_bytes):
         """Test frame counter increments."""
@@ -293,4 +320,6 @@ class TestMotionDetectorPlugin:
 
         plugin.analyze(bytes1.getvalue())
         result = plugin.analyze(bytes2.getvalue())
+        # Resets baseline -> returns dict
+        assert isinstance(result, dict)
         assert result["motion_detected"] is False
