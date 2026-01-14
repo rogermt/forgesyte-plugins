@@ -9,26 +9,15 @@ import io
 import logging
 from typing import Any, Optional
 
+from app.models import AnalysisResult, PluginMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
-
-
-
-
-
-
-
-
-
-
-
-
 
 logger = logging.getLogger(__name__)
 
 # Try to import OCR dependencies
 try:
-    import pytesseract  # type: ignore[import-not-found]
+    import pytesseract
 
     HAS_TESSERACT = True
 except ImportError:
@@ -38,7 +27,7 @@ except ImportError:
 
 class TextBlock(BaseModel):
     """A single text block detected by OCR.
-    
+
     Attributes:
         text: Extracted text content
         confidence: Confidence score (0-100)
@@ -58,7 +47,7 @@ class TextBlock(BaseModel):
 
 class ImageSize(BaseModel):
     """Image dimensions.
-    
+
     Attributes:
         width: Image width in pixels
         height: Image height in pixels
@@ -70,7 +59,7 @@ class ImageSize(BaseModel):
 
 class OCRResponse(BaseModel):
     """OCR analysis response with validated data.
-    
+
     Attributes:
         text: Full extracted text
         blocks: List of detected text blocks with positions
@@ -205,9 +194,7 @@ class Plugin:
 
             # Calculate average confidence across all blocks
             confidences = [b.confidence for b in blocks if b.confidence > 0]
-            avg_confidence = (
-                sum(confidences) / len(confidences) if confidences else 0.0
-            )
+            avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
             # Convert blocks to dict format for AnalysisResult
             # Note: TextBlock confidence is 0-100, keep as-is for blocks detail

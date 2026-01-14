@@ -9,7 +9,6 @@ Tests cover:
 from unittest.mock import patch
 
 import pytest
-
 from forgesyte_plugin_template.plugin import Plugin
 
 
@@ -21,7 +20,7 @@ class TestTemplatePlugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    @patch('forgesyte_plugin_template.plugin.PluginMetadata')
+    @patch("forgesyte_plugin_template.plugin.PluginMetadata")
     def test_metadata_returns_plugin_metadata(self, mock_metadata_cls, plugin):
         """Test metadata endpoint returns valid PluginMetadata."""
         mock_instance = mock_metadata_cls.return_value
@@ -29,15 +28,15 @@ class TestTemplatePlugin:
         mock_instance.version = "1.0.0"
         mock_instance.inputs = ["image"]
         mock_instance.outputs = ["json"]
-        
+
         metadata = plugin.metadata()
-        
+
         assert metadata.name == "template_plugin"
         assert metadata.version == "1.0.0"
         assert "image" in metadata.inputs
         assert "json" in metadata.outputs
 
-    @patch('forgesyte_plugin_template.plugin.PluginMetadata')
+    @patch("forgesyte_plugin_template.plugin.PluginMetadata")
     def test_metadata_includes_config_schema(self, mock_metadata_cls, plugin):
         """Test metadata includes configuration schema."""
         mock_instance = mock_metadata_cls.return_value
@@ -49,14 +48,14 @@ class TestTemplatePlugin:
                 "description": "Processing mode for this plugin",
             }
         }
-        
+
         metadata = plugin.metadata()
         config = metadata.config_schema
         assert "mode" in config
         assert config["mode"]["default"] == "default"
         assert "default" in config["mode"]["enum"]
 
-    @patch('forgesyte_plugin_template.plugin.AnalysisResult')
+    @patch("forgesyte_plugin_template.plugin.AnalysisResult")
     def test_analyze_returns_template_error(self, mock_analysis_cls, plugin):
         """Test analyze returns template error response."""
         expected_instance = mock_analysis_cls.return_value
@@ -72,7 +71,7 @@ class TestTemplatePlugin:
         assert result.error == "Template plugin has no implementation."
         assert result.text == ""
 
-    @patch('forgesyte_plugin_template.plugin.AnalysisResult')
+    @patch("forgesyte_plugin_template.plugin.AnalysisResult")
     def test_analyze_with_options(self, mock_analysis_cls, plugin):
         """Test analyze handles options parameter."""
         expected_instance = mock_analysis_cls.return_value

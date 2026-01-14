@@ -11,7 +11,7 @@ ForgeSyte plugins. It mirrors the architecture of the OCR plugin:
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from app.models import AnalysisResult, PluginMetadata
 
@@ -49,8 +49,8 @@ class Plugin:
             name=self.name,
             description="Template plugin — replace with your description.",
             version=self.version,
-            inputs=["image"],          # or ["text"], ["binary"], etc.
-            outputs=["json"],          # or ["text"], ["regions"], etc.
+            inputs=["image"],  # or ["text"], ["binary"], etc.
+            outputs=["json"],  # or ["text"], ["regions"], etc.
             config_schema={
                 "mode": {
                     "type": "string",
@@ -67,7 +67,7 @@ class Plugin:
     def analyze(
         self,
         image_bytes: bytes,
-        options: Optional[dict[str, Any]] = None,
+        options: dict[str, Any] | None = None,
     ) -> AnalysisResult:
         """
         Main plugin logic.

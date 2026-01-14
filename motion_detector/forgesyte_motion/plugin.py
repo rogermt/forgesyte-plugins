@@ -6,13 +6,12 @@ Optimized for high-frequency analysis with adaptive baseline learning.
 import io
 import logging
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
+from app.models import PluginMetadata
 from PIL import Image
 from pydantic import BaseModel, Field
-
-from app.models import PluginMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class MotionRegion(BaseModel):
 
     bbox: BoundingBox
     area: int
-    center: Dict[str, int]
+    center: dict[str, int]
 
 
 class MotionAnalysisResult(BaseModel):
@@ -43,10 +42,10 @@ class MotionAnalysisResult(BaseModel):
 
     motion_detected: bool
     motion_score: float = Field(..., description="Percentage of frame changed")
-    regions: List[MotionRegion]
+    regions: list[MotionRegion]
     frame_number: int
-    image_size: Dict[str, int]
-    time_since_last_motion: Optional[float] = None
+    image_size: dict[str, int]
+    time_since_last_motion: float | None = None
     recent_motion_events_count: int
 
 
@@ -69,10 +68,10 @@ class Plugin:
 
     def __init__(self) -> None:
         """Initialize frame storage and motion history."""
-        self._previous_frame: Optional[np.ndarray] = None
+        self._previous_frame: np.ndarray | None = None
         self._frame_count: int = 0
         self._last_motion_time: float = 0
-        self._motion_history: List[Dict[str, Any]] = []
+        self._motion_history: list[dict[str, Any]] = []
 
     def metadata(self) -> PluginMetadata:
         """Returns Pydantic-validated metadata for MCP discovery."""
@@ -101,8 +100,8 @@ class Plugin:
         )
 
     def analyze(
-        self, image_bytes: bytes, options: Optional[Dict[str, Any]] = None
-    ) -> MotionAnalysisResult | Dict[str, Any]:
+        self, image_bytes: bytes, options: dict[str, Any] | None = None
+    ) -> MotionAnalysisResult | dict[str, Any]:
         """
         Calculates frame differences and updates adaptive baseline.
         """
@@ -199,7 +198,7 @@ class Plugin:
 
     def _find_motion_regions(
         self, motion_mask: np.ndarray, min_size: int = 100
-    ) -> List[MotionRegion]:
+    ) -> list[MotionRegion]:
         """Identifies the bounding box of contiguous motion pixels."""
         rows = np.any(motion_mask, axis=1)
         cols = np.any(motion_mask, axis=0)

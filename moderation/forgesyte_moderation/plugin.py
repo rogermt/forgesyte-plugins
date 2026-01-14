@@ -1,6 +1,7 @@
 from forgesyte.server.models import PluginMetadata
 from forgesyte.server.plugin_loader import BasePlugin
 
+
 class Plugin(BasePlugin):
     name = "moderation"
 
