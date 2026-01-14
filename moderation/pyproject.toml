@@ -1,8 +1,33 @@
 [project]
 name = "forgesyte-moderation"
 version = "1.0.0"
-description = "Content moderation plugin for ForgeSyte"
-dependencies = []
+description = "Moderation plugin for ForgeSyte"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24.0",
+    "Pillow>=10.0.0",
+    "pydantic>=2.0.0",
+]
 
 [project.entry-points."forgesyte.plugins"]
 moderation = "forgesyte_moderation.plugin:Plugin"
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0.0",
+    "black",
+    "ruff",
+    "isort",
+    "mypy",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

@@ -5,7 +5,7 @@
 
 set -e
 
-PLUGINS=("motion_detector" "ocr" "plugin_template")
+PLUGINS=("motion_detector" "ocr" "plugin_template" "moderation")
 
 # Colors for output
 GREEN='\033[0;32m'
