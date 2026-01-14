@@ -13,30 +13,9 @@ ForgeSyte plugins. It mirrors the architecture of the OCR plugin:
 import logging
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from app.models import AnalysisResult, PluginMetadata
 
 logger = logging.getLogger(__name__)
-
-
-class PluginMetadata(BaseModel):
-    """Metadata for plugin discovery and configuration."""
-
-    name: str
-    description: str
-    version: str
-    inputs: list[str]
-    outputs: list[str]
-    config_schema: dict[str, Any]
-
-
-class AnalysisResult(BaseModel):
-    """Result of plugin analysis."""
-
-    text: str
-    blocks: list[dict[str, Any]]
-    confidence: float
-    language: Optional[str] = None
-    error: Optional[str] = None
 
 
 class Plugin:
