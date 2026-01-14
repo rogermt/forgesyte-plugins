@@ -2,7 +2,14 @@
 name = "forgesyte-plugin-template"
 version = "1.0.0"
 description = "Template plugin for ForgeSyte"
-dependencies = []
+dependencies = [
+    "pydantic>=2.12.5",
+]
 
 [project.entry-points."forgesyte.plugins"]
 template_plugin = "forgesyte_plugin_template.plugin:Plugin"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
