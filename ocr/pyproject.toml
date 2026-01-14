@@ -1,8 +1,49 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "forgesyte-ocr"
 version = "1.0.0"
 description = "OCR plugin for ForgeSyte"
-dependencies = []
+requires-python = ">=3.8"
+dependencies = [
+    "Pillow>=10.0.0",
+    "pytesseract>=0.3.10",
+    "pydantic>=2.0.0",
+    "forgesyte @ file:///home/rogermt/forgesyte/server",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black==24.1.1",
+    "ruff==0.9.1",
+    "mypy==1.14.0",
+    "types-Pillow>=10.0.0",
+]
 
 [project.entry-points."forgesyte.plugins"]
 ocr = "forgesyte_ocr.plugin:Plugin"
+
+[tool.black]
+line-length = 88
+target-version = ["py38", "py39", "py310", "py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py38"
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.8"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--verbose --cov=forgesyte_ocr --cov-report=term-missing"
