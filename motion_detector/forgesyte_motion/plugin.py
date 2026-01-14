@@ -9,9 +9,9 @@ import time
 from typing import Any
 
 import numpy as np
-from app.models import PluginMetadata
+from app.models import AnalysisResult, PluginMetadata
 from PIL import Image
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -35,18 +35,6 @@ class MotionRegion(BaseModel):
     bbox: BoundingBox
     area: int
     center: dict[str, int]
-
-
-class MotionAnalysisResult(BaseModel):
-    """Strict schema for motion detection output."""
-
-    motion_detected: bool
-    motion_score: float = Field(..., description="Percentage of frame changed")
-    regions: list[MotionRegion]
-    frame_number: int
-    image_size: dict[str, int]
-    time_since_last_motion: float | None = None
-    recent_motion_events_count: int
 
 
 # ---------------------------------------------------------------------------
@@ -80,7 +68,7 @@ class Plugin:
             version=self.version,
             description=self.description,
             inputs=["image"],
-            outputs=["motion_detected", "motion_score", "regions"],
+            outputs=["text", "blocks", "confidence"],
             config_schema={
                 "threshold": {
                     "type": "float",
@@ -101,9 +89,10 @@ class Plugin:
 
     def analyze(
         self, image_bytes: bytes, options: dict[str, Any] | None = None
-    ) -> MotionAnalysisResult | dict[str, Any]:
+    ) -> AnalysisResult:
         """
         Calculates frame differences and updates adaptive baseline.
+        Returns a universal AnalysisResult for ForgeSyte Core.
         """
         opts = options or {}
         self._frame_count += 1
@@ -128,11 +117,13 @@ class Plugin:
                 or current_frame.shape != self._previous_frame.shape
             ):
                 self._previous_frame = current_frame
-                return {
-                    "motion_detected": False,
-                    "motion_score": 0.0,
-                    "message": "Baseline established",
-                }
+                return AnalysisResult(
+                    text="Baseline established",
+                    blocks=[],
+                    confidence=0.0,
+                    language=None,
+                    error=None,
+                )
 
             # 4. Differencing and Thresholding
             diff = np.abs(current_frame - self._previous_frame)
@@ -159,28 +150,28 @@ class Plugin:
                 )
 
             self._motion_history = self._motion_history[-100:]
-            recent_events = [
-                e for e in self._motion_history if time.time() - e["time"] < 60
-            ]
+            # Note: recent_events calculation is kept logic-side but not currently
+            # mapped to AnalysisResult as there isn't a clear field for it.
+            # If needed, it could go into text or a custom block.
 
-            # 9. Validated Output Construction
-            return MotionAnalysisResult(
-                motion_detected=motion_detected,
-                motion_score=round(motion_score * 100, 2),
-                regions=regions,
-                frame_number=self._frame_count,
-                image_size={"width": img.width, "height": img.height},
-                time_since_last_motion=(
-                    round(time.time() - self._last_motion_time, 1)
-                    if self._last_motion_time > 0
-                    else None
-                ),
-                recent_motion_events_count=len(recent_events),
+            # 9. Validated Output Construction (Universal AnalysisResult)
+            return AnalysisResult(
+                text="motion detected" if motion_detected else "",
+                blocks=[r.model_dump() for r in regions],
+                confidence=float(motion_score),
+                language=None,
+                error=None,
             )
 
         except Exception as e:
             logger.exception("Motion analysis failed", extra={"plugin": self.name})
-            return {"motion_detected": False, "error": str(e), "motion_score": 0}
+            return AnalysisResult(
+                text="",
+                blocks=[],
+                confidence=0.0,
+                language=None,
+                error=str(e),
+            )
 
     def _gaussian_blur(self, img: np.ndarray, size: int) -> np.ndarray:
         """Standard Gaussian kernel generation and separable filter application."""
