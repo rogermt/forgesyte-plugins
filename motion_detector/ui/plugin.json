@@ -1,0 +1,8 @@
+{
+  "name": "motion_detector",
+  "version": "1.0.0",
+  "description": "motion_detector UI plugin",
+  "ui": {
+    "entry": "ResultRenderer.tsx"
+  }
+}
