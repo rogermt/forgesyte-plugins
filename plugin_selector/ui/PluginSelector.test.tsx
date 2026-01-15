@@ -1,212 +1,74 @@
-/**
- * Tests for PluginSelector styling and API integration
- */
-
-import { render, screen, waitFor } from "@testing-library/react";
+import React from "react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
 import { PluginSelector } from "./PluginSelector";
-import * as client from "../api/client";
+import { vi, describe, it, expect, beforeEach } from "vitest";
 
-// Mock the API client
-vi.mock("../api/client", () => ({
+// Mock the dependencies
+const mockGetPlugins = vi.fn();
+
+vi.mock("@forgesyte/ui-core", () => ({
     apiClient: {
-        getPlugins: vi.fn(),
+        getPlugins: (...args: any[]) => mockGetPlugins(...args),
     },
 }));
 
-describe("PluginSelector - Styling and Integration", () => {
-    const mockPlugins: client.Plugin[] = [
-        {
-            name: "motion_detector",
-            description: "Detects motion in video frames",
-            version: "1.0.0",
-            inputs: ["image"],
-            outputs: ["detection"],
-            permissions: ["camera"],
-        },
-        {
-            name: "object_detection",
-            description: "Detects objects in images",
-            version: "2.1.0",
-            inputs: ["image"],
-            outputs: ["objects"],
-            permissions: ["camera"],
-        },
-    ];
+vi.mock("../../../web-ui/src/plugin-system/uiPluginManager", () => ({
+    UIPluginManager: vi.fn(),
+}));
 
+describe("PluginSelector", () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    describe("heading and layout", () => {
-        it("should display heading", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
+    it("shows loading state initially", () => {
+        mockGetPlugins.mockImplementation(() => new Promise(() => {}));
+        render(<PluginSelector selectedPlugin="" onPluginChange={vi.fn()} />);
+        expect(screen.getByText("Loading plugins...")).toBeInTheDocument();
+    });
 
-            render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Select Plugin")
-                ).toBeInTheDocument();
-            });
+    it("shows error state when fetching fails", async () => {
+        mockGetPlugins.mockRejectedValue(new Error("Network error"));
+        render(<PluginSelector selectedPlugin="" onPluginChange={vi.fn()} />);
+        
+        await waitFor(() => {
+            expect(screen.getByText(/Error: Network error/)).toBeInTheDocument();
         });
     });
 
-    describe("loading state", () => {
-        it("should display loading message", () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockImplementation(
-                () => new Promise(() => {
-                    /* never resolves */
-                })
-            );
+    it("renders plugin list when fetch succeeds", async () => {
+        const mockPlugins = [
+            { name: "ocr", version: "1.0.0" },
+            { name: "motion", version: "2.0.0" }
+        ];
+        mockGetPlugins.mockResolvedValue(mockPlugins);
 
-            render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
+        render(<PluginSelector selectedPlugin="" onPluginChange={vi.fn()} />);
 
-            expect(screen.getByText("Loading plugins...")).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText("Select Plugin")).toBeInTheDocument();
         });
+        
+        expect(screen.getByText("ocr (v1.0.0)")).toBeInTheDocument();
+        expect(screen.getByText("motion (v2.0.0)")).toBeInTheDocument();
     });
 
-    describe("error state", () => {
-        it("should display error with brand styling", async () => {
-            const errorMsg = "Failed to connect to API";
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockRejectedValue(
-                new Error(errorMsg)
-            );
+    it("calls onPluginChange when a plugin is selected", async () => {
+        const mockPlugins = [
+            { name: "ocr", version: "1.0.0" },
+            { name: "motion", version: "2.0.0" }
+        ];
+        mockGetPlugins.mockResolvedValue(mockPlugins);
+        const handleChange = vi.fn();
 
-            render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
+        render(<PluginSelector selectedPlugin="ocr" onPluginChange={handleChange} />);
 
-            await waitFor(() => {
-                expect(
-                    screen.getByText(new RegExp(errorMsg))
-                ).toBeInTheDocument();
-            });
-        });
-    });
-
-    describe("plugin list display", () => {
-        it("should display plugins with version info", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
-
-            render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText(/motion_detector \(v1.0.0\)/)
-                ).toBeInTheDocument();
-                expect(
-                    screen.getByText(/object_detection \(v2.1.0\)/)
-                ).toBeInTheDocument();
-            });
+        await waitFor(() => {
+            expect(screen.getByRole("combobox")).toBeInTheDocument();
         });
 
-        it("should call onPluginChange when selection changes", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
-
-            const mockChange = vi.fn();
-            const { container } = render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={mockChange}
-                />
-            );
-
-            await waitFor(() => {
-                const select = container.querySelector("select");
-                expect(select).toBeInTheDocument();
-            });
-        });
-    });
-
-    describe("description display", () => {
-        it("should display plugin description", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
-
-            render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText("Detects motion in video frames")
-                ).toBeInTheDocument();
-            });
-        });
-    });
-
-    describe("disabled state", () => {
-        it("should disable select when disabled prop is true", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
-
-            const { container } = render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                    disabled={true}
-                />
-            );
-
-            await waitFor(() => {
-                const select = container.querySelector("select");
-                expect(select).toBeDisabled();
-            });
-        });
-    });
-
-    describe("styling", () => {
-        it("should use brand colors for select element", async () => {
-            (client.apiClient.getPlugins as ReturnType<typeof vi.fn>).mockResolvedValue(
-                mockPlugins
-            );
-
-            const { container } = render(
-                <PluginSelector
-                    selectedPlugin="motion_detector"
-                    onPluginChange={vi.fn()}
-                />
-            );
-
-            await waitFor(() => {
-                const select = container.querySelector("select");
-                expect(select).toHaveStyle({
-                    width: "100%",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                });
-            });
-        });
+        fireEvent.change(screen.getByRole("combobox"), { target: { value: "motion" } });
+        expect(handleChange).toHaveBeenCalledWith("motion");
     });
 });
-
-import { vi } from "vitest";

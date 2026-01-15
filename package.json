@@ -1,0 +1,35 @@
+{
+  "name": "forgesyte-plugins",
+  "version": "1.0.0",
+  "description": "A collection of plugins for the ForgeSyte platform.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogermt/forgesyte-plugins.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/rogermt/forgesyte-plugins/issues"
+  },
+  "homepage": "https://github.com/rogermt/forgesyte-plugins#readme",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@types/node": "^25.0.9",
+    "@types/react": "^19.2.8",
+    "jsdom": "^27.4.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17"
+  }
+}

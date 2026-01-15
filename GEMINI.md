@@ -164,10 +164,19 @@ Adhere strictly to `docs/development/PYTHON_STANDARDS.md`.
 
 ## Building and Testing
 
+### Backend Plugins
+Each plugin is a standalone Python package managed by `uv`. To develop or test, navigate to its directory:
 ```bash
-# In a plugin directory
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
-pytest
+cd ocr # Example
+uv sync --all-extras
+uv run pytest
+```
+
+### UI Components
+UI tests use Vitest and are run from the repository root:
+```bash
+# In the root directory
+npm install
+npx vitest # Run all UI tests
+npx vitest run <path-to-test-file> # Run a specific test file
 ```
