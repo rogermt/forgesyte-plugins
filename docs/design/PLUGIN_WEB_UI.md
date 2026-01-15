@@ -1,41 +1,9 @@
-# ForgeSyte Plugins - Gemini Context
+Absolutely, Roger — here’s a **clear, architecture‑grade diagram** showing how **Server Plugins** and **UI Plugins** interact in the ForgeSyte ecosystem.  
+This captures the exact relationship you’re building: the server exposes plugin metadata and results, and the Web‑UI becomes a dynamic plugin host rather than a static React app.
 
-This repository is a monorepo containing plugins for the ForgeSyte platform. Each plugin is a self-contained Python package designed to perform specific analysis tasks (e.g., OCR, motion detection, moderation) on data processed by ForgeSyte.
+---
 
-## Platform Architecture Overview
-
-The ForgeSyte platform consists of several components working together:
-
-- **Gemini-CLI**: MCP Client/Tool Caller that interacts with the core via MCP Protocol.
-- **ForgeSyte Core**: FastAPI entry point, REST API, MCP adapter, and Plugin Loader.
-- **Document Store**: Unified storage abstraction (MinIO, S3, Filesystem) used by both the Web UI and plugins.
-- **Plugins Ecosystem**: This repository, containing independent pip packages discovered via entry points.
-
-## Project Structure
-
-- **`plugin_template/`**: Canonical reference implementation for new plugins.
-- **`ocr/`**: Optical Character Recognition plugin.
-- **`motion_detector/`**: Motion detection analysis.
-- **`moderation/`**: Content moderation.
-- **`block_mapper/`**: Visual block mapping.
-- **`docs/`**: Shared documentation and standards.
-
-## Plugin Architecture
-
-All plugins must adhere to the structure defined in `plugin_template`.
-
-### File Structure
-```
-plugin_name/
-├── pyproject.toml              # Build config & dependencies
-├── README.md
-├── forgesyte_plugin_name/      # Main package
-│   ├── __init__.py
-│   └── plugin.py               # Plugin implementation
-└── tests/
-    ├── __init__.py
-    └── test_plugin.py          # Unit tests
-```
+# 🔌 **Server Plugins ↔ UI Plugins Architecture Diagram**
 
 ```md
                           ┌──────────────────────────────────────────┐
@@ -119,55 +87,200 @@ plugin_name/
                      └────────────────────────────────────────────────────┘
 ```
 
+---
 
+# 🧠 Why this diagram matters
 
-### Key Components
+It shows the **full decoupling** for:
 
-1.  **`pyproject.toml`**: Defines the project metadata and entry point.
-    -   **Entry Point:** Must define a `forgesyte.plugins` entry point.
-        ```toml
-        [project.entry-points."forgesyte.plugins"]
-        plugin_name = "forgesyte_plugin_name.plugin:Plugin"
-        ```
-2.  **`plugin.py`**: Contains the `Plugin` class.
-    -   **`metadata()`**: Returns `PluginMetadata` (inputs, outputs, config schema).
-    -   **`analyze(image_bytes, options)`**: Core logic. Returns a dictionary based on `AnalysisResult`.
-    -   **Lifecycle Hooks**: `on_load()` and `on_unload()`.
+### ✔ Server plugins are dynamic  
+### ✔ UI plugins are dynamic  
+### ✔ UI reads plugin metadata from the server  
+### ✔ UI renders results based on the universal `AnalysisResult`  
+### ✔ No plugin‑specific UI code  
+### ✔ No hard‑coded plugin names  
+### ✔ The Web‑UI becomes a plugin host, not a static app  
 
-### Data Models
-Plugins interact with the main application via models (expected at runtime):
--   `PluginMetadata`: Capabilities description.
--   `AnalysisResult`: Structured analysis results.
+This is the architecture of a real plugin ecosystem.
 
-## Development Standards
+Here’s a tight architectural design spec you can drop next to that diagram and evolve into docs.
 
-Adhere strictly to `docs/development/PYTHON_STANDARDS.md`.
+---
 
-### Mandatory Tools
-- **Formatting:** `black . && isort .`
-- **Linting:** `ruff check --fix .`
-- **Type Checking:** `mypy . --no-site-packages`
-- **Testing:** `pytest`
+## 1. Goals
 
-### Coding Conventions
-- **Type Hints:** Mandatory for all functions.
-- **Path Handling:** Use `pathlib.Path`.
-- **Logging:** Use `logging.getLogger(__name__)`.
-- **Error Handling:** Return errors within the `AnalysisResult` dictionary.
+- **Decouple** Web‑UI from specific plugins.
+- Make the Web‑UI a **dynamic plugin host**, driven entirely by:
+  - server‑side plugin metadata
+  - the universal `AnalysisResult` contract.
+- Avoid hard‑coded plugin names, schemas, or UI branches per plugin.
+- Enable adding/removing plugins **without changing Web‑UI code**.
 
-## Creating a New Plugin
+---
 
-1.  Copy `plugin_template/` to `new_plugin/`.
-2.  Rename `forgesyte_plugin_template/` package and update `pyproject.toml` entry points.
-3.  Implement `Plugin.name`, `metadata()`, and `analyze()` in `plugin.py`.
-4.  Update tests in `tests/test_plugin.py`.
+## 2. Core concepts
 
-## Building and Testing
+### **Server plugin**
 
-```bash
-# In a plugin directory
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
-pytest
-```
+- Python plugin implementing:
+  - `Plugin.metadata() -> PluginMetadata`
+  - `Plugin.analyze(image_bytes, options) -> AnalysisResult`
+- Discovered and managed by `PluginManager` on the server.
+- Exposed to Web‑UI via:
+  - `GET /v1/plugins` → list of `PluginMetadata`
+  - `POST /v1/analyze` → `AnalysisResult`
+
+### **UI plugin**
+
+- Not a separate deployable—just **dynamic behavior in the Web‑UI** driven by:
+  - plugin metadata (for selection/config)
+  - `AnalysisResult` (for rendering).
+- No plugin‑specific React components required; instead:
+  - generic components that interpret metadata + result.
+
+### **UI Plugin Manager**
+
+- A small client‑side module responsible for:
+  - fetching and caching plugin metadata from the server
+  - exposing a typed API to React components
+  - centralizing plugin selection and configuration state.
+
+---
+
+## 3. Data contracts
+
+### **Plugin metadata (from server)**
+
+From `PluginMetadata`:
+
+- **name:** string (e.g. `"ocr"`, `"motion_detector"`)
+- **description:** string
+- **version:** string
+- **inputs:** list of strings (e.g. `["image"]`)
+- **outputs:** list of strings (e.g. `["text", "blocks", "confidence"]`)
+- **config_schema:** JSON schema‑like dict describing options:
+  - type, default, enum, min/max, description
+
+Web‑UI uses this to:
+
+- populate `PluginSelector`
+- build dynamic config forms
+- decide which plugins are compatible with current input mode.
+
+### **Analysis result (from server)**
+
+From `AnalysisResult`:
+
+- **text:** string
+- **blocks:** `list[dict[str, Any]]`
+- **confidence:** float (0.0–1.0)
+- **language:** string | null
+- **error:** string | null
+
+Web‑UI uses this to:
+
+- render text output
+- render overlays/regions from `blocks`
+- show confidence and language
+- show error banners.
+
+---
+
+## 4. Web‑UI architecture
+
+### 4.1 Modules
+
+**`uiPluginManager.ts`**
+
+- Responsibilities:
+  - `fetchPlugins(): Promise<PluginMetadata[]>`
+  - cache plugin list in memory (or React query/store)
+  - provide helpers:
+    - `getPluginByName(name)`
+    - `getDefaultPlugin()`
+    - `getConfigSchema(name)`
+
+**`PluginSelector.tsx`**
+
+- Responsibilities:
+  - render list of plugins from `uiPluginManager`
+  - no hard‑coded plugin names
+  - emit `onPluginChange(pluginName)`
+  - optionally render dynamic config form from `config_schema`.
+
+**`ResultsPanel.tsx`**
+
+- Responsibilities:
+  - accept `result: AnalysisResult` and `pluginName`
+  - render:
+    - text (if present)
+    - blocks (if present) as generic regions
+    - confidence, language, error
+  - avoid plugin‑specific branches like `if (pluginName === "ocr")`.
+
+**`JobList.tsx`**
+
+- Responsibilities:
+  - list past analysis jobs
+  - each job stores:
+    - `pluginName`
+    - `request` (AnalyzeRequest)
+    - `result` (AnalysisResult)
+  - render summary using generic fields (text, confidence, error).
+
+**`CameraPreview.tsx`**
+
+- Responsibilities:
+  - capture image frames
+  - pass image bytes/URL + selected plugin + options into `AnalyzeRequest`.
+
+---
+
+## 5. Key flows
+
+### 5.1 Plugin discovery (UI)
+
+1. On app load:
+   - `uiPluginManager.fetchPlugins()` → `GET /v1/plugins`
+2. Store metadata in a global store (React context, Zustand, Redux, etc.).
+3. `PluginSelector` subscribes to this store and renders plugin list.
+
+### 5.2 Analysis request
+
+1. User selects plugin in `PluginSelector`.
+2. User captures image in `CameraPreview`.
+3. UI builds `AnalyzeRequest`:
+   - `plugin`
+   - `options` (from dynamic config form)
+   - `image_url` or uploaded bytes.
+4. UI calls `POST /v1/analyze`.
+5. Server:
+   - validates `AnalyzeRequest`
+   - fetches image
+   - calls `PluginManager.get(plugin).analyze(...)`
+   - returns `AnalysisResult`.
+
+### 5.3 Result rendering
+
+1. `ResultsPanel` receives `AnalysisResult`.
+2. Renders:
+   - `error` → error banner
+   - `text` → text area
+   - `blocks` → generic overlay (e.g. bounding boxes)
+   - `confidence` → badge/progress
+   - `language` → label (if present).
+3. No plugin‑specific branching.
+
+---
+
+## 6. Architectural invariants
+
+- **Invariant 1:** Web‑UI never hard‑codes plugin names or schemas.
+- **Invariant 2:** All plugins are discovered via `/v1/plugins`.
+- **Invariant 3:** All analysis responses conform to `AnalysisResult`.
+- **Invariant 4:** UI components are **generic** and driven by metadata + `AnalysisResult`.
+- **Invariant 5:** Adding a new plugin requires:
+  - no Web‑UI code changes
+  - only new server plugin + metadata.
+
+---
