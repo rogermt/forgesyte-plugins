@@ -177,6 +177,7 @@ UI tests use Vitest and are run from the repository root:
 ```bash
 # In the root directory
 npm install
-npx vitest # Run all UI tests
-npx vitest run <path-to-test-file> # Run a specific test file
+npm test # Run all UI tests
+npm test -- <path-to-test-file> # Run a specific test file
+# Example: npm test -- ocr/ui/ResultRenderer.test.tsx
 ```

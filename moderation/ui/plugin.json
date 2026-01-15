@@ -1,0 +1,8 @@
+{
+  "name": "moderation",
+  "version": "1.0.0",
+  "description": "moderation UI plugin",
+  "ui": {
+    "entry": "ResultRenderer.tsx"
+  }
+}

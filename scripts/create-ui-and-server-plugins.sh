@@ -72,5 +72,7 @@ create_plugin "ocr" true true true "ResultRenderer.tsx"
 create_plugin "motion_detector" true false true "ResultRenderer.tsx"
 create_plugin "plugin_selector" false false false "PluginSelector.tsx"
 create_plugin "block_mapper" true false true "ResultRenderer.tsx"
+create_plugin "moderation" true false true "ResultRenderer.tsx"
+
 
 echo "All plugins created successfully."
