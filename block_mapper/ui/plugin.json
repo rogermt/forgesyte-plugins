@@ -1,0 +1,8 @@
+{
+  "name": "block_mapper",
+  "version": "1.0.0",
+  "description": "block_mapper UI plugin",
+  "ui": {
+    "entry": "ResultRenderer.tsx"
+  }
+}
