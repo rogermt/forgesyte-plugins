@@ -1,8 +1,0 @@
-{
-  "name": "plugin_selector",
-  "version": "1.0.0",
-  "description": "plugin_selector UI plugin",
-  "ui": {
-    "entry": "PluginSelector.tsx"
-  }
-}

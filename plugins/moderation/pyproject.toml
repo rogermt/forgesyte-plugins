@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "forgesyte-block-mapper"
+name = "forgesyte-moderation"
 version = "1.0.0"
-description = "Minecraft block mapping plugin for ForgeSyte"
+description = "Moderation plugin for ForgeSyte"
 requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24.0",
@@ -10,9 +14,9 @@ dependencies = [
 ]
 
 [project.entry-points."forgesyte.plugins"]
-block_mapper = "forgesyte_block_mapper.plugin:Plugin"
+moderation = "forgesyte_moderation.plugin:Plugin"
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
     "black",
@@ -21,8 +25,13 @@ dev = [
     "mypy",
 ]
 
+[tool.setuptools]
+# Use src-layout so setuptools only scans ./src
+package-dir = {"" = "src"}
+packages = ["forgesyte_moderation"]
+
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["src/forgesyte_moderation/tests"]
 python_files = ["test_*.py"]
 
 [tool.mypy]

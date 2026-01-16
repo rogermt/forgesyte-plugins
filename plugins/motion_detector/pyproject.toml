@@ -1,7 +1,12 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "forgesyte-motion-detector"
 version = "1.0.0"
 description = "Motion detection plugin for ForgeSyte"
+requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.24.0",
     "Pillow>=10.0.0",
@@ -16,3 +21,12 @@ dev = [
 
 [project.entry-points."forgesyte.plugins"]
 motion_detector = "forgesyte_motion.plugin:Plugin"
+
+[tool.setuptools]
+# Use src-layout so setuptools only scans ./src
+package-dir = {"" = "src"}
+packages = ["forgesyte_motion"]
+
+[tool.pytest.ini_options]
+testpaths = ["src/forgesyte_motion/tests"]
+python_files = ["test_*.py"]
