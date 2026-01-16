@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class BoundingBox(BaseModel):
+class BoundingBox(BaseModel):  # type: ignore[misc]
     """Coordinates for a detected motion area."""
 
     x: int
@@ -29,7 +29,7 @@ class BoundingBox(BaseModel):
     height: int
 
 
-class MotionRegion(BaseModel):
+class MotionRegion(BaseModel):  # type: ignore[misc]
     """Metadata for a specific region exhibiting motion."""
 
     bbox: BoundingBox

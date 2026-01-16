@@ -22,12 +22,12 @@ from forgesyte_ocr.plugin import ImageSize, OCRResponse, Plugin, TextBlock
 class TestOCRPlugin:
     """Test suite for OCR Plugin."""
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def sample_image_bytes(self) -> bytes:
         """Generate sample image bytes for testing."""
         img = Image.new("RGB", (100, 100), color="white")
@@ -35,7 +35,7 @@ class TestOCRPlugin:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def mock_pytesseract_data(self) -> dict[str, Any]:
         """Mock pytesseract output data."""
         return {

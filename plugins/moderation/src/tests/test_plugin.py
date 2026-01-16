@@ -20,12 +20,12 @@ from PIL import Image
 class TestModerationPlugin:
     """Test suite for Moderation Plugin."""
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def sample_image_bytes(self) -> bytes:
         """Generate a random sample image."""
         img = Image.new("RGB", (100, 100), color="blue")
@@ -33,7 +33,7 @@ class TestModerationPlugin:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def unsafe_image_bytes(self) -> bytes:
         """Generate a sample image likely to trigger simple heuristics
         (e.g. skin tone)."""

@@ -25,7 +25,7 @@ except ImportError:
     logger.warning("pytesseract not installed - OCR will use fallback")
 
 
-class TextBlock(BaseModel):
+class TextBlock(BaseModel):  # type: ignore[misc]
     """A single text block detected by OCR.
 
     Attributes:
@@ -45,7 +45,7 @@ class TextBlock(BaseModel):
     line_num: int
 
 
-class ImageSize(BaseModel):
+class ImageSize(BaseModel):  # type: ignore[misc]
     """Image dimensions.
 
     Attributes:
@@ -57,7 +57,7 @@ class ImageSize(BaseModel):
     height: int
 
 
-class OCRResponse(BaseModel):
+class OCRResponse(BaseModel):  # type: ignore[misc]
     """OCR analysis response with validated data.
 
     Attributes:

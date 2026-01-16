@@ -20,12 +20,12 @@ from PIL import Image
 class TestBlockMapperPlugin:
     """Test suite for Block Mapper Plugin."""
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def sample_image_bytes(self) -> bytes:
         """Generate a random sample image."""
         img = Image.new("RGB", (64, 64), color="blue")

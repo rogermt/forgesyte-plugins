@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class CategoryResult(BaseModel):
+class CategoryResult(BaseModel):  # type: ignore[misc]
     """Validated result for an individual moderation category."""
 
     category: str

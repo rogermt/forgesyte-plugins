@@ -20,12 +20,12 @@ from PIL import Image
 class TestMotionDetectorPlugin:
     """Test suite for Motion Detector Plugin."""
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def sample_static_image_bytes(self) -> bytes:
         """Generate a static (no motion) image."""
         img = Image.new("RGB", (640, 480), color="white")
@@ -33,7 +33,7 @@ class TestMotionDetectorPlugin:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[untyped-decorator]
     def sample_high_contrast_motion_image(self) -> bytes:
         """Generate image with significant change for motion detection."""
         img = Image.new("RGB", (640, 480), color="black")
