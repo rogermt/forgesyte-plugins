@@ -423,3 +423,117 @@ class TestOCRPlugin:
         # Must be Pydantic model, not dict
         assert result == expected_instance
         assert not isinstance(result, dict)
+
+    # Text extraction quality tests
+    @patch("forgesyte_ocr.plugin.pytesseract")
+    @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
+    @patch("forgesyte_ocr.plugin.AnalysisResult")
+    def test_analyze_extracts_specific_expected_text(
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+    ) -> None:
+        """Test OCR extracts specific expected text from test image.
+        
+        Verifies extraction of known text patterns without LLM judgment.
+        """
+        # Simulate OCR output from gemini-cli test image
+        extracted_text = (
+            "This is a lot of 12 point text to test the\n"
+            "ocr code and see if it works on all types\n"
+            "of file format.\n"
+            "\n"
+            "The quick brown dog jumped over the\n"
+            "lazy fox. The quick brown dog jumped\n"
+            "over the lazy fox. The quick brown dog\n"
+            "jumped over the lazy fox. The quick\n"
+            "brown dog jumped over the lazy fox"
+        )
+        mock_tesseract.image_to_string.return_value = extracted_text
+        mock_tesseract.image_to_data.return_value = {
+            "level": [3, 4, 4],
+            "text": ["12 point text", "quick brown", "lazy fox"],
+            "conf": [92, 88, 95],
+            "left": [10, 20, 30],
+            "top": [10, 20, 30],
+            "width": [100, 100, 100],
+            "height": [20, 20, 20],
+            "block_num": [1, 1, 1],
+            "line_num": [1, 1, 1],
+        }
+        mock_tesseract.Output.DICT = {
+            "level": [3, 4, 4],
+            "text": ["12 point text", "quick brown", "lazy fox"],
+            "conf": [92, 88, 95],
+            "left": [10, 20, 30],
+            "top": [10, 20, 30],
+            "width": [100, 100, 100],
+            "height": [20, 20, 20],
+            "block_num": [1, 1, 1],
+            "line_num": [1, 1, 1],
+        }
+
+        expected_instance = mock_analysis_cls.return_value
+        expected_instance.text = extracted_text
+        expected_instance.error = None
+
+        response = plugin.analyze(sample_image_bytes)
+
+        # Verify expected text fragments are present
+        call_kwargs = mock_analysis_cls.call_args[1]
+        result_text = call_kwargs["text"]
+        assert "12 point text" in result_text
+        assert "quick brown" in result_text
+        assert "lazy fox" in result_text
+
+    @patch("forgesyte_ocr.plugin.pytesseract")
+    @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
+    @patch("forgesyte_ocr.plugin.AnalysisResult")
+    def test_analyze_maintains_minimum_confidence_threshold(
+        self,
+        mock_analysis_cls: Any,
+        mock_tesseract: Any,
+        plugin: Plugin,
+        sample_image_bytes: bytes,
+    ) -> None:
+        """Test OCR maintains acceptable confidence threshold (>80%).
+        
+        Verifies extracted text meets quality standards without LLM judgment.
+        """
+        mock_tesseract.image_to_string.return_value = "test output"
+        mock_tesseract.image_to_data.return_value = {
+            "level": [3, 4, 4],
+            "text": ["good", "text", "here"],
+            "conf": [92, 88, 85],  # All above 80%
+            "left": [10, 20, 30],
+            "top": [10, 20, 30],
+            "width": [40, 40, 40],
+            "height": [20, 20, 20],
+            "block_num": [1, 1, 1],
+            "line_num": [1, 1, 1],
+        }
+        mock_tesseract.Output.DICT = {
+            "level": [3, 4, 4],
+            "text": ["good", "text", "here"],
+            "conf": [92, 88, 85],
+            "left": [10, 20, 30],
+            "top": [10, 20, 30],
+            "width": [40, 40, 40],
+            "height": [20, 20, 20],
+            "block_num": [1, 1, 1],
+            "line_num": [1, 1, 1],
+        }
+
+        expected_instance = mock_analysis_cls.return_value
+
+        response = plugin.analyze(sample_image_bytes)
+
+        call_kwargs = mock_analysis_cls.call_args[1]
+        confidence = call_kwargs["confidence"]
+
+        # Average: (92 + 88 + 85) / 3 / 100 = 0.8833...
+        assert confidence > 0.80, (
+            f"Confidence {confidence} below 80% threshold"
+        )
