@@ -4,7 +4,7 @@
   "description": "Template plugin with backend and UI manifest.",
   "version": "0.1.0",
   "author": "ForgeSyte Team",
-  "icon": "plugin-icon.svg",
+  "icon": "plugin-icon.png",
   "configForm": "ConfigForm.tsx",
   "resultRenderer": "ResultRenderer.tsx",
   "tags": ["template", "example"]
