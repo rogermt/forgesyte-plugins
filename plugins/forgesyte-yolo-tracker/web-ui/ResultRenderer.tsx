@@ -26,15 +26,30 @@ interface ResultRendererProps {
 }
 
 /**
- * Result renderer for YOLO Tracker plugin.
- * Displays analysis results with appropriate visualization based on mode.
+ * ResultRenderer component for displaying YOLO Tracker analysis results.
+ *
+ * Renders different visualizations based on analysis mode:
+ * - Pitch Detection: Shows detected keypoints
+ * - Player Detection: Displays bounding boxes on image
+ * - Player Tracking: Shows tracked players with IDs
+ * - Ball Detection: Highlights ball position
+ * - Team Classification: Shows team colors and assignments
+ * - Radar: Bird's-eye view with player positions
+ *
+ * Args:
+ *     result: Analysis results from plugin backend
+ *     imageUrl: Optional URL for image visualization
+ *     videoUrl: Optional URL for video visualization
+ *
+ * Returns:
+ *     Rendered result component with appropriate visualization
  */
-export const ResultRenderer: React.FC<ResultRendererProps> = ({
+export default function ResultRenderer({
   result,
   imageUrl,
   videoUrl,
-}) => {
-  const renderContent = () => {
+}: ResultRendererProps): JSX.Element {
+  const renderContent = (): JSX.Element => {
     switch (result.mode) {
       case "pitch_detection":
         return (
@@ -52,8 +67,18 @@ export const ResultRenderer: React.FC<ResultRendererProps> = ({
       case "player_tracking":
         return (
           <div className="result-section">
-            <h3>{result.mode === "player_detection" ? "Player Detection" : "Player Tracking"} Results</h3>
-            {imageUrl && <BoundingBoxOverlay imageUrl={imageUrl} detections={result.detections || []} />}
+            <h3>
+              {result.mode === "player_detection"
+                ? "Player Detection"
+                : "Player Tracking"}{" "}
+              Results
+            </h3>
+            {imageUrl && (
+              <BoundingBoxOverlay
+                imageUrl={imageUrl}
+                detections={result.detections || []}
+              />
+            )}
             {result.detections && (
               <div className="detection-stats">
                 <p>Detected {result.detections.length} players</p>
@@ -66,7 +91,12 @@ export const ResultRenderer: React.FC<ResultRendererProps> = ({
         return (
           <div className="result-section">
             <h3>Ball Detection Results</h3>
-            {imageUrl && <BoundingBoxOverlay imageUrl={imageUrl} detections={result.detections || []} />}
+            {imageUrl && (
+              <BoundingBoxOverlay
+                imageUrl={imageUrl}
+                detections={result.detections || []}
+              />
+            )}
             {result.detections && result.detections.length > 0 && (
               <div className="ball-info">
                 <p>Ball detected at position</p>
@@ -79,7 +109,12 @@ export const ResultRenderer: React.FC<ResultRendererProps> = ({
         return (
           <div className="result-section">
             <h3>Team Classification Results</h3>
-            {imageUrl && <BoundingBoxOverlay imageUrl={imageUrl} detections={result.detections || []} />}
+            {imageUrl && (
+              <BoundingBoxOverlay
+                imageUrl={imageUrl}
+                detections={result.detections || []}
+              />
+            )}
             {result.team_colors && (
               <div className="team-info">
                 <h4>Team Colors</h4>
@@ -90,6 +125,9 @@ export const ResultRenderer: React.FC<ResultRendererProps> = ({
                         className="swatch"
                         style={{
                           backgroundColor: color,
+                          width: "20px",
+                          height: "20px",
+                          borderRadius: "4px",
                         }}
                       />
                       <span>Team {teamId}</span>
@@ -129,13 +167,11 @@ export const ResultRenderer: React.FC<ResultRendererProps> = ({
   return (
     <div className="result-renderer">
       {renderContent()}
-      {result.processing_time_ms && (
+      {result.processing_time_ms !== undefined && (
         <div className="processing-info">
           <small>Processing time: {result.processing_time_ms.toFixed(2)}ms</small>
         </div>
       )}
     </div>
   );
-};
-
-export default ResultRenderer;
+}
