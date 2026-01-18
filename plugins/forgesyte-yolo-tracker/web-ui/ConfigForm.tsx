@@ -1,82 +1,130 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 interface PluginConfig {
+  model: string;
   mode: string;
-  device: string;
-  confidence: number;
+  targetNumber: string;
+  targetColor: string;
 }
 
-interface ConfigFormProps {
+interface PluginConfigProps {
   config: PluginConfig;
   onChange: (config: PluginConfig) => void;
 }
 
+const MODEL_OPTIONS = [
+  { label: "YOLOv8n (fastest)", value: "yolov8n" },
+  { label: "YOLOv8s (balanced)", value: "yolov8s" },
+  { label: "YOLOv8m (accurate)", value: "yolov8m" },
+  { label: "YOLOv10n", value: "yolov10n" },
+  { label: "YOLOv10s", value: "yolov10s" },
+];
+
+const TRACKING_MODES = [
+  { label: "Player Detection Only", value: "player_detection" },
+  { label: "Player Tracking (ByteTrack)", value: "player_tracking" },
+  { label: "Ball Detection", value: "ball_detection" },
+  { label: "Team Classification", value: "team_classification" },
+  { label: "Pitch Detection", value: "pitch_detection" },
+  { label: "Radar View", value: "radar" },
+];
+
 /**
- * Configuration form for YOLO Tracker plugin.
- * Allows users to select analysis mode, device, and confidence threshold.
+ * ConfigForm component for YOLO Football Tracker plugin configuration.
+ *
+ * Allows users to:
+ * - Select YOLO model version
+ * - Choose tracking/detection mode
+ * - Optionally specify target player by jersey number and color
+ *
+ * Args:
+ *     config: Current plugin configuration
+ *     onChange: Callback when configuration changes
+ *
+ * Returns:
+ *     Configured form component
  */
-export const ConfigForm: React.FC<ConfigFormProps> = ({ config, onChange }) => {
-  const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange({ ...config, mode: e.target.value });
-  };
+export default function ConfigForm({
+  config,
+  onChange,
+}: PluginConfigProps): JSX.Element {
+  const [model, setModel] = useState<string>(config.model || "yolov8s");
+  const [mode, setMode] = useState<string>(config.mode || "player_tracking");
+  const [targetNumber, setTargetNumber] = useState<string>(
+    config.targetNumber || ""
+  );
+  const [targetColor, setTargetColor] = useState<string>(
+    config.targetColor || ""
+  );
 
-  const handleDeviceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange({ ...config, device: e.target.value });
-  };
-
-  const handleConfidenceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange({ ...config, confidence: parseFloat(e.target.value) });
-  };
+  // Sync changes to parent component
+  useEffect(() => {
+    onChange({
+      model,
+      mode,
+      targetNumber,
+      targetColor,
+    });
+  }, [model, mode, targetNumber, targetColor, onChange]);
 
   return (
-    <div className="config-form">
-      <div className="form-group">
-        <label htmlFor="mode">Analysis Mode</label>
-        <select
-          id="mode"
-          value={config.mode}
-          onChange={handleModeChange}
-          data-testid="mode-select"
-        >
-          <option value="pitch_detection">Pitch Detection</option>
-          <option value="player_detection">Player Detection</option>
-          <option value="ball_detection">Ball Detection</option>
-          <option value="player_tracking">Player Tracking</option>
-          <option value="team_classification">Team Classification</option>
-          <option value="radar">Radar View</option>
-        </select>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <h3>YOLO Football Tracking Configuration</h3>
 
-      <div className="form-group">
-        <label htmlFor="device">Device</label>
+      {/* Model Selection */}
+      <label>
+        <strong>YOLO Model</strong>
         <select
-          id="device"
-          value={config.device}
-          onChange={handleDeviceChange}
-          data-testid="device-select"
+          name="model"
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
+          style={{ width: "100%", padding: 8, marginTop: 4 }}
         >
-          <option value="cpu">CPU</option>
-          <option value="cuda">CUDA</option>
+          {MODEL_OPTIONS.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
         </select>
-      </div>
+      </label>
 
-      <div className="form-group">
-        <label htmlFor="confidence">
-          Confidence Threshold: {config.confidence.toFixed(2)}
-        </label>
-        <input
-          id="confidence"
-          type="range"
-          min="0"
-          max="1"
-          step="0.05"
-          value={config.confidence}
-          onChange={handleConfidenceChange}
-          data-testid="confidence-slider"
-        />
+      {/* Tracking Mode */}
+      <label>
+        <strong>Tracking Mode</strong>
+        <select
+          name="mode"
+          value={mode}
+          onChange={(e) => setMode(e.target.value)}
+          style={{ width: "100%", padding: 8, marginTop: 4 }}
+        >
+          {TRACKING_MODES.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {/* Target Player Configuration */}
+      <div>
+        <strong>Target Player (Optional)</strong>
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          <input
+            type="number"
+            placeholder="Jersey Number"
+            value={targetNumber}
+            onChange={(e) => setTargetNumber(e.target.value)}
+            style={{ flex: 1, padding: 8 }}
+          />
+          <input
+            type="text"
+            placeholder="Jersey Color (e.g. red)"
+            value={targetColor}
+            onChange={(e) => setTargetColor(e.target.value)}
+            style={{ flex: 1, padding: 8 }}
+          />
+        </div>
       </div>
     </div>
   );
-};
-
-export default ConfigForm;
+}
