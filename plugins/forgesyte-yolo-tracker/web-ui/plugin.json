@@ -1,0 +1,19 @@
+{
+  "name": "forgesyte-yolo-tracker",
+  "displayName": "YOLO Football Tracker",
+  "version": "0.1.0",
+  "description": "YOLO-based football player, ball, and pitch analysis for ForgeSyte.",
+  "entrypoints": {
+    "config": "./ConfigForm.tsx",
+    "result": "./ResultRenderer.tsx"
+  },
+  "tags": ["computer-vision", "sports", "yolo", "tracking"],
+  "tools": [
+    "yolo_player_detection",
+    "yolo_player_tracking",
+    "yolo_ball_detection",
+    "yolo_team_classification",
+    "yolo_pitch_detection",
+    "yolo_radar"
+  ]
+}

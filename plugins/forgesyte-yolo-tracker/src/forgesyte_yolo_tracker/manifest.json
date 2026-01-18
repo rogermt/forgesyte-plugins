@@ -1,0 +1,43 @@
+{
+  "id": "yolo-tracker",
+  "name": "YOLO Tracker",
+  "version": "0.1.0",
+  "description": "YOLO-based sports detection and tracking for player, ball, and team analysis",
+  "author": "ForgeSyte Contributors",
+  "license": "MIT",
+  "capabilities": [
+    "player_detection",
+    "player_tracking",
+    "ball_detection",
+    "team_classification",
+    "pitch_detection",
+    "radar_visualization"
+  ],
+  "models": [
+    {
+      "name": "football-player-detection.pt",
+      "type": "detection",
+      "description": "YOLOv8 model for player, goalkeeper, and referee detection"
+    },
+    {
+      "name": "football-ball-detection.pt",
+      "type": "detection",
+      "description": "YOLOv8 model for ball detection"
+    },
+    {
+      "name": "football-pitch-detection.pt",
+      "type": "detection",
+      "description": "YOLOv8 model for pitch line and vertex detection"
+    }
+  ],
+  "supported_formats": ["mp4", "avi", "mov", "mkv"],
+  "min_python_version": "3.8",
+  "dependencies": [
+    "ultralytics",
+    "supervision",
+    "numpy",
+    "opencv-python",
+    "torch",
+    "torchvision"
+  ]
+}
