@@ -1,71 +1,141 @@
-"""Ball detection inference module."""
+"""Ball detection inference module.
 
+Provides JSON and JSON+Base64 modes for ball detection:
+- detect_ball_json(): Returns detection data with ball position
+- detect_ball_json_with_annotated(): Returns data + annotated frame
+"""
+
+import base64
 from typing import Any, Dict, List, Optional
 
+import cv2
 import numpy as np
+import supervision as sv
+from ultralytics import YOLO
+
+MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-ball-detection-v2.pt"
+
+BALL_COLOR = sv.Color.from_hex("#FF6347")
+DEFAULT_CONFIDENCE = 0.20
+DEFAULT_NMS = 0.10
+
+_model: Optional[YOLO] = None
+
+
+def get_ball_detection_model(device: str = "cpu") -> YOLO:
+    """Get or create cached YOLO model."""
+    global _model
+    if _model is None:
+        _model = YOLO(MODEL_PATH).to(device=device)
+    return _model
+
+
+def _encode_frame_to_base64(frame: np.ndarray) -> str:
+    """Encode frame to base64 JPEG."""
+    _, buffer = cv2.imencode(".jpg", frame)
+    return base64.b64encode(buffer).decode("utf-8")
+
+
+def detect_ball_json(
+    frame: np.ndarray,
+    device: str = "cpu",
+    confidence: float = DEFAULT_CONFIDENCE,
+) -> Dict[str, Any]:
+    """Detect ball in a frame - JSON mode.
+
+    Args:
+        frame: Input image frame (BGR format)
+        device: Device to run model on ('cpu' or 'cuda')
+        confidence: Detection confidence threshold
+
+    Returns:
+        Dictionary with:
+        - detections: List of ball detections
+        - ball: Primary ball detection (or None)
+        - ball_detected: Boolean indicating if ball was found
+    """
+    model = get_ball_detection_model(device=device)
+    result = model(frame, imgsz=640, conf=confidence, verbose=False)[0]
+    detections = sv.Detections.from_ultralytics(result)
+
+    detection_list = []
+    primary_ball = None
+
+    for i in range(len(detections)):
+        xyxy = detections.xyxy[i]
+        conf = float(detections.confidence[i])
+
+        detection_data = {
+            "xyxy": xyxy.tolist(),
+            "confidence": conf,
+        }
+        detection_list.append(detection_data)
+
+        if primary_ball is None or conf > primary_ball["confidence"]:
+            primary_ball = detection_data
+
+    return {
+        "detections": detection_list,
+        "ball": primary_ball,
+        "ball_detected": primary_ball is not None,
+    }
+
+
+def detect_ball_json_with_annotated(
+    frame: np.ndarray,
+    device: str = "cpu",
+    confidence: float = DEFAULT_CONFIDENCE,
+) -> Dict[str, Any]:
+    """Detect ball in a frame - JSON+Base64 mode.
+
+    Args:
+        frame: Input image frame (BGR format)
+        device: Device to run model on ('cpu' or 'cuda')
+        confidence: Detection confidence threshold
+
+    Returns:
+        Dictionary with detections, ball, and annotated_frame_base64
+    """
+    model = get_ball_detection_model(device=device)
+    result = model(frame, imgsz=640, conf=confidence, verbose=False)[0]
+    detections = sv.Detections.from_ultralytics(result)
+
+    detection_list = []
+    primary_ball = None
+
+    for i in range(len(detections)):
+        xyxy = detections.xyxy[i]
+        conf = float(detections.confidence[i])
+
+        detection_data = {
+            "xyxy": xyxy.tolist(),
+            "confidence": conf,
+        }
+        detection_list.append(detection_data)
+
+        if primary_ball is None or conf > primary_ball["confidence"]:
+            primary_ball = detection_data
+
+    # Create annotated frame
+    box_annotator = sv.BoxAnnotator(color=BALL_COLOR, thickness=2)
+
+    annotated = frame.copy()
+    annotated = box_annotator.annotate(annotated, detections)
+
+    return {
+        "detections": detection_list,
+        "ball": primary_ball,
+        "ball_detected": primary_ball is not None,
+        "annotated_frame_base64": _encode_frame_to_base64(annotated),
+    }
 
 
 def run_ball_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Run ball detection on a frame.
+    """Legacy function for plugin.py compatibility."""
+    device = config.get("device", "cpu")
+    confidence = config.get("confidence", DEFAULT_CONFIDENCE)
+    include_annotated = config.get("include_annotated", False)
 
-    Args:
-        frame: Input image frame
-        config: Configuration dictionary
-
-    Returns:
-        Dictionary containing ball detection results
-    """
-    # Placeholder implementation
-    return {
-        "ball_detected": False,
-        "position": None,
-    }
-
-
-def detect_ball(
-    frame: np.ndarray,
-    model: Any,
-    imgsz: int = 640,
-    confidence: float = 0.5,
-) -> Dict[str, Any]:
-    """Detect ball in a frame using YOLO model.
-
-    Args:
-        frame: Input image frame
-        model: YOLO model instance
-        imgsz: Input image size for model
-        confidence: Confidence threshold
-
-    Returns:
-        Dictionary containing ball detection results
-    """
-    # Placeholder implementation
-    return {
-        "ball_detected": False,
-        "position": None,
-        "confidence": 0.0,
-        "bbox": None,
-    }
-
-
-def track_ball(
-    current_detection: Dict[str, Any],
-    previous_positions: Optional[List[np.ndarray]] = None,
-    buffer_size: int = 20,
-) -> Dict[str, Any]:
-    """Track ball position across frames with temporal smoothing.
-
-    Args:
-        current_detection: Current ball detection
-        previous_positions: Historical positions for trajectory
-        buffer_size: Number of frames to maintain in buffer
-
-    Returns:
-        Dictionary containing tracked ball position and trajectory
-    """
-    # Placeholder implementation
-    return {
-        "current_position": None,
-        "trajectory": [],
-        "smoothed_position": None,
-    }
+    if include_annotated:
+        return detect_ball_json_with_annotated(frame, device=device, confidence=confidence)
+    return detect_ball_json(frame, device=device, confidence=confidence)
