@@ -1,43 +1,79 @@
 {
-  "id": "yolo-tracker",
-  "name": "YOLO Tracker",
+  "name": "forgesyte-yolo-tracker",
   "version": "0.1.0",
-  "description": "YOLO-based sports detection and tracking for player, ball, and team analysis",
-  "author": "ForgeSyte Contributors",
-  "license": "MIT",
-  "capabilities": [
-    "player_detection",
-    "player_tracking",
-    "ball_detection",
-    "team_classification",
-    "pitch_detection",
-    "radar_visualization"
-  ],
-  "models": [
+  "description": "YOLO-based football analysis tools for ForgeSyte.",
+  "tools": [
     {
-      "name": "football-player-detection.pt",
-      "type": "detection",
-      "description": "YOLOv8 model for player, goalkeeper, and referee detection"
+      "name": "yolo_player_detection",
+      "description": "Detect football players in a frame using YOLO.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
     },
     {
-      "name": "football-ball-detection.pt",
-      "type": "detection",
-      "description": "YOLOv8 model for ball detection"
+      "name": "yolo_player_tracking",
+      "description": "Track football players across frames using YOLO + ByteTrack.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
     },
     {
-      "name": "football-pitch-detection.pt",
-      "type": "detection",
-      "description": "YOLOv8 model for pitch line and vertex detection"
+      "name": "yolo_ball_detection",
+      "description": "Detect and track the football using YOLO.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
+    },
+    {
+      "name": "yolo_team_classification",
+      "description": "Classify players into teams based on jersey colors.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
+    },
+    {
+      "name": "yolo_pitch_detection",
+      "description": "Detect pitch keypoints and lines using YOLO.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
+    },
+    {
+      "name": "yolo_radar",
+      "description": "Generate radar view of player positions on the pitch.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "image": { "type": "string" },
+          "config": { "type": "object" }
+        },
+        "required": ["image"]
+      }
     }
-  ],
-  "supported_formats": ["mp4", "avi", "mov", "mkv"],
-  "min_python_version": "3.8",
-  "dependencies": [
-    "ultralytics",
-    "supervision",
-    "numpy",
-    "opencv-python",
-    "torch",
-    "torchvision"
   ]
 }
