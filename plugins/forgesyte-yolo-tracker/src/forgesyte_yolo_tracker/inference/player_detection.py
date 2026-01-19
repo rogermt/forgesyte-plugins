@@ -6,7 +6,7 @@ Provides JSON and JSON+Base64 modes for player detection:
 """
 
 import base64
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import cv2
 import numpy as np
@@ -203,5 +203,5 @@ def run_player_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str,
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_players_json_with_annotated(frame, device=device, confidence=confidence)
+        return detect_players_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return detect_players_json(frame, device=device, confidence=confidence)

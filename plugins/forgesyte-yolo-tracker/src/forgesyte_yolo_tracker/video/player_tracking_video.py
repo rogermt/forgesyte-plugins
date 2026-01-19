@@ -7,7 +7,6 @@ Roboflow-style full video processing with ByteTrack:
 
 from typing import Iterator, Optional
 
-import cv2
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO

@@ -1,7 +1,6 @@
 """Tests for soccer pitch configuration."""
 
 import pytest
-import numpy as np
 
 
 class TestSoccerPitchConfiguration:

@@ -130,7 +130,6 @@ class TestPlayerDetectionModelCache:
         """Verify model is cached after first call."""
         from forgesyte_yolo_tracker.inference.player_detection import (
             get_player_detection_model,
-            _model,
         )
 
         with patch("forgesyte_yolo_tracker.inference.player_detection.YOLO") as mock_yolo:

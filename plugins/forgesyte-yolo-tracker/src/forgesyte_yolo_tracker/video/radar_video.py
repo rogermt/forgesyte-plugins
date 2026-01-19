@@ -148,7 +148,17 @@ def run_radar_video_frames(
         radar_image = _create_radar_image(radar_points, (radar_w, radar_h))
 
         annotated = frame.copy()
-        cv2.putText(annotated, "Radar", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        radar_h, radar_w = radar_image.shape[:2]
+        annotated[-radar_h - 10 : -10, -radar_w - 10 : -10] = radar_image
+        cv2.putText(
+            annotated,
+            "Radar",
+            (annotated.shape[1] - radar_w, annotated.shape[0] - radar_h - 15),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            1,
+            (255, 255, 255),
+            2,
+        )
 
         yield annotated
 
