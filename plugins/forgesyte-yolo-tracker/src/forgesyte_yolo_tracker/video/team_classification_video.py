@@ -12,7 +12,7 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-from sports.common import TeamClassifier
+from forgesyte_yolo_tracker.utils import TeamClassifier
 
 MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
 
