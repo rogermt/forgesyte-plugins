@@ -24,13 +24,17 @@ class ViewTransformer:
                 calculation.
 
         Raises:
-            ValueError: If source and target do not have the same shape or if they
-                are not 2D coordinates.
+            ValueError: If source and target do not have the same shape, if they
+                are not 2D coordinates, or if fewer than 4 points are provided.
         """
         if source.shape != target.shape:
             raise ValueError("Source and target must have the same shape.")
         if source.shape[1] != 2:
             raise ValueError("Source and target points must be 2D coordinates.")
+        if len(source) < 4:
+            raise ValueError(
+                f"At least 4 correspondence points are required for homography calculation. Got {len(source)} points."
+            )
 
         source = source.astype(np.float32)
         target = target.astype(np.float32)

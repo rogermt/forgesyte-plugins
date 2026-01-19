@@ -28,6 +28,30 @@ class TestViewTransformer:
         with pytest.raises(ValueError, match="same shape"):
             ViewTransformer(source, target)
 
+    def test_initialization_too_few_points(self) -> None:
+        """Test initialization fails with fewer than 4 points."""
+        source = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+        target = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]], dtype=np.float32)
+
+        with pytest.raises(ValueError, match="4 correspondence points"):
+            ViewTransformer(source, target)
+
+    def test_initialization_single_point(self) -> None:
+        """Test initialization fails with single point."""
+        source = np.array([[0.0, 0.0]], dtype=np.float32)
+        target = np.array([[10.0, 10.0]], dtype=np.float32)
+
+        with pytest.raises(ValueError, match="4 correspondence points"):
+            ViewTransformer(source, target)
+
+    def test_initialization_two_points(self) -> None:
+        """Test initialization fails with two points."""
+        source = np.array([[0.0, 0.0], [1.0, 0.0]], dtype=np.float32)
+        target = np.array([[0.0, 0.0], [1.0, 0.0]], dtype=np.float32)
+
+        with pytest.raises(ValueError, match="4 correspondence points"):
+            ViewTransformer(source, target)
+
     def test_initialization_non_2d_coordinates(self) -> None:
         """Test initialization fails with non-2D coordinates."""
         source = np.array([[0.0, 0.0, 0.0]], dtype=np.float32)
