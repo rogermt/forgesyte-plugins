@@ -165,3 +165,30 @@ def radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Di
     if annotated:
         return radar_json_with_annotated_frame(frame, device=device)
     return radar_json(frame, device=device)
+
+
+class YOLOTrackerPlugin:
+    """ForgeSyte plugin entry point for YOLO Tracker.
+
+    This class provides the standard ForgeSyte plugin interface.
+    Individual tools are available as module-level functions.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the plugin."""
+        pass
+
+    def metadata(self) -> Dict[str, Any]:
+        """Return plugin metadata."""
+        return {
+            "name": "forgesyte-yolo-tracker",
+            "version": "0.1.0",
+            "description": "YOLO-based football analysis plugin",
+        }
+
+    def analyze(self, image_data: bytes, **kwargs: Any) -> Dict[str, Any]:
+        """Legacy analyze method."""
+        import base64
+
+        frame_base64 = base64.b64encode(image_data).decode("utf-8")
+        return player_detection(frame_base64, device="cpu")
