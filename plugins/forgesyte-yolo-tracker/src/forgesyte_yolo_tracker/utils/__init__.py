@@ -1,9 +1,13 @@
 """Utility modules for YOLO Tracker.
 
 This package provides utilities for sports tracking:
+
+Core Classes:
 - create_batches - Batch generation utility
-- TeamClassifier - Team classification with umap fallback for Python 3.13
-- ViewTransformer - View transformation with 4-point validation
+- TeamClassifier - Team classification (based on sports.common with umap fallback)
+- ViewTransformer - View transformation (based on sports.common with 4-point validation)
+
+Custom Modules:
 - ball.py - Ball tracking (not annotating)
 - soccer_pitch.py - Soccer pitch drawing utilities
 - annotators.py - Custom annotators
@@ -11,9 +15,13 @@ This package provides utilities for sports tracking:
 - transforms.py - Image transforms
 - common.py - Common utilities
 
-Note: roboflow/sports is not used directly due to Python 3.13 incompatibility
-(umap-learn requires Python < 3.10). Local implementations mirror sports.common
-with necessary modifications.
+Note on sports.common:
+The roboflow/sports package has a Python version check bug that prevents
+installation on Python 3.10+ despite setup.py stating python_requires>=3.8.
+Local implementations are used instead, which mirror sports.common (MIT License)
+with forgeSYTE-specific improvements:
+- umap fallback for Python 3.13 compatibility
+- 4-point validation for homography calculation
 """
 
 from .team import create_batches, TeamClassifier
