@@ -2,7 +2,7 @@
 
 Provides JSON and JSON+Base64 modes for radar/bird's-eye view generation:
 - generate_radar_json(): Returns mapped radar points
-- generate_radar_json_with_annotated(): Returns data + radar image
+- radar_json_with_annotated_frame(): Returns data + radar image
 
 Radar uses ViewTransformer to map frame coordinates to pitch coordinates.
 """
@@ -204,7 +204,7 @@ def generate_radar_json(
     }
 
 
-def generate_radar_json_with_annotated(
+def radar_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,
@@ -293,5 +293,5 @@ def run_radar(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return generate_radar_json_with_annotated(frame, device=device, confidence=confidence)
+        return radar_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return generate_radar_json(frame, device=device, confidence=confidence)

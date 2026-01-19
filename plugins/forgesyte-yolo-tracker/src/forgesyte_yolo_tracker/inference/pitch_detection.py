@@ -2,7 +2,7 @@
 
 Provides JSON and JSON+Base64 modes for pitch detection:
 - detect_pitch_json(): Returns keypoints and pitch polygon
-- detect_pitch_json_with_annotated(): Returns data + annotated frame
+- detect_pitch_json_with_annotated_frame(): Returns data + annotated frame
 """
 
 import base64
@@ -113,7 +113,7 @@ def detect_pitch_json(
     }
 
 
-def detect_pitch_json_with_annotated(
+def detect_pitch_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,
@@ -197,5 +197,5 @@ def run_pitch_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, 
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_pitch_json_with_annotated(frame, device=device, confidence=confidence)
+        return detect_pitch_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return detect_pitch_json(frame, device=device, confidence=confidence)

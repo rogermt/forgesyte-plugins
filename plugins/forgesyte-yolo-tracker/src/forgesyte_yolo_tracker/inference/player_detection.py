@@ -128,7 +128,7 @@ def detect_players_json(
     }
 
 
-def detect_players_json_with_annotated(
+def detect_players_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,

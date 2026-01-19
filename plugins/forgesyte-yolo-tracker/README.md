@@ -47,22 +47,32 @@ As a ForgeSyte plugin, this module is automatically discovered and available thr
 ```
 src/forgesyte_yolo_tracker/
 ├── __init__.py              # Package initialization
-├── plugin.py                # Main plugin class
+├── plugin.py                # ForgeSyte-native plugin functions
 ├── manifest.json            # Plugin metadata
 ├── inference/               # Detection and tracking modules
-│   ├── player_detection.py
-│   ├── player_tracking.py
-│   ├── ball_detection.py
-│   ├── team_classification.py
-│   ├── pitch_detection.py
-│   └── radar.py
+│   ├── player_detection.py  # JSON + JSON+Base64 modes
+│   ├── player_tracking.py   # ByteTrack integration
+│   ├── ball_detection.py    # Ball localization
+│   ├── team_classification.py  # Team clustering
+│   ├── pitch_detection.py   # Pitch keypoints
+│   └── radar.py             # Bird's-eye view
+├── video/                   # Video processing modules
+│   ├── player_detection_video.py
+│   ├── player_tracking_video.py
+│   ├── ball_detection_video.py
+│   ├── team_classification_video.py
+│   ├── pitch_detection_video.py
+│   └── radar_video.py
 ├── utils/                   # Utility modules
-│   ├── transforms.py        # View transformations
-│   ├── annotators.py        # Custom annotators
-│   ├── tracking.py          # Tracking utilities
-│   └── common.py            # Common utilities
-├── models/                  # Model weights
-└── data/                    # Configuration files
+│   ├── ball.py              # BallTracker
+│   ├── soccer_pitch.py      # Soccer pitch utilities
+│   └── (imports from sports.common)
+├── configs/
+│   └── soccer.py            # SoccerPitchConfiguration
+└── models/                  # Model weights (placeholders)
+    ├── football-player-detection-v3.pt
+    ├── football-ball-detection-v2.pt
+    └── football-pitch-detection-v1.pt
 ```
 
 ## Development

@@ -2,7 +2,7 @@
 
 Provides JSON and JSON+Base64 modes for ball detection:
 - detect_ball_json(): Returns detection data with ball position
-- detect_ball_json_with_annotated(): Returns data + annotated frame
+- detect_ball_json_with_annotated_frame(): Returns data + annotated frame
 """
 
 import base64
@@ -81,7 +81,7 @@ def detect_ball_json(
     }
 
 
-def detect_ball_json_with_annotated(
+def detect_ball_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,
@@ -137,5 +137,5 @@ def run_ball_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, A
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_ball_json_with_annotated(frame, device=device, confidence=confidence)
+        return detect_ball_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return detect_ball_json(frame, device=device, confidence=confidence)

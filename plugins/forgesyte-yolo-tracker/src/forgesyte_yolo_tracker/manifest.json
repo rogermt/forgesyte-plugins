@@ -1,90 +1,82 @@
 {
-  "id": "forgesyte-yolo-tracker",
   "name": "forgesyte-yolo-tracker",
-  "version": "0.1.0",
-  "description": "YOLO-based football analysis tools for ForgeSyte.",
-  "author": "ForgeSyte Contributors",
-  "license": "MIT",
-  "capabilities": [
-    "player_detection",
-    "player_tracking",
-    "ball_detection",
-    "team_classification",
-    "pitch_detection",
-    "radar_visualization"
-  ],
-  "tools": [
-    {
-      "name": "yolo_player_detection",
-      "description": "Detect football players in a frame using YOLO.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+  "version": "1.0.0",
+  "description": "ForgeSyte plugin for football player, ball, pitch, team classification, and radar analysis using YOLO + Supervision + SigLIP.",
+  "author": "Roger",
+  "entrypoint": "forgesyte_yolo_tracker.plugin",
+  "tools": {
+    "player_detection": {
+      "description": "Detect players in a single frame.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "detections": "array",
+        "annotated_frame_base64": "string?"
       }
     },
-    {
-      "name": "yolo_player_tracking",
-      "description": "Track football players across frames using YOLO + ByteTrack.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+    "player_tracking": {
+      "description": "Track players across frames using ByteTrack.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "detections": "array",
+        "annotated_frame_base64": "string?"
       }
     },
-    {
-      "name": "yolo_ball_detection",
-      "description": "Detect and track the football using YOLO.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+    "ball_detection": {
+      "description": "Detect the football in a single frame.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "detections": "array",
+        "annotated_frame_base64": "string?"
       }
     },
-    {
-      "name": "yolo_team_classification",
-      "description": "Classify players into teams based on jersey colors.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+    "team_classification": {
+      "description": "Classify players into teams using SigLIP embeddings + UMAP + KMeans.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "detections": "array",
+        "team_ids": "array?",
+        "annotated_frame_base64": "string?"
       }
     },
-    {
-      "name": "yolo_pitch_detection",
-      "description": "Detect pitch keypoints and lines using YOLO.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+    "pitch_detection": {
+      "description": "Detect pitch keypoints for homography mapping.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "keypoints": "array",
+        "annotated_frame_base64": "string?"
       }
     },
-    {
-      "name": "yolo_radar",
-      "description": "Generate radar view of player positions on the pitch.",
-      "inputSchema": {
-        "type": "object",
-        "properties": {
-          "image": { "type": "string" },
-          "config": { "type": "object" }
-        },
-        "required": ["image"]
+    "radar": {
+      "description": "Generate radar (bird's-eye) view of player positions.",
+      "inputs": {
+        "frame_base64": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "radar_points": "array",
+        "annotated_frame_base64": "string?"
       }
     }
-  ]
+  }
 }

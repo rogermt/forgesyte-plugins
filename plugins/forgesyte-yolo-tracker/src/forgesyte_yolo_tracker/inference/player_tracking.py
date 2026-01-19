@@ -2,7 +2,7 @@
 
 Provides JSON and JSON+Base64 modes for player tracking with ByteTrack:
 - track_players_json(): Returns tracked detection data with IDs
-- track_players_json_with_annotated(): Returns data + annotated frame with labels
+- track_players_json_with_annotated_frame(): Returns data + annotated frame with labels
 """
 
 import base64
@@ -126,7 +126,7 @@ def track_players_json(
     }
 
 
-def track_players_json_with_annotated(
+def track_players_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,
@@ -200,5 +200,5 @@ def run_player_tracking(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, 
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return track_players_json_with_annotated(frame, device=device, confidence=confidence)
+        return track_players_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return track_players_json(frame, device=device, confidence=confidence)
