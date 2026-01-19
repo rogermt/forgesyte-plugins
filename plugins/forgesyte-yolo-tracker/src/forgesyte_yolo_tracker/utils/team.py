@@ -13,7 +13,7 @@ try:
     import umap
 except ImportError:
     # umap is optional and may not be installed
-    umap = None  # type: ignore
+    umap = None  # type: ignore[assignment]
 
 V = TypeVar("V")
 
@@ -33,7 +33,7 @@ def create_batches(sequence: Iterable[V], batch_size: int) -> Generator[List[V],
             sequence.
     """
     batch_size = max(batch_size, 1)
-    current_batch = []
+    current_batch: List[V] = []
     for element in sequence:
         if len(current_batch) == batch_size:
             yield current_batch
@@ -65,9 +65,9 @@ class TeamClassifier:
             self.reducer = umap.UMAP(n_components=3)
         else:
             # Fallback: use a simple scaler if umap is not available
-            from sklearn.preprocessing import StandardScaler  # type: ignore
+            from sklearn.preprocessing import StandardScaler  # type: ignore[import]
 
-            self.reducer = StandardScaler()  # type: ignore
+            self.reducer = StandardScaler()  # type: ignore[assignment]
         self.cluster_model = KMeans(n_clusters=2)
 
     def extract_features(self, crops: List[np.ndarray]) -> np.ndarray:
