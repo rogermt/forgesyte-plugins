@@ -2,7 +2,7 @@
 
 from typing import List
 
-from sports.common import create_batches
+from forgesyte_yolo_tracker.utils import create_batches
 
 
 class TestCreateBatches:
