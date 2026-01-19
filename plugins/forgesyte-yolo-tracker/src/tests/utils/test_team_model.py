@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
 
-from sports.common import TeamClassifier
+from forgesyte_yolo_tracker.utils import TeamClassifier
 
 RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
 

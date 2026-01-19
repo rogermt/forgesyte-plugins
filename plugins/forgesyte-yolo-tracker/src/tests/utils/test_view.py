@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from sports.common import ViewTransformer
+from forgesyte_yolo_tracker.utils import ViewTransformer
 
 
 class TestViewTransformer:

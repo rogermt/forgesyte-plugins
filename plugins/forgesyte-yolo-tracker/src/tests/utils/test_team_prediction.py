@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
 
-from sports.common import TeamClassifier, create_batches
+from forgesyte_yolo_tracker.utils import TeamClassifier, create_batches
 
 
 class TestTeamClassifierPrediction:

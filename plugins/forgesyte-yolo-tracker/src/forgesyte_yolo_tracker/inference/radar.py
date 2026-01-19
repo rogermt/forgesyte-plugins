@@ -16,7 +16,7 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
-from sports.common import ViewTransformer
+from forgesyte_yolo_tracker.utils import ViewTransformer
 
 PLAYER_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
 PITCH_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-pitch-detection-v1.pt"
