@@ -5,6 +5,7 @@ A collection of plugins for the ForgeSyte platform.
 ## Available Plugins
 
 - **block_mapper** - Maps visual blocks in images
+- **forgesyte-yolo-tracker** - YOLO-based football analysis (player detection, tracking, ball detection, team classification, pitch detection, radar visualization)
 - **moderation** - Content moderation plugin
 - **motion_detector** - Detects motion in video/images
 - **ocr** - Optical character recognition
