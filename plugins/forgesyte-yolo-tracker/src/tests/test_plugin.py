@@ -10,7 +10,7 @@ Tests cover:
 
 import io
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -82,7 +82,7 @@ class TestPlugin:
     ) -> None:
         """Test analyze returns AnalysisResult compatible dictionary with required fields."""
         result = plugin.analyze(sample_image_bytes)
-        
+
         required_fields = ["text", "blocks", "confidence", "language", "error"]
         for field in required_fields:
             assert field in result, f"Missing AnalysisResult field: {field}"
@@ -92,11 +92,7 @@ class TestPlugin:
         self, mock_analysis_cls: Any, plugin: Plugin, sample_image_bytes: bytes
     ) -> None:
         """Test analyze accepts config options like other plugins."""
-        result = plugin.analyze(
-            sample_image_bytes,
-            confidence_threshold=0.7,
-            max_detections=50
-        )
+        result = plugin.analyze(sample_image_bytes, confidence_threshold=0.7, max_detections=50)
         assert isinstance(result, dict)
         assert "error" in result
 
@@ -106,7 +102,7 @@ class TestPlugin:
     ) -> None:
         """Test analyze handles invalid image data without crashing."""
         result = plugin.analyze(b"invalid image data")
-        
+
         # Should return error field, not crash
         assert isinstance(result, dict)
         assert "error" in result
@@ -118,7 +114,7 @@ class TestPlugin:
     ) -> None:
         """Test analyze returns placeholder result (implementation in progress)."""
         result = plugin.analyze(sample_image_bytes)
-        
+
         # Current placeholder behavior
         assert result["text"] == "YOLO tracker analysis not yet implemented"
         assert result["error"] is not None
@@ -133,14 +129,12 @@ class TestPlugin:
         """Test on_unload lifecycle hook executes without error."""
         plugin.on_unload()  # Should not raise
 
-    def test_plugin_lifecycle_sequence(
-        self, plugin: Plugin, sample_image_bytes: bytes
-    ) -> None:
+    def test_plugin_lifecycle_sequence(self, plugin: Plugin, sample_image_bytes: bytes) -> None:
         """Test complete plugin lifecycle: load -> analyze -> unload."""
         plugin.on_load()
         result = plugin.analyze(sample_image_bytes)
         plugin.on_unload()
-        
+
         assert isinstance(result, dict)
 
     # Tool method tests
@@ -154,7 +148,7 @@ class TestPlugin:
             "yolo_pitch_detection",
             "yolo_radar",
         ]
-        
+
         for tool in tools:
             assert hasattr(plugin, tool), f"Missing tool method: {tool}"
             method = getattr(plugin, tool)
@@ -167,32 +161,28 @@ class TestPlugin:
         # Just verify they're callable with expected signature
         assert callable(plugin.yolo_player_detection)
         assert callable(plugin.yolo_player_tracking)
-        
+
         # Methods should exist and have proper signature
         # (actual calls would need real inference functions)
 
     # Integration-like tests
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_with_grayscale_image(
-        self, mock_analysis_cls: Any, plugin: Plugin
-    ) -> None:
+    def test_analyze_with_grayscale_image(self, mock_analysis_cls: Any, plugin: Plugin) -> None:
         """Test analyze can handle grayscale images."""
         img = Image.new("L", (640, 480), color=128)
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
-        
+
         result = plugin.analyze(img_bytes.getvalue())
         assert isinstance(result, dict)
 
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_with_rgba_image(
-        self, mock_analysis_cls: Any, plugin: Plugin
-    ) -> None:
+    def test_analyze_with_rgba_image(self, mock_analysis_cls: Any, plugin: Plugin) -> None:
         """Test analyze can handle RGBA images."""
         img = Image.new("RGBA", (640, 480), color=(255, 255, 255, 255))
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
-        
+
         result = plugin.analyze(img_bytes.getvalue())
         assert isinstance(result, dict)
 

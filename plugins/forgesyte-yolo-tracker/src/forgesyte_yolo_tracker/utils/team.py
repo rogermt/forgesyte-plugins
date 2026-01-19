@@ -20,9 +20,7 @@ V = TypeVar("V")
 SIGLIP_MODEL_PATH = "google/siglip-base-patch16-224"
 
 
-def create_batches(
-    sequence: Iterable[V], batch_size: int
-) -> Generator[List[V], None, None]:
+def create_batches(sequence: Iterable[V], batch_size: int) -> Generator[List[V], None, None]:
     """
     Generate batches from a sequence with a specified batch size.
 
@@ -61,15 +59,14 @@ class TeamClassifier:
         """
         self.device = device
         self.batch_size = batch_size
-        self.features_model = SiglipVisionModel.from_pretrained(
-            SIGLIP_MODEL_PATH
-        ).to(device)
+        self.features_model = SiglipVisionModel.from_pretrained(SIGLIP_MODEL_PATH).to(device)
         self.processor = AutoProcessor.from_pretrained(SIGLIP_MODEL_PATH)
         if umap is not None:
             self.reducer = umap.UMAP(n_components=3)
         else:
             # Fallback: use a simple scaler if umap is not available
             from sklearn.preprocessing import StandardScaler  # type: ignore
+
             self.reducer = StandardScaler()  # type: ignore
         self.cluster_model = KMeans(n_clusters=2)
 
@@ -89,13 +86,9 @@ class TeamClassifier:
         data = []
         with torch.no_grad():
             for batch in tqdm(batches, desc="Embedding extraction"):
-                inputs = self.processor(images=batch, return_tensors="pt").to(
-                    self.device
-                )
+                inputs = self.processor(images=batch, return_tensors="pt").to(self.device)
                 outputs = self.features_model(**inputs)
-                embeddings = (
-                    torch.mean(outputs.last_hidden_state, dim=1).cpu().numpy()
-                )
+                embeddings = torch.mean(outputs.last_hidden_state, dim=1).cpu().numpy()
                 data.append(embeddings)
 
         return np.concatenate(data)

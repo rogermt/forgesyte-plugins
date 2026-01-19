@@ -1,7 +1,6 @@
 """Ball tracking and annotation utilities."""
 
 from collections import deque
-from typing import List
 
 import cv2
 import numpy as np
@@ -28,9 +27,7 @@ class BallAnnotator:
             buffer_size (int): Size of the deque buffer. Defaults to 5.
             thickness (int): Thickness of circle borders. Defaults to 2.
         """
-        self.color_palette = sv.ColorPalette.from_matplotlib(
-            "jet", buffer_size
-        )
+        self.color_palette = sv.ColorPalette.from_matplotlib("jet", buffer_size)
         self.buffer: deque[np.ndarray] = deque(maxlen=buffer_size)
         self.radius = radius
         self.thickness = thickness
@@ -50,9 +47,7 @@ class BallAnnotator:
             return self.radius
         return int(1 + i * (self.radius - 1) / (max_i - 1))
 
-    def annotate(
-        self, frame: np.ndarray, detections: sv.Detections
-    ) -> np.ndarray:
+    def annotate(self, frame: np.ndarray, detections: sv.Detections) -> np.ndarray:
         """
         Annotates the frame with circles based on detections.
 
@@ -63,9 +58,7 @@ class BallAnnotator:
         Returns:
             np.ndarray: The annotated frame.
         """
-        xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(
-            int
-        )
+        xy = detections.get_anchors_coordinates(sv.Position.BOTTOM_CENTER).astype(int)
         self.buffer.append(xy)
         for i, xy_coords in enumerate(self.buffer):
             color = self.color_palette.by_idx(i)

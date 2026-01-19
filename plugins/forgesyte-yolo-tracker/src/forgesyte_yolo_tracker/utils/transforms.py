@@ -1,6 +1,5 @@
 """View transformation utilities."""
 
-
 import numpy as np
 
 

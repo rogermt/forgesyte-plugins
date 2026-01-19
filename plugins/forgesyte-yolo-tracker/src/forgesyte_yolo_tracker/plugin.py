@@ -261,9 +261,7 @@ class Plugin:
     # ---------------------------------------------------------
     #  RADAR VIEW
     # ---------------------------------------------------------
-    def yolo_radar(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+    def yolo_radar(self, image: str, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Generate radar bird's-eye view.
 
         Args:

@@ -1,7 +1,6 @@
 """Tests for ball tracking and annotation utilities."""
 
 import numpy as np
-import pytest
 import supervision as sv
 from collections import deque
 
@@ -49,9 +48,9 @@ class TestBallAnnotator:
         annotator = BallAnnotator(radius=10)
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         detections = sv.Detections.empty()
-        
+
         result = annotator.annotate(frame, detections)
-        
+
         assert result.shape == frame.shape
         assert np.array_equal(result, frame)
         assert len(annotator.buffer) == 1
@@ -60,16 +59,16 @@ class TestBallAnnotator:
         """Test annotate with one detection."""
         annotator = BallAnnotator(radius=10)
         frame = np.ones((480, 640, 3), dtype=np.uint8) * 100  # Non-zero background
-        
+
         # Create detection at (320, 240)
         detections = sv.Detections(
             xyxy=np.array([[300, 220, 340, 260]]),  # Box around (320, 240)
             confidence=np.array([1.0]),
-            class_id=np.array([0])
+            class_id=np.array([0]),
         )
-        
+
         result = annotator.annotate(frame, detections)
-        
+
         assert result.shape == frame.shape
         # Buffer should have coordinates
         assert len(annotator.buffer) == 1
@@ -81,13 +80,13 @@ class TestBallAnnotator:
         detections = sv.Detections(
             xyxy=np.array([[100, 100, 150, 150]]),
             confidence=np.array([1.0]),
-            class_id=np.array([0])
+            class_id=np.array([0]),
         )
-        
+
         # Add multiple detections
         for _ in range(5):
             annotator.annotate(frame, detections)
-        
+
         # Buffer should not exceed maxlen
         assert len(annotator.buffer) == 3
 
@@ -95,13 +94,13 @@ class TestBallAnnotator:
         """Test annotate preserves frame shape."""
         annotator = BallAnnotator(radius=10)
         shapes = [(480, 640, 3), (720, 1280, 3), (360, 480, 3)]
-        
+
         for shape in shapes:
             frame = np.zeros(shape, dtype=np.uint8)
             detections = sv.Detections(
                 xyxy=np.array([[10, 10, 50, 50]]),
                 confidence=np.array([1.0]),
-                class_id=np.array([0])
+                class_id=np.array([0]),
             )
             result = annotator.annotate(frame, detections)
             assert result.shape == shape
@@ -126,9 +125,9 @@ class TestBallTracker:
         """Test update with no detections returns input unchanged."""
         tracker = BallTracker()
         detections = sv.Detections.empty()
-        
+
         result = tracker.update(detections)
-        
+
         assert len(result) == 0
         assert len(tracker.buffer) == 1
 
@@ -138,35 +137,33 @@ class TestBallTracker:
         detections = sv.Detections(
             xyxy=np.array([[100, 100, 150, 150]]),
             confidence=np.array([1.0]),
-            class_id=np.array([0])
+            class_id=np.array([0]),
         )
-        
+
         result = tracker.update(detections)
-        
+
         assert len(result) == 1
         assert len(tracker.buffer) == 1
 
     def test_update_selects_closest_to_centroid(self) -> None:
         """Test that update selects detection closest to centroid."""
         tracker = BallTracker(buffer_size=2)
-        
+
         # Add first detection at (100, 100)
         det1 = sv.Detections(
-            xyxy=np.array([[75, 75, 125, 125]]),
-            confidence=np.array([1.0]),
-            class_id=np.array([0])
+            xyxy=np.array([[75, 75, 125, 125]]), confidence=np.array([1.0]), class_id=np.array([0])
         )
         result1 = tracker.update(det1)
         assert len(result1) == 1
-        
+
         # Add second detection with two options
         det2 = sv.Detections(
             xyxy=np.array([[50, 50, 100, 100], [100, 100, 150, 150]]),
             confidence=np.array([1.0, 1.0]),
-            class_id=np.array([0, 0])
+            class_id=np.array([0, 0]),
         )
         result2 = tracker.update(det2)
-        
+
         # Should select detection closer to centroid of buffer
         assert len(result2) == 1
         assert len(tracker.buffer) == 2
@@ -174,66 +171,66 @@ class TestBallTracker:
     def test_update_buffer_accumulation(self) -> None:
         """Test buffer accumulates positions over time."""
         tracker = BallTracker(buffer_size=5)
-        
+
         # Different positions over time
         positions = [(100, 100), (110, 110), (120, 120), (130, 130)]
-        
+
         for x, y in positions:
             det = sv.Detections(
                 xyxy=np.array([[x - 25, y - 25, x + 25, y + 25]]),
                 confidence=np.array([1.0]),
-                class_id=np.array([0])
+                class_id=np.array([0]),
             )
             tracker.update(det)
-        
+
         assert len(tracker.buffer) == 4
 
     def test_update_centroid_calculation(self) -> None:
         """Test centroid is calculated correctly."""
         tracker = BallTracker(buffer_size=3)
-        
+
         # Add positions: (100, 100), (150, 150)
         for x, y in [(100, 100), (150, 150)]:
             det = sv.Detections(
                 xyxy=np.array([[x - 25, y - 25, x + 25, y + 25]]),
                 confidence=np.array([1.0]),
-                class_id=np.array([0])
+                class_id=np.array([0]),
             )
             tracker.update(det)
-        
+
         # Centroid should be (125, 125)
         # Now add detections and verify closest one is selected
         det3 = sv.Detections(
             xyxy=np.array([[120, 120, 140, 140], [200, 200, 220, 220]]),
             confidence=np.array([1.0, 1.0]),
-            class_id=np.array([0, 0])
+            class_id=np.array([0, 0]),
         )
         result = tracker.update(det3)
-        
+
         # Should pick (130, 130) which is closer to centroid (125, 125)
         assert len(result) == 1
 
     def test_update_with_outlier_detection(self) -> None:
         """Test tracker handles outliers correctly."""
         tracker = BallTracker()
-        
+
         # Normal trajectory: (100, 100), (105, 105), (110, 110)
         for x, y in [(100, 100), (105, 105), (110, 110)]:
             det = sv.Detections(
                 xyxy=np.array([[x - 25, y - 25, x + 25, y + 25]]),
                 confidence=np.array([1.0]),
-                class_id=np.array([0])
+                class_id=np.array([0]),
             )
             tracker.update(det)
-        
+
         # Outlier and normal option
         det_outlier = sv.Detections(
             xyxy=np.array([[400, 400, 450, 450], [115, 115, 135, 135]]),
             confidence=np.array([1.0, 1.0]),
-            class_id=np.array([0, 0])
+            class_id=np.array([0, 0]),
         )
         result = tracker.update(det_outlier)
-        
+
         # Should select (125, 125), not (425, 425)
         assert len(result) == 1
 
@@ -243,11 +240,11 @@ class TestBallTracker:
         detections = sv.Detections(
             xyxy=np.array([[100, 100, 150, 150]]),
             confidence=np.array([0.95]),
-            class_id=np.array([1])
+            class_id=np.array([1]),
         )
-        
+
         result = tracker.update(detections)
-        
+
         assert isinstance(result, sv.Detections)
         assert len(result.xyxy) > 0
         assert len(result.confidence) > 0
