@@ -1,76 +1,65 @@
-import React from "react";
-
-interface Detection {
-  class_id: number;
-  confidence: number;
-  bbox: [number, number, number, number];
-  track_id?: number;
-}
+import React, { useEffect, useRef } from "react";
+import { Player } from "./BoundingBoxOverlay";
 
 interface PlayerTrailProps {
-  detections: Detection[];
-  teamColors: Record<number, string>;
+  players: Player[];
+  width?: number;
+  height?: number;
 }
 
 /**
- * Component for displaying player movement trails.
- * Shows tracked player positions with their team colors and trail history.
+ * PlayerTrail component renders player movement trails on a canvas.
+ *
+ * Displays movement history for each tracked player in a separate visualization.
+ * Can be used as a mini-map or overlay showing player paths and movement patterns.
+ *
+ * Args:
+ *     players: Array of players with trail data
+ *     width: Canvas width in pixels (default: 300)
+ *     height: Canvas height in pixels (default: 300)
+ *
+ * Returns:
+ *     Canvas with player trails visualization
  */
 export const PlayerTrail: React.FC<PlayerTrailProps> = ({
-  detections,
-  teamColors,
+  players,
+  width = 300,
+  height = 300,
 }) => {
-  // Group detections by track_id
-  const playersByTrack = detections.reduce(
-    (acc, detection) => {
-      if (detection.track_id) {
-        if (!acc[detection.track_id]) {
-          acc[detection.track_id] = [];
-        }
-        acc[detection.track_id].push(detection);
-      }
-      return acc;
-    },
-    {} as Record<number, Detection[]>
-  );
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, width, height);
+
+    players.forEach((p) => {
+      if (!p.trail || p.trail.length < 2) return;
+
+      const color = p.is_target ? "red" : "cyan";
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(p.trail[0].x, p.trail[0].y);
+      p.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+      ctx.stroke();
+    });
+  }, [players, width, height]);
 
   return (
-    <div className="player-trail">
-      <div className="trail-info">
-        <h4>Tracked Players</h4>
-        <div className="trail-list">
-          {Object.entries(playersByTrack).map(([trackId, positions]) => {
-            const latestDetection = positions[positions.length - 1];
-            const teamId = latestDetection.class_id;
-            const color = teamColors[teamId] || "#FFFFFF";
-
-            return (
-              <div key={trackId} className="trail-item">
-                <div
-                  className="trail-indicator"
-                  style={{
-                    backgroundColor: color,
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "50%",
-                    marginRight: "8px",
-                  }}
-                />
-                <span className="track-id">Player #{trackId}</span>
-                <span className="confidence">
-                  {(latestDetection.confidence * 100).toFixed(1)}%
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {detections.length === 0 && (
-        <p className="no-trails">No player trails found</p>
-      )}
+    <div>
+      <h4 style={{ margin: "0 0 8px 0" }}>Player Trails</h4>
+      <canvas ref={canvasRef} style={{ border: "1px solid #333" }} />
     </div>
   );
 };
-
-export default PlayerTrail;

@@ -5,6 +5,22 @@ from typing import Any, Dict, Optional
 import numpy as np
 
 
+def run_radar(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run radar visualization on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing radar visualization results
+    """
+    # Placeholder implementation
+    return {
+        "radar": None,
+    }
+
+
 def create_radar_view(
     detections: Dict[str, Any],
     keypoints: Dict[str, Any],

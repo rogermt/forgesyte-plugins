@@ -1,176 +1,101 @@
-import React from "react";
-import { BoundingBoxOverlay } from "./components/BoundingBoxOverlay";
-import { RadarView } from "./components/RadarView";
-import { PlayerTrail } from "./components/PlayerTrail";
+import React, { useRef, useEffect } from "react";
 
-interface Detection {
-  class_id: number;
-  confidence: number;
-  bbox: [number, number, number, number];
-  track_id?: number;
+interface Player {
+  id: number;
+  bbox: number[];
+  is_target?: boolean;
+  trail?: { x: number; y: number }[];
 }
 
-interface AnalysisResult {
-  mode: string;
-  detections?: Detection[];
-  keypoints?: Array<[number, number]>;
-  radar_image?: string;
-  team_colors?: Record<number, string>;
-  processing_time_ms?: number;
-}
-
-interface ResultRendererProps {
-  result: AnalysisResult;
-  imageUrl?: string;
-  videoUrl?: string;
+interface PluginResultProps {
+  result: {
+    players?: Player[];
+    radar?: string;
+    frame?: string;
+    [key: string]: any;
+  };
 }
 
 /**
- * ResultRenderer component for displaying YOLO Tracker analysis results.
+ * Advanced ResultRenderer for YOLO Tracker with canvas visualization.
  *
- * Renders different visualizations based on analysis mode:
- * - Pitch Detection: Shows detected keypoints
- * - Player Detection: Displays bounding boxes on image
- * - Player Tracking: Shows tracked players with IDs
- * - Ball Detection: Highlights ball position
- * - Team Classification: Shows team colors and assignments
- * - Radar: Bird's-eye view with player positions
+ * Displays:
+ * - Frame with player bounding boxes drawn on canvas
+ * - Player IDs and trails
+ * - Target player highlighting
+ * - Radar/bird's-eye view alongside frame
  *
  * Args:
- *     result: Analysis results from plugin backend
- *     imageUrl: Optional URL for image visualization
- *     videoUrl: Optional URL for video visualization
+ *     result: Result object containing players, radar, and base64 frame
  *
  * Returns:
- *     Rendered result component with appropriate visualization
+ *     Canvas visualization with optional radar view
  */
-export default function ResultRenderer({
-  result,
-  imageUrl,
-  videoUrl,
-}: ResultRendererProps): JSX.Element {
-  const renderContent = (): JSX.Element => {
-    switch (result.mode) {
-      case "pitch_detection":
-        return (
-          <div className="result-section">
-            <h3>Pitch Detection Results</h3>
-            {result.keypoints && (
-              <div className="keypoints-info">
-                <p>Detected {result.keypoints.length} keypoints</p>
-              </div>
-            )}
-          </div>
-        );
+export default function ResultRenderer({ result }: PluginResultProps): JSX.Element {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-      case "player_detection":
-      case "player_tracking":
-        return (
-          <div className="result-section">
-            <h3>
-              {result.mode === "player_detection"
-                ? "Player Detection"
-                : "Player Tracking"}{" "}
-              Results
-            </h3>
-            {imageUrl && (
-              <BoundingBoxOverlay
-                imageUrl={imageUrl}
-                detections={result.detections || []}
-              />
-            )}
-            {result.detections && (
-              <div className="detection-stats">
-                <p>Detected {result.detections.length} players</p>
-              </div>
-            )}
-          </div>
-        );
+  const players: Player[] = result?.players || [];
+  const radar = result?.radar || null;
 
-      case "ball_detection":
-        return (
-          <div className="result-section">
-            <h3>Ball Detection Results</h3>
-            {imageUrl && (
-              <BoundingBoxOverlay
-                imageUrl={imageUrl}
-                detections={result.detections || []}
-              />
-            )}
-            {result.detections && result.detections.length > 0 && (
-              <div className="ball-info">
-                <p>Ball detected at position</p>
-              </div>
-            )}
-          </div>
-        );
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !result?.frame) return;
 
-      case "team_classification":
-        return (
-          <div className="result-section">
-            <h3>Team Classification Results</h3>
-            {imageUrl && (
-              <BoundingBoxOverlay
-                imageUrl={imageUrl}
-                detections={result.detections || []}
-              />
-            )}
-            {result.team_colors && (
-              <div className="team-info">
-                <h4>Team Colors</h4>
-                <div className="color-palette">
-                  {Object.entries(result.team_colors).map(([teamId, color]) => (
-                    <div key={teamId} className="color-swatch">
-                      <div
-                        className="swatch"
-                        style={{
-                          backgroundColor: color,
-                          width: "20px",
-                          height: "20px",
-                          borderRadius: "4px",
-                        }}
-                      />
-                      <span>Team {teamId}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        );
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-      case "radar":
-        return (
-          <div className="result-section">
-            <h3>Radar View Results</h3>
-            {result.radar_image && (
-              <RadarView radarImageUrl={result.radar_image} />
-            )}
-            {result.detections && (
-              <PlayerTrail
-                detections={result.detections}
-                teamColors={result.team_colors || {}}
-              />
-            )}
-          </div>
-        );
+    const img = new Image();
+    img.src = `data:image/jpeg;base64,${result.frame}`;
 
-      default:
-        return (
-          <div className="result-section">
-            <p>Analysis mode: {result.mode}</p>
-          </div>
-        );
-    }
-  };
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      // Draw players
+      players.forEach((p) => {
+        const [x1, y1, x2, y2] = p.bbox;
+        const color = p.is_target ? "red" : "lime";
+
+        // Bounding box
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+        // Label
+        ctx.fillStyle = color;
+        ctx.font = "18px Arial";
+        ctx.fillText(`ID ${p.id}`, x1, y1 - 6);
+
+        // Trail
+        if (p.trail && p.trail.length > 1) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p.trail[0].x, p.trail[0].y);
+          p.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+          ctx.stroke();
+        }
+      });
+    };
+  }, [result, players]);
 
   return (
-    <div className="result-renderer">
-      {renderContent()}
-      {result.processing_time_ms !== undefined && (
-        <div className="processing-info">
-          <small>Processing time: {result.processing_time_ms.toFixed(2)}ms</small>
-        </div>
+    <div style={{ display: "flex", gap: 16 }}>
+      <canvas ref={canvasRef} style={{ maxWidth: "100%" }} />
+
+      {radar && (
+        <img
+          src={`data:image/png;base64,${radar}`}
+          alt="Radar View"
+          style={{
+            width: 300,
+            height: 300,
+            border: "2px solid #444",
+            borderRadius: 8,
+          }}
+        />
       )}
     </div>
   );

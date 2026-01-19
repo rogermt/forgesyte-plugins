@@ -1,7 +1,7 @@
 """Common utility functions."""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Tuple
 
 import numpy as np
 
@@ -49,7 +49,7 @@ def crop_image(image: np.ndarray, bbox: np.ndarray) -> np.ndarray:
 
 def resize_image(
     image: np.ndarray,
-    size: tuple,
+    size: Tuple[int, int],
     keep_aspect_ratio: bool = True,
 ) -> np.ndarray:
     """Resize image to target size.
@@ -79,7 +79,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     return {}
 
 
-def hex_to_rgb(hex_color: str) -> tuple:
+def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
     """Convert hex color to RGB tuple.
 
     Args:
@@ -89,4 +89,7 @@ def hex_to_rgb(hex_color: str) -> tuple:
         RGB tuple (0-255 range)
     """
     hex_color = hex_color.lstrip("#")
-    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    r = int(hex_color[0:2], 16)
+    g = int(hex_color[2:4], 16)
+    b = int(hex_color[4:6], 16)
+    return (r, g, b)

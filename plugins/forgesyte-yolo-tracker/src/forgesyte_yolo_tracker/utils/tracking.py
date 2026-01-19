@@ -1,6 +1,6 @@
 """Tracking utility functions."""
 
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 import numpy as np
 

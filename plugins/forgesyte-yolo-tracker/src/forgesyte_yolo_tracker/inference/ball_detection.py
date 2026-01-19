@@ -5,6 +5,23 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 
+def run_ball_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run ball detection on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing ball detection results
+    """
+    # Placeholder implementation
+    return {
+        "ball_detected": False,
+        "position": None,
+    }
+
+
 def detect_ball(
     frame: np.ndarray,
     model: Any,

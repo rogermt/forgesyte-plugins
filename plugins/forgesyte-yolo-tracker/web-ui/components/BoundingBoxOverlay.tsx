@@ -1,83 +1,82 @@
-import React, { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
-interface Detection {
-  class_id: number;
-  confidence: number;
-  bbox: [number, number, number, number];
-  track_id?: number;
+export interface Player {
+  id: number;
+  bbox: number[]; // [x1, y1, x2, y2]
+  is_target?: boolean;
+  trail?: { x: number; y: number }[];
 }
 
 interface BoundingBoxOverlayProps {
-  imageUrl: string;
-  detections: Detection[];
+  frame: string; // base64 JPEG
+  players: Player[];
 }
 
-const CLASS_COLORS: Record<number, string> = {
-  0: "#FF1493", // Deep Pink (Player)
-  1: "#FFD700", // Gold (Goalkeeper)
-  2: "#00BFFF", // Deep Sky Blue (Referee)
-};
-
 /**
- * Component for rendering bounding box overlays on images.
- * Displays detected objects with their class, confidence, and optional track ID.
+ * BoundingBoxOverlay component renders a video frame with player detections.
+ *
+ * Displays:
+ * - Base64 encoded JPEG frame on canvas
+ * - Player bounding boxes with different colors for target/non-target
+ * - Player ID labels
+ * - Optional player movement trails
+ *
+ * Args:
+ *     frame: Base64 encoded JPEG image data
+ *     players: Array of detected players with bounding boxes and metadata
+ *
+ * Returns:
+ *     Canvas element with annotated frame and player overlays
  */
 export const BoundingBoxOverlay: React.FC<BoundingBoxOverlayProps> = ({
-  imageUrl,
-  detections,
+  frame,
+  players,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas || !frame) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const img = new Image();
+    img.src = `data:image/jpeg;base64,${frame}`;
+
     img.onload = () => {
       canvas.width = img.width;
       canvas.height = img.height;
 
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0);
 
-      detections.forEach((detection) => {
-        const [x1, y1, x2, y2] = detection.bbox;
-        const width = x2 - x1;
-        const height = y2 - y1;
-        const color = CLASS_COLORS[detection.class_id] || "#FFFFFF";
+      players.forEach((p) => {
+        const [x1, y1, x2, y2] = p.bbox;
+        const color = p.is_target ? "red" : "lime";
 
-        // Draw bounding box
+        // Box
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(x1, y1, width, height);
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-        // Draw label background
-        const labelText = `Class ${detection.class_id} (${(detection.confidence * 100).toFixed(1)}%)${detection.track_id ? ` #${detection.track_id}` : ""}`;
-        const textMetrics = ctx.measureText(labelText);
-        const textHeight = 20;
-        const textWidth = textMetrics.width + 8;
-
+        // Label
         ctx.fillStyle = color;
-        ctx.fillRect(x1, y1 - textHeight, textWidth, textHeight);
+        ctx.font = "16px Arial";
+        ctx.fillText(`ID ${p.id}`, x1, Math.max(12, y1 - 4));
 
-        // Draw label text
-        ctx.fillStyle = "#FFFFFF";
-        ctx.font = "14px Arial";
-        ctx.fillText(labelText, x1 + 4, y1 - 5);
+        // Trail
+        if (p.trail && p.trail.length > 1) {
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p.trail[0].x, p.trail[0].y);
+          p.trail.forEach((pt) => ctx.lineTo(pt.x, pt.y));
+          ctx.stroke();
+        }
       });
     };
+  }, [frame, players]);
 
-    img.src = imageUrl;
-  }, [imageUrl, detections]);
-
-  return (
-    <div className="bounding-box-overlay">
-      <canvas ref={canvasRef} style={{ maxWidth: "100%", height: "auto" }} />
-      {detections.length === 0 && <p>No detections found</p>}
-    </div>
-  );
+  return <canvas ref={canvasRef} style={{ maxWidth: "100%" }} />;
 };
-
-export default BoundingBoxOverlay;

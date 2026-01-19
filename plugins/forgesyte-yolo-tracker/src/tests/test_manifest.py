@@ -12,12 +12,7 @@ class TestManifestContent:
     @pytest.fixture
     def manifest(self) -> dict:
         """Load the manifest file."""
-        manifest_path = (
-            Path(__file__).parent.parent
-            / "src"
-            / "forgesyte_yolo_tracker"
-            / "manifest.json"
-        )
+        manifest_path = Path(__file__).parent.parent / "forgesyte_yolo_tracker" / "manifest.json"
         with open(manifest_path) as f:
             return json.load(f)
 

@@ -5,6 +5,23 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 
+def run_team_classification(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run team classification on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing team classification results
+    """
+    # Placeholder implementation
+    return {
+        "team_ids": [],
+        "team_colors": {},
+    }
+
+
 def classify_teams(
     player_crops: List[np.ndarray],
     team_model: Optional[Any] = None,
