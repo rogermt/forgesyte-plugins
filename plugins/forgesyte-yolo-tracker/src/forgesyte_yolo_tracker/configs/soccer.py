@@ -41,24 +41,24 @@ class SoccerPitchConfiguration:
         Order matches Roboflow pitch detection model output.
         Keypoints include: goal posts, penalty spots, corner arcs, etc.
         """
-        w = self._width_cm
-        l = self._length_cm
+        width = self._width_cm
+        length = self._length_cm
 
         return [
-            (0, w / 2),  # 0: left goal center
+            (0, width / 2),  # 0: left goal center
             (0, 0),  # 1: bottom left corner
-            (0, w),  # 2: top left corner
-            (l / 2, 0),  # 3: bottom center line
-            (l / 2, w),  # 4: top center line
-            (l, 0),  # 5: bottom right corner
-            (l, w),  # 6: top right corner
-            (l, w / 2),  # 7: right goal center
-            (l * 0.11, 0),  # 8: left penalty area bottom
-            (l * 0.11, w),  # 9: left penalty area top
-            (l * 0.39, 0),  # 10: left penalty spot
-            (l * 0.61, 0),  # 11: right penalty spot
-            (l * 0.89, 0),  # 12: right penalty area bottom
-            (l * 0.89, w),  # 13: right penalty area top
+            (0, width),  # 2: top left corner
+            (length / 2, 0),  # 3: bottom center line
+            (length / 2, width),  # 4: top center line
+            (length, 0),  # 5: bottom right corner
+            (length, width),  # 6: top right corner
+            (length, width / 2),  # 7: right goal center
+            (length * 0.11, 0),  # 8: left penalty area bottom
+            (length * 0.11, width),  # 9: left penalty area top
+            (length * 0.39, 0),  # 10: left penalty spot
+            (length * 0.61, 0),  # 11: right penalty spot
+            (length * 0.89, 0),  # 12: right penalty area bottom
+            (length * 0.89, width),  # 13: right penalty area top
         ]
 
     @property

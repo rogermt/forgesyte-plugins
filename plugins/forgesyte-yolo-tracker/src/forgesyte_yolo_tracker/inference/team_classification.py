@@ -8,7 +8,7 @@ Team classification uses on-the-fly clustering (collect crops → UMAP → KMean
 """
 
 import base64
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import cv2
 import numpy as np
