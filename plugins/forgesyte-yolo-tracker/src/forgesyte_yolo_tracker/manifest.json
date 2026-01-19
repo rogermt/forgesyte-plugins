@@ -1,7 +1,18 @@
 {
+  "id": "forgesyte-yolo-tracker",
   "name": "forgesyte-yolo-tracker",
   "version": "0.1.0",
   "description": "YOLO-based football analysis tools for ForgeSyte.",
+  "author": "ForgeSyte Contributors",
+  "license": "MIT",
+  "capabilities": [
+    "player_detection",
+    "player_tracking",
+    "ball_detection",
+    "team_classification",
+    "pitch_detection",
+    "radar_visualization"
+  ],
   "tools": [
     {
       "name": "yolo_player_detection",

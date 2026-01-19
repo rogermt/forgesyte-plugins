@@ -1,6 +1,7 @@
 """Main plugin class for YOLO Football Analysis."""
 
 import base64
+import logging
 from typing import Any, Dict, Optional
 
 import cv2
@@ -12,6 +13,8 @@ from .inference.player_detection import run_player_detection
 from .inference.player_tracking import run_player_tracking
 from .inference.radar import run_radar
 from .inference.team_classification import run_team_classification
+
+logger = logging.getLogger(__name__)
 
 
 def decode_image(image_b64: str) -> np.ndarray:
@@ -71,6 +74,20 @@ class Plugin:
         and pass into the inference functions.
         """
         pass
+
+    def on_load(self) -> None:
+        """Called when the plugin is loaded.
+
+        Use this for initialization that requires the full application context.
+        """
+        logger.info("YOLO Football Analysis plugin loaded")
+
+    def on_unload(self) -> None:
+        """Called when the plugin is unloaded.
+
+        Use this for cleanup and resource release.
+        """
+        logger.info("YOLO Football Analysis plugin unloaded")
 
     # ---------------------------------------------------------
     #  YOLO PLAYER DETECTION

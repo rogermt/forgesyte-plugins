@@ -1,16 +1,13 @@
 """Unit tests for YOLO tracker plugin.
 
 Tests cover:
-- Metadata endpoint
-- Plugin analyze method (error handling)
-- Lifecycle hooks
+- Plugin initialization
+- Lifecycle hooks (on_load, on_unload)
+- Tool methods (placeholder/stub tests)
 """
 
-from typing import Any
-from unittest.mock import patch
-
 import pytest
-from forgesyte_yolo_tracker.plugin import Plugin
+from forgesyte_yolo_tracker.plugin import Plugin, decode_image, encode_frame
 
 
 class TestPlugin:
@@ -21,62 +18,11 @@ class TestPlugin:
         """Create plugin instance for testing."""
         return Plugin()
 
-    # Metadata tests
-    @patch("forgesyte_yolo_tracker.plugin.PluginMetadata")
-    def test_metadata_returns_plugin_metadata(
-        self, mock_metadata_cls: Any, plugin: Plugin
-    ) -> None:
-        """Test metadata endpoint returns valid PluginMetadata."""
-        mock_instance = mock_metadata_cls.return_value
-        mock_instance.name = "template_plugin"
-        mock_instance.version = "1.0.0"
-
-        metadata = plugin.metadata()
-        assert metadata.name == "template_plugin"
-        assert metadata.version == "1.0.0"
-
-    @patch("forgesyte_yolo_tracker.plugin.PluginMetadata")
-    def test_metadata_includes_config_schema(
-        self, mock_metadata_cls: Any, plugin: Plugin
-    ) -> None:
-        """Test metadata includes mode configuration."""
-        mock_instance = mock_metadata_cls.return_value
-        mock_instance.config_schema = {"mode": {"default": "default"}}
-
-        metadata = plugin.metadata()
-        assert "mode" in metadata.config_schema
-
-    # Analysis tests
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_returns_template_error(
-        self, mock_analysis_cls: Any, plugin: Plugin
-    ) -> None:
-        """Test analyze returns the default error message."""
-        expected_instance = mock_analysis_cls.return_value
-        expected_instance.error = "YOLO tracker plugin has no full implementation."
-
-        result = plugin.analyze(b"fake image data")
-
-        # The mock instantiation returns the mock instance
-        assert result == expected_instance
-
-        # Verify AnalysisResult was called with the correct error
-        call_kwargs = mock_analysis_cls.call_args[1]
-        assert call_kwargs["error"] == "YOLO tracker plugin has no full implementation."
-
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_handles_exceptions(
-        self, mock_analysis_cls: Any, plugin: Plugin
-    ) -> None:
-        """Test error handling when an exception occurs."""
-        # This is a bit tricky to mock since we're mocking the class itself
-        # but the template calls AnalysisResult twice (once in try, once in except)
-        # if the first one fails.
-
-        # Let's verify it returns an AnalysisResult with the error string
-        # by making the first call fail or just checking the call args
-        result = plugin.analyze(b"fake image data")
-        assert result == mock_analysis_cls.return_value
+    # Initialization tests
+    def test_plugin_initialization(self, plugin: Plugin) -> None:
+        """Test plugin initializes without error."""
+        assert plugin is not None
+        assert isinstance(plugin, Plugin)
 
     # Lifecycle tests
     def test_on_load(self, plugin: Plugin) -> None:
@@ -86,3 +32,34 @@ class TestPlugin:
     def test_on_unload(self, plugin: Plugin) -> None:
         """Test on_unload lifecycle hook."""
         plugin.on_unload()
+
+    # Tool method existence tests
+    def test_has_yolo_player_detection(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_player_detection method."""
+        assert hasattr(plugin, "yolo_player_detection")
+        assert callable(plugin.yolo_player_detection)
+
+    def test_has_yolo_player_tracking(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_player_tracking method."""
+        assert hasattr(plugin, "yolo_player_tracking")
+        assert callable(plugin.yolo_player_tracking)
+
+    def test_has_yolo_ball_detection(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_ball_detection method."""
+        assert hasattr(plugin, "yolo_ball_detection")
+        assert callable(plugin.yolo_ball_detection)
+
+    def test_has_yolo_team_classification(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_team_classification method."""
+        assert hasattr(plugin, "yolo_team_classification")
+        assert callable(plugin.yolo_team_classification)
+
+    def test_has_yolo_pitch_detection(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_pitch_detection method."""
+        assert hasattr(plugin, "yolo_pitch_detection")
+        assert callable(plugin.yolo_pitch_detection)
+
+    def test_has_yolo_radar(self, plugin: Plugin) -> None:
+        """Test plugin has yolo_radar method."""
+        assert hasattr(plugin, "yolo_radar")
+        assert callable(plugin.yolo_radar)
