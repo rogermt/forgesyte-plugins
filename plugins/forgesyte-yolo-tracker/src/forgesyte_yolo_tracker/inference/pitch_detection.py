@@ -5,6 +5,23 @@ from typing import Any, Dict
 import numpy as np
 
 
+def run_pitch_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run pitch detection on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing pitch detection results
+    """
+    # Placeholder implementation
+    return {
+        "keypoints": [],
+        "edges": [],
+    }
+
+
 def detect_pitch(
     frame: np.ndarray,
     model: Any,

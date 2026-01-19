@@ -2,6 +2,24 @@
 
 from typing import Any, Dict, Optional
 
+import numpy as np
+
+
+def run_player_tracking(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run player tracking on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing tracking results
+    """
+    # Placeholder implementation
+    return {
+        "players": [],
+        "count": 0,
+    }
 
 
 def track_players(

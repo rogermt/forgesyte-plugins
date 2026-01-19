@@ -5,6 +5,28 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 
 
+def run_player_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Run player detection on a frame.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Dictionary containing detection results
+    """
+    # Placeholder implementation
+    return {
+        "detections": [],
+        "count": 0,
+        "classes": {
+            "player": 0,
+            "goalkeeper": 0,
+            "referee": 0,
+        },
+    }
+
+
 def detect_players(
     frame: np.ndarray,
     model: Any,
