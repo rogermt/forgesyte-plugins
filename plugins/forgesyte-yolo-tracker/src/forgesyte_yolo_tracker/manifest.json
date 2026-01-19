@@ -1,9 +1,19 @@
 {
+  "id": "forgesyte-yolo-tracker",
   "name": "forgesyte-yolo-tracker",
   "version": "1.0.0",
   "description": "ForgeSyte plugin for football player, ball, pitch, team classification, and radar analysis using YOLO + Supervision + SigLIP.",
   "author": "Roger",
+  "license": "MIT",
   "entrypoint": "forgesyte_yolo_tracker.plugin",
+  "capabilities": [
+    "player_detection",
+    "player_tracking",
+    "ball_detection",
+    "team_classification",
+    "pitch_detection",
+    "radar_visualization"
+  ],
   "tools": {
     "player_detection": {
       "description": "Detect players in a single frame.",

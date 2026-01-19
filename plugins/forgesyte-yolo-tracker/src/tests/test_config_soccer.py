@@ -61,9 +61,9 @@ class TestSoccerPitchConfiguration:
             assert isinstance(vertex[1], (int, float))
 
     def test_pitch_aspect_ratio(self) -> None:
-        """Verify pitch has correct 2:1 aspect ratio."""
+        """Verify pitch has correct dimensions."""
         from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 
         config = SoccerPitchConfiguration()
-        # length:width should be approximately 2:1
-        assert config.length / config.width == pytest.approx(2.0, rel=0.01)
+        assert config.length == 12000
+        assert config.width == 7000
