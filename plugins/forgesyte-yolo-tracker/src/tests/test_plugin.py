@@ -15,7 +15,7 @@ from unittest.mock import patch
 import pytest
 from PIL import Image
 
-from forgesyte_yolo_tracker.plugin import Plugin
+from forgesyte_yolo_tracker.plugin import YOLOTrackerPlugin as Plugin
 
 
 class TestPlugin:

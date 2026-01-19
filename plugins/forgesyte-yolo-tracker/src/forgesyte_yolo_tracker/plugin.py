@@ -36,7 +36,7 @@ from forgesyte_yolo_tracker.inference.pitch_detection import (
     detect_pitch_json_with_annotated_frame,
 )
 from forgesyte_yolo_tracker.inference.radar import (
-    radar_json,
+    generate_radar_json as radar_json,
     radar_json_with_annotated_frame,
 )
 

@@ -11,6 +11,6 @@ A comprehensive sports detection and tracking plugin providing:
 __version__ = "0.1.0"
 __author__ = "ForgeSyte Contributors"
 
-from .plugin import Plugin
+from .plugin import YOLOTrackerPlugin as Plugin
 
 __all__ = ["Plugin"]
