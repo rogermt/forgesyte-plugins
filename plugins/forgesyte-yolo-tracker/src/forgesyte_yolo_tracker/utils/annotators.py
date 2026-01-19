@@ -1,6 +1,6 @@
 """Custom annotation utilities."""
 
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 
@@ -32,7 +32,7 @@ class FrameAnnotator:
     def draw_boxes(
         self,
         frame: np.ndarray,
-        detections: dict,
+        detections: Dict[str, Any],
         thickness: int = 2,
     ) -> np.ndarray:
         """Draw bounding boxes on frame.
@@ -51,7 +51,7 @@ class FrameAnnotator:
     def draw_ellipses(
         self,
         frame: np.ndarray,
-        detections: dict,
+        detections: Dict[str, Any],
         thickness: int = 2,
     ) -> np.ndarray:
         """Draw ellipses on frame.
@@ -70,7 +70,7 @@ class FrameAnnotator:
     def draw_keypoints(
         self,
         frame: np.ndarray,
-        keypoints: dict,
+        keypoints: Dict[str, Any],
         radius: int = 5,
     ) -> np.ndarray:
         """Draw keypoints on frame.
@@ -89,7 +89,7 @@ class FrameAnnotator:
     def draw_labels(
         self,
         frame: np.ndarray,
-        detections: dict,
+        detections: Dict[str, Any],
         labels: List[str],
     ) -> np.ndarray:
         """Draw labels on frame.

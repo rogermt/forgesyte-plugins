@@ -1,7 +1,6 @@
 """Tests for player detection module."""
 
 import numpy as np
-import pytest
 
 from forgesyte_yolo_tracker.inference.player_detection import (
     detect_players,

@@ -4,7 +4,7 @@ This module implements the ForgeSyte plugin interface for YOLO-based
 detection and tracking capabilities.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from enum import Enum
 
 

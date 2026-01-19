@@ -3,7 +3,6 @@
 import json
 from pathlib import Path
 
-import pytest
 
 from forgesyte_yolo_tracker.plugin import YOLOTrackerPlugin, AnalysisMode
 
@@ -53,20 +52,14 @@ class TestManifest:
     def test_manifest_exists(self) -> None:
         """Test that manifest.json exists."""
         manifest_path = (
-            Path(__file__).parent.parent
-            / "src"
-            / "forgesyte_yolo_tracker"
-            / "manifest.json"
+            Path(__file__).parent.parent / "src" / "forgesyte_yolo_tracker" / "manifest.json"
         )
         assert manifest_path.exists()
 
     def test_manifest_valid_json(self) -> None:
         """Test that manifest is valid JSON."""
         manifest_path = (
-            Path(__file__).parent.parent
-            / "src"
-            / "forgesyte_yolo_tracker"
-            / "manifest.json"
+            Path(__file__).parent.parent / "src" / "forgesyte_yolo_tracker" / "manifest.json"
         )
         with open(manifest_path) as f:
             manifest = json.load(f)

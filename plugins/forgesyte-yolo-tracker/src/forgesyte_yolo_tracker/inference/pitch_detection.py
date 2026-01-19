@@ -1,6 +1,6 @@
 """Pitch detection inference module."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 
 import numpy as np
 

@@ -1,7 +1,6 @@
 """Tests for team classification module."""
 
 import numpy as np
-import pytest
 
 from forgesyte_yolo_tracker.inference.team_classification import (
     classify_teams,
