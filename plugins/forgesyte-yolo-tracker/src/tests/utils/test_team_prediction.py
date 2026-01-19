@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
 
-from forgesyte_yolo_tracker.utils.team import TeamClassifier, create_batches
+from sports.common import TeamClassifier, create_batches
 
 
 class TestTeamClassifierPrediction:
@@ -21,8 +21,8 @@ class TestTeamClassifierPrediction:
     @pytest.fixture
     def mock_classifier(self) -> TeamClassifier:
         """Create a TeamClassifier with fully mocked model dependencies."""
-        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel") as mock_model, patch(
-            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
+        with patch("sports.common.team.SiglipVisionModel") as mock_model, patch(
+            "sports.common.team.AutoProcessor"
         ) as mock_processor:
             classifier = TeamClassifier.__new__(TeamClassifier)
             classifier.device = "cpu"
