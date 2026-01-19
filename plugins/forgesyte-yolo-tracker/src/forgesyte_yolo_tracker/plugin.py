@@ -7,6 +7,14 @@ from typing import Any, Dict, Optional
 import cv2
 import numpy as np
 
+# Import plugin interfaces from forgesyte server
+try:
+    from app.models import AnalysisResult, PluginMetadata
+except ImportError:
+    # Fallback for testing environments where app.models may not be available
+    AnalysisResult = None  # type: ignore
+    PluginMetadata = None  # type: ignore
+
 from .inference.ball_detection import run_ball_detection
 from .inference.pitch_detection import run_pitch_detection
 from .inference.player_detection import run_player_detection
@@ -88,6 +96,66 @@ class Plugin:
         Use this for cleanup and resource release.
         """
         logger.info("YOLO Football Analysis plugin unloaded")
+
+    def metadata(self) -> Dict[str, Any]:
+        """Return plugin metadata.
+
+        Returns:
+            Dictionary with plugin metadata (name, version, config_schema, etc.)
+        """
+        return {
+            "name": "forgesyte-yolo-tracker",
+            "version": "0.1.0",
+            "description": "YOLO-based football analysis tools for ForgeSyte.",
+            "config_schema": {
+                "confidence_threshold": {
+                    "type": "number",
+                    "default": 0.5,
+                    "description": "Detection confidence threshold",
+                },
+                "max_detections": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Maximum number of detections to return",
+                },
+            },
+        }
+
+    def analyze(self, image_data: bytes, **kwargs: Any) -> Dict[str, Any]:
+        """Analyze an image and return results.
+
+        Args:
+            image_data: Raw image bytes
+            **kwargs: Additional analysis options
+
+        Returns:
+            Analysis results as AnalysisResult compatible dict
+        """
+        try:
+            # Decode image
+            arr = np.frombuffer(image_data, np.uint8)
+            frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+            if frame is None:
+                raise ValueError("Failed to decode image")
+
+            # Return placeholder result
+            return {
+                "text": "YOLO tracker analysis not yet implemented",
+                "blocks": [],
+                "confidence": 0.0,
+                "language": None,
+                "error": "YOLO tracker plugin analysis methods under development",
+            }
+
+        except Exception as e:
+            logger.error(f"Analysis error: {e}")
+            return {
+                "text": "",
+                "blocks": [],
+                "confidence": 0.0,
+                "language": None,
+                "error": str(e),
+            }
 
     # ---------------------------------------------------------
     #  YOLO PLAYER DETECTION
