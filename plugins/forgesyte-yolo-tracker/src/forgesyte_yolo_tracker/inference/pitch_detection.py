@@ -6,7 +6,7 @@ Provides JSON and JSON+Base64 modes for pitch detection:
 """
 
 import base64
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import cv2
 import numpy as np
