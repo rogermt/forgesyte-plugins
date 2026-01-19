@@ -7,7 +7,7 @@ import os
 import numpy as np
 import pytest
 
-from forgesyte_yolo_tracker.utils.team import TeamClassifier
+from sports.common import TeamClassifier
 
 RUN_INTEGRATION_TESTS = os.getenv("RUN_INTEGRATION_TESTS", "0") == "1"
 
