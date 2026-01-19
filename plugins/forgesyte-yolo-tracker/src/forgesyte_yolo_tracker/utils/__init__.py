@@ -7,10 +7,6 @@ This package uses code from roboflow/sports (MIT License):
 Custom forgeSYTE modules:
 - ball.py - Ball tracking (not annotating)
 - soccer_pitch.py - Soccer pitch drawing utilities
-- annotators.py - Custom annotators
-- tracking.py - Tracking utilities
-- transforms.py - Image transforms
-- common.py - Common utilities
 """
 
 from sports.common import (
@@ -20,10 +16,6 @@ from sports.common import (
 )
 
 from . import (
-    transforms,
-    annotators,
-    tracking,
-    common,
     ball,
     soccer_pitch,
 )
@@ -34,10 +26,6 @@ __all__ = [
     "TeamClassifier",
     "ViewTransformer",
     # Custom forgeSYTE modules
-    "transforms",
-    "annotators",
-    "tracking",
-    "common",
     "ball",
     "soccer_pitch",
 ]

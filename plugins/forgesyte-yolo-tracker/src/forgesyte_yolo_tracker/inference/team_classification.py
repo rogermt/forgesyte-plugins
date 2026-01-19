@@ -2,7 +2,7 @@
 
 Provides JSON and JSON+Base64 modes for team classification using TeamClassifier:
 - classify_teams_json(): Returns team assignments for players
-- classify_teams_json_with_annotated(): Returns data + annotated frame
+- classify_teams_json_with_annotated_frame(): Returns data + annotated frame
 
 Team classification uses on-the-fly clustering (collect crops → UMAP → KMeans → predict).
 """
@@ -133,7 +133,7 @@ def classify_teams_json(
     }
 
 
-def classify_teams_json_with_annotated(
+def classify_teams_json_with_annotated_frame(
     frame: np.ndarray,
     device: str = "cpu",
     confidence: float = DEFAULT_CONFIDENCE,
@@ -248,5 +248,5 @@ def run_team_classification(frame: np.ndarray, config: Dict[str, Any]) -> Dict[s
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return classify_teams_json_with_annotated(frame, device=device, confidence=confidence)
+        return classify_teams_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return classify_teams_json(frame, device=device, confidence=confidence)

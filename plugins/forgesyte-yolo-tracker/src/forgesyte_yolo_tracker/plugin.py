@@ -1,278 +1,167 @@
-"""Main plugin class for YOLO Football Analysis."""
+"""ForgeSyte YOLO Tracker Plugin.
+
+Frame-based JSON tools for football analysis:
+- player_detection
+- player_tracking
+- ball_detection
+- team_classification
+- pitch_detection
+- radar
+"""
 
 import base64
-import logging
-from typing import Any, Dict, Optional
+from typing import Dict, Any
 
 import cv2
 import numpy as np
 
-# Import plugin interfaces from forgesyte server
-try:
-    from app.models import AnalysisResult, PluginMetadata
-except ImportError:
-    # Fallback for testing environments where app.models may not be available
-    AnalysisResult = None  # type: ignore
-    PluginMetadata = None  # type: ignore
+from forgesyte_yolo_tracker.inference.player_detection import (
+    detect_players_json,
+    detect_players_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.player_tracking import (
+    track_players_json,
+    track_players_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.ball_detection import (
+    detect_ball_json,
+    detect_ball_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.team_classification import (
+    classify_teams_json,
+    classify_teams_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.pitch_detection import (
+    detect_pitch_json,
+    detect_pitch_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.radar import (
+    radar_json,
+    radar_json_with_annotated_frame,
+)
 
-from .inference.ball_detection import run_ball_detection
-from .inference.pitch_detection import run_pitch_detection
-from .inference.player_detection import run_player_detection
-from .inference.player_tracking import run_player_tracking
-from .inference.radar import run_radar
-from .inference.team_classification import run_team_classification
 
-logger = logging.getLogger(__name__)
-
-
-def decode_image(image_b64: str) -> np.ndarray:
+def _decode_frame_base64(frame_b64: str) -> np.ndarray:
     """Decode base64-encoded image into a numpy BGR frame.
 
     Args:
-        image_b64: Base64 encoded image data
+        frame_b64: Base64 encoded image data
 
     Returns:
         Decoded image as numpy BGR array
-
-    Raises:
-        ValueError: If image decoding fails
     """
-    data = base64.b64decode(image_b64)
-    arr = np.frombuffer(data, np.uint8)
-    frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-    if frame is None:
-        raise ValueError("Failed to decode image from base64.")
-    return frame
+    data = base64.b64decode(frame_b64)
+    arr = np.frombuffer(data, dtype=np.uint8)
+    return cv2.imdecode(arr, cv2.IMREAD_COLOR)
 
 
-def encode_frame(frame: np.ndarray) -> str:
-    """Encode numpy BGR frame into base64 JPEG.
+def player_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Detect players in a single frame.
 
     Args:
-        frame: Image frame as numpy BGR array
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return annotated frame
 
     Returns:
-        Base64 encoded JPEG string
-
-    Raises:
-        ValueError: If image encoding fails
+        Dictionary with detections, count, classes
     """
-    ok, buf = cv2.imencode(".jpg", frame)
-    if not ok:
-        raise ValueError("Failed to encode frame to JPEG.")
-    return base64.b64encode(buf.tobytes()).decode("utf-8")
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return detect_players_json_with_annotated_frame(frame, device=device)
+    return detect_players_json(frame, device=device)
 
 
-class Plugin:
-    """ForgeSyte YOLO Football Analysis Plugin.
+def player_tracking(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Track players across frames using ByteTrack.
 
-    Exposes multiple tools:
-      - yolo_player_detection
-      - yolo_player_tracking
-      - yolo_ball_detection
-      - yolo_team_classification
-      - yolo_pitch_detection
-      - yolo_radar
+    Args:
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return annotated frame
+
+    Returns:
+        Dictionary with detections, count, track_ids
     """
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return track_players_json_with_annotated_frame(frame, device=device)
+    return track_players_json(frame, device=device)
 
-    def __init__(self) -> None:
-        """Initialize the plugin.
 
-        If you want persistent models/trackers, you can initialize them here
-        and pass into the inference functions.
-        """
-        pass
+def ball_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Detect the football in a single frame.
 
-    def on_load(self) -> None:
-        """Called when the plugin is loaded.
+    Args:
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return annotated frame
 
-        Use this for initialization that requires the full application context.
-        """
-        logger.info("YOLO Football Analysis plugin loaded")
+    Returns:
+        Dictionary with detections, ball, ball_detected
+    """
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return detect_ball_json_with_annotated_frame(frame, device=device)
+    return detect_ball_json(frame, device=device)
 
-    def on_unload(self) -> None:
-        """Called when the plugin is unloaded.
 
-        Use this for cleanup and resource release.
-        """
-        logger.info("YOLO Football Analysis plugin unloaded")
+def team_classification(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Classify players into teams using SigLIP embeddings + UMAP + KMeans.
 
-    def metadata(self) -> Dict[str, Any]:
-        """Return plugin metadata.
+    Args:
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return annotated frame
 
-        Returns:
-            Dictionary with plugin metadata (name, version, config_schema, etc.)
-        """
-        return {
-            "name": "forgesyte-yolo-tracker",
-            "version": "0.1.0",
-            "description": "YOLO-based football analysis tools for ForgeSyte.",
-            "config_schema": {
-                "confidence_threshold": {
-                    "type": "number",
-                    "default": 0.5,
-                    "description": "Detection confidence threshold",
-                },
-                "max_detections": {
-                    "type": "integer",
-                    "default": 100,
-                    "description": "Maximum number of detections to return",
-                },
-            },
-        }
+    Returns:
+        Dictionary with detections, team_ids, team_counts
+    """
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return classify_teams_json_with_annotated_frame(frame, device=device)
+    return classify_teams_json(frame, device=device)
 
-    def analyze(self, image_data: bytes, **kwargs: Any) -> Dict[str, Any]:
-        """Analyze an image and return results.
 
-        Args:
-            image_data: Raw image bytes
-            **kwargs: Additional analysis options
+def pitch_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Detect pitch keypoints for homography mapping.
 
-        Returns:
-            Analysis results as AnalysisResult compatible dict
-        """
-        try:
-            # Decode image
-            arr = np.frombuffer(image_data, np.uint8)
-            frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-            if frame is None:
-                raise ValueError("Failed to decode image")
+    Args:
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return annotated frame
 
-            # Return placeholder result
-            return {
-                "text": "YOLO tracker analysis not yet implemented",
-                "blocks": [],
-                "confidence": 0.0,
-                "language": None,
-                "error": "YOLO tracker plugin analysis methods under development",
-            }
+    Returns:
+        Dictionary with keypoints, pitch_polygon, pitch_detected
+    """
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return detect_pitch_json_with_annotated_frame(frame, device=device)
+    return detect_pitch_json(frame, device=device)
 
-        except Exception as e:
-            logger.error(f"Analysis error: {e}")
-            return {
-                "text": "",
-                "blocks": [],
-                "confidence": 0.0,
-                "language": None,
-                "error": str(e),
-            }
 
-    # ---------------------------------------------------------
-    #  YOLO PLAYER DETECTION
-    # ---------------------------------------------------------
-    def yolo_player_detection(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Detect players in an image.
+def radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    """Generate radar (bird's-eye) view of player positions.
 
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
+    Args:
+        frame_base64: Base64 encoded image
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: If True, return radar image
 
-        Returns:
-            Dictionary containing detection results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_player_detection(frame, config or {})
-        # Ensure frame is available to UI
-        result.setdefault("frame", encode_frame(frame))
-        return result
-
-    # ---------------------------------------------------------
-    #  YOLO PLAYER TRACKING (YOLO + ByteTrack)
-    # ---------------------------------------------------------
-    def yolo_player_tracking(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Track players across frames.
-
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
-
-        Returns:
-            Dictionary containing tracking results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_player_tracking(frame, config or {})
-        result.setdefault("frame", encode_frame(frame))
-        return result
-
-    # ---------------------------------------------------------
-    #  BALL DETECTION
-    # ---------------------------------------------------------
-    def yolo_ball_detection(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Detect ball in an image.
-
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
-
-        Returns:
-            Dictionary containing ball detection results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_ball_detection(frame, config or {})
-        result.setdefault("frame", encode_frame(frame))
-        return result
-
-    # ---------------------------------------------------------
-    #  TEAM CLASSIFICATION
-    # ---------------------------------------------------------
-    def yolo_team_classification(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Classify players into teams.
-
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
-
-        Returns:
-            Dictionary containing team classification results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_team_classification(frame, config or {})
-        result.setdefault("frame", encode_frame(frame))
-        return result
-
-    # ---------------------------------------------------------
-    #  PITCH DETECTION
-    # ---------------------------------------------------------
-    def yolo_pitch_detection(
-        self, image: str, config: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
-        """Detect pitch lines and keypoints.
-
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
-
-        Returns:
-            Dictionary containing pitch detection results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_pitch_detection(frame, config or {})
-        result.setdefault("frame", encode_frame(frame))
-        return result
-
-    # ---------------------------------------------------------
-    #  RADAR VIEW
-    # ---------------------------------------------------------
-    def yolo_radar(self, image: str, config: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-        """Generate radar bird's-eye view.
-
-        Args:
-            image: Base64 encoded image
-            config: Optional configuration dictionary
-
-        Returns:
-            Dictionary containing radar results and encoded frame
-        """
-        frame = decode_image(image)
-        result = run_radar(frame, config or {})
-        # result["radar"] should be base64 PNG from your radar renderer
-        result.setdefault("frame", encode_frame(frame))
-        return result
+    Returns:
+        Dictionary with radar_points, radar_size, radar_base64 (if annotated)
+    """
+    frame = _decode_frame_base64(frame_base64)
+    if annotated:
+        return radar_json_with_annotated_frame(frame, device=device)
+    return radar_json(frame, device=device)
