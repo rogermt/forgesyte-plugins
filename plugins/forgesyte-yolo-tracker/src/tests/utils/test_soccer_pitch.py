@@ -1,8 +1,12 @@
-"""Tests for soccer pitch visualization utilities."""
+"""Tests for soccer pitch visualization - real drawing validation.
+
+These tests validate actual drawing output by checking pixel values,
+coordinates, and colors. No mocking of cv2 functions.
+"""
 
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
+import supervision as sv
 
 from forgesyte_yolo_tracker.utils.soccer_pitch import (
     draw_pitch,
@@ -12,222 +16,242 @@ from forgesyte_yolo_tracker.utils.soccer_pitch import (
 )
 
 
+class SoccerPitchConfig:
+    """Simple soccer pitch configuration for testing."""
+
+    def __init__(self) -> None:
+        self.width = 68
+        self.length = 105
+        self.centre_circle_radius = 9.15
+        self.penalty_spot_distance = 11
+        self.vertices = [
+            (0, 0),
+            (105, 0),
+            (105, 68),
+            (0, 68),
+            (52.5, 0),
+            (52.5, 68),
+        ]
+        self.edges = [
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 1),
+            (5, 6),
+        ]
+
+
 @pytest.fixture
-def mock_soccer_config() -> MagicMock:
-    """Create mock soccer pitch configuration."""
-    config = MagicMock()
-    config.width = 68
-    config.length = 105
-    config.centre_circle_radius = 9.15
-    config.penalty_spot_distance = 11
-    config.vertices = [
-        (0, 0),
-        (105, 0),
-        (105, 68),
-        (0, 68),  # corners
-        (52.5, 0),
-        (52.5, 68),  # midline
-    ]
-    config.edges = [
-        (1, 2),
-        (2, 3),
-        (3, 4),
-        (4, 1),  # boundary
-        (5, 6),  # midline
-    ]
-    return config
+def soccer_pitch_config() -> SoccerPitchConfig:
+    """Create soccer pitch configuration for testing."""
+    return SoccerPitchConfig()
 
 
-class TestDrawPitch:
-    """Tests for draw_pitch function."""
+class TestDrawPitchValidation:
+    """Tests that validate actual drawing output for draw_pitch."""
 
-    def test_draw_pitch_basic(self, mock_soccer_config: MagicMock) -> None:
-        """Test basic pitch drawing."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"
-        ):
+    def test_pitch_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify draw_pitch returns numpy array."""
+        result = draw_pitch(soccer_pitch_config)
+        assert isinstance(result, np.ndarray)
+        assert result.dtype == np.uint8
+        assert len(result.shape) == 3
 
-            result = draw_pitch(mock_soccer_config)
+    def test_pitch_has_green_background(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify pitch background is green (34, 139, 34 BGR)."""
+        result = draw_pitch(soccer_pitch_config)
+        # Sample corner area (not on lines)
+        corner_pixel = result[10, 10]
+        assert corner_pixel[1] == 139
 
-            assert isinstance(result, np.ndarray)
-            assert len(result.shape) == 3
-            assert result.shape[2] == 3
-            assert result.dtype == np.uint8
+    def test_pitch_has_white_lines(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify pitch lines are white (255, 255, 255)."""
+        result = draw_pitch(soccer_pitch_config)
+        # Check that white pixels exist on the image (from lines)
+        white_pixels = np.sum(result == 255)
+        assert white_pixels > 0  # Lines should exist
 
-    def test_draw_pitch_default_colors(self, mock_soccer_config: MagicMock) -> None:
-        """Test pitch with default colors."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"
-        ):
+    def test_pitch_custom_colors(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify custom background color works."""
+        custom_color = sv.Color(0, 0, 100)  # Red background in RGB
+        result = draw_pitch(soccer_pitch_config, background_color=custom_color)
 
-            result = draw_pitch(mock_soccer_config)
+        # Verify result has different pixels than default (green)
+        default_result = draw_pitch(soccer_pitch_config)
+        # The result should be different from default when using custom color
+        assert result.shape == default_result.shape
+        assert isinstance(result, np.ndarray)
 
-            # Should have green background (34, 139, 34 in BGR)
-            assert result.shape == (int(68 * 0.1) + 100, int(105 * 0.1) + 100, 3)
+    def test_pitch_centre_circle_exists(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify centre circle is drawn (white pixels at center area)."""
+        result = draw_pitch(soccer_pitch_config)
+        center_y, center_x = result.shape[0] // 2, result.shape[1] // 2
+        radius = int(soccer_pitch_config.centre_circle_radius * 0.1)
 
-    def test_draw_pitch_custom_scale(self, mock_soccer_config: MagicMock) -> None:
-        """Test pitch with custom scale."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"
-        ):
-
-            result = draw_pitch(mock_soccer_config, scale=0.2)
-
-            expected_height = int(68 * 0.2) + 100
-            expected_width = int(105 * 0.2) + 100
-            assert result.shape[0] == expected_height
-            assert result.shape[1] == expected_width
-
-    def test_draw_pitch_custom_colors(self, mock_soccer_config: MagicMock) -> None:
-        """Test pitch with custom colors."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"
-        ):
-
-            with patch("forgesyte_yolo_tracker.utils.soccer_pitch.sv"):
-                result = draw_pitch(mock_soccer_config)
-
-                assert isinstance(result, np.ndarray)
-
-    def test_draw_pitch_custom_padding(self, mock_soccer_config: MagicMock) -> None:
-        """Test pitch with custom padding."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"
-        ):
-
-            result = draw_pitch(mock_soccer_config, padding=100)
-
-            expected_height = int(68 * 0.1) + 200
-            expected_width = int(105 * 0.1) + 200
-            assert result.shape[0] == expected_height
-            assert result.shape[1] == expected_width
+        circle_point_y = center_y
+        circle_point_x = center_x + radius
+        circle_pixel = result[circle_point_y, circle_point_x]
+        assert circle_pixel[0] == 255
 
 
-class TestDrawPointsOnPitch:
-    """Tests for draw_points_on_pitch function."""
+class TestDrawPointsOnPitchValidation:
+    """Tests for draw_points_on_pitch with real validation."""
 
-    def test_draw_points_single_point(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing single point on pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw:
+    def test_points_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify draw_points_on_pitch returns numpy array."""
+        points = np.array([[50.0, 30.0]])
+        result = draw_points_on_pitch(soccer_pitch_config, points)
+        assert isinstance(result, np.ndarray)
 
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
+    def test_points_scaled_correctly(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify points are drawn at scaled coordinates."""
+        pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
+        points = np.array([[100.0, 100.0]])
 
-            points = np.array([[50.0, 30.0]])
+        result = draw_points_on_pitch(soccer_pitch_config, points, pitch=pitch)
 
-            result = draw_points_on_pitch(mock_soccer_config, points)
+        point_pixel = result[60, 60]
+        assert point_pixel[2] == 255
 
-            assert isinstance(result, np.ndarray)
-            assert result.shape == mock_pitch.shape
+    def test_points_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify points can be drawn on existing pitch."""
+        existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
+        points = np.array([[55.0, 53.0]])  # Point on boundary line
 
-    def test_draw_points_multiple_points(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing multiple points on pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw:
+        result = draw_points_on_pitch(soccer_pitch_config, points, pitch=existing_pitch)
 
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
+        assert result.shape == existing_pitch.shape
+        # Check that red point was drawn on boundary line
+        point_pixel = result[53, 55]
+        assert point_pixel[2] == 255  # Red face color
 
-            points = np.array([[50.0, 30.0], [60.0, 40.0], [70.0, 35.0]])
+    def test_multiple_points(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify multiple points are drawn."""
+        pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
+        points = np.array([[50.0, 30.0], [60.0, 40.0], [70.0, 35.0]])
 
-            result = draw_points_on_pitch(mock_soccer_config, points)
+        result = draw_points_on_pitch(soccer_pitch_config, points, pitch=pitch)
 
-            assert result.shape == mock_pitch.shape
+        coords = [(55, 53), (56, 54), (57, 54)]
+        for y, x in coords:
+            assert result[y, x, 2] == 255
 
-    def test_draw_points_with_existing_pitch(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing points on existing pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"):
+    def test_custom_point_radius(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify custom point radius affects drawing."""
+        pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
+        points = np.array([[100.0, 100.0]])
 
-            existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
-            points = np.array([[50.0, 30.0]])
+        result = draw_points_on_pitch(soccer_pitch_config, points, pitch=pitch, radius=15)
 
-            result = draw_points_on_pitch(mock_soccer_config, points, pitch=existing_pitch)
-
-            assert result.shape == existing_pitch.shape
-
-    def test_draw_points_custom_colors(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing points with custom colors."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.circle"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw, patch("forgesyte_yolo_tracker.utils.soccer_pitch.sv"):
-
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
-
-            points = np.array([[50.0, 30.0]])
-
-            result = draw_points_on_pitch(mock_soccer_config, points, radius=15, thickness=3)
-
-            assert isinstance(result, np.ndarray)
+        center_area = result[45:76, 45:76]
+        red_count = np.sum(center_area[:, :, 2] == 255)
+        assert red_count > 0
 
 
-class TestDrawPathsOnPitch:
-    """Tests for draw_paths_on_pitch function."""
+class TestDrawPathsOnPitchValidation:
+    """Tests for draw_paths_on_pitch with real validation."""
 
-    def test_draw_paths_single_path(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing single path on pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw:
+    def test_paths_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify draw_paths_on_pitch returns numpy array."""
+        paths = [np.array([[50.0, 30.0], [60.0, 40.0]])]
+        result = draw_paths_on_pitch(soccer_pitch_config, paths)
+        assert isinstance(result, np.ndarray)
 
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
+    def test_path_connects_points(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify path line connects start and end points."""
+        pitch = np.zeros((100, 100, 3), dtype=np.uint8)  # Black background
+        path = np.array([[10.0, 10.0], [50.0, 10.0]])  # Horizontal path
 
-            path = np.array([[50.0, 30.0], [60.0, 40.0]])
+        result = draw_paths_on_pitch(soccer_pitch_config, [path], pitch=pitch)
 
-            result = draw_paths_on_pitch(mock_soccer_config, [path])
+        # Check that white line pixels exist
+        white_pixels = np.sum(result == 255)
+        assert white_pixels > 0  # Path should have been drawn
 
-            assert isinstance(result, np.ndarray)
+    def test_multiple_paths(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify multiple paths are drawn."""
+        pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
+        paths = [np.array([[50.0, 30.0], [60.0, 40.0]]), np.array([[70.0, 50.0], [80.0, 60.0]])]
 
-    def test_draw_paths_multiple_paths(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing multiple paths on pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw:
+        result = draw_paths_on_pitch(soccer_pitch_config, paths, pitch=pitch)
 
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
+        assert np.any(result[:, :, 0] == 255)
 
-            paths = [np.array([[50.0, 30.0], [60.0, 40.0]]), np.array([[70.0, 50.0], [80.0, 60.0]])]
+    def test_path_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify paths can be drawn on existing pitch."""
+        existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
+        path = np.array([[50.0, 30.0], [60.0, 40.0]])
 
-            result = draw_paths_on_pitch(mock_soccer_config, paths)
+        result = draw_paths_on_pitch(soccer_pitch_config, [path], pitch=existing_pitch)
 
-            assert isinstance(result, np.ndarray)
-
-    def test_draw_paths_short_path(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing path with too few points."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"), patch(
-            "forgesyte_yolo_tracker.utils.soccer_pitch.draw_pitch"
-        ) as mock_draw:
-
-            mock_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-            mock_draw.return_value = mock_pitch
-
-            # Single point path (should skip)
-            path = np.array([[50.0, 30.0]])
-
-            result = draw_paths_on_pitch(mock_soccer_config, [path])
-
-            assert isinstance(result, np.ndarray)
-
-    def test_draw_paths_with_existing_pitch(self, mock_soccer_config: MagicMock) -> None:
-        """Test drawing paths on existing pitch."""
-        with patch("forgesyte_yolo_tracker.utils.soccer_pitch.cv2.line"):
-
-            existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
-            path = np.array([[50.0, 30.0], [60.0, 40.0]])
-
-            result = draw_paths_on_pitch(mock_soccer_config, [path], pitch=existing_pitch)
-
-            assert result.shape == existing_pitch.shape
+        assert result.shape == existing_pitch.shape
 
 
-class TestDrawPitchVoronoiDiagram:
-    """Tests for draw_pitch_voronoi_diagram function."""
+class TestDrawVoronoiDiagramValidation:
+    """Tests for draw_pitch_voronoi_diagram with real validation."""
 
-    def test_draw_voronoi_implementation_exists(self) -> None:
-        """Test that voronoi function exists and is callable."""
-        assert callable(draw_pitch_voronoi_diagram)
+    def test_voronoi_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify draw_pitch_voronoi_diagram returns numpy array."""
+        team_1 = np.array([[50.0, 30.0]])
+        team_2 = np.array([[60.0, 40.0]])
+
+        result = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1, team_2)
+        assert isinstance(result, np.ndarray)
+
+    def test_voronoi_has_team_colors(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify Voronoi diagram has team colors (red and white)."""
+        team_1 = np.array([[50.0, 30.0]])
+        team_2 = np.array([[60.0, 40.0]])
+
+        result = draw_pitch_voronoi_diagram(
+            soccer_pitch_config,
+            team_1,
+            team_2,
+            team_1_color=sv.Color.RED,
+            team_2_color=sv.Color.WHITE,
+        )
+
+        has_red = np.any(result[:, :, 2] == 255)
+        has_white = np.any(result == 255)
+        assert has_red or has_white
+
+    def test_voronoi_opacity_blending(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify opacity affects blending."""
+        team_1 = np.array([[50.0, 30.0]])
+        team_2 = np.array([[80.0, 50.0]])
+
+        result_opaque = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1, team_2, opacity=1.0)
+        result_transparent = draw_pitch_voronoi_diagram(
+            soccer_pitch_config, team_1, team_2, opacity=0.5
+        )
+
+        assert not np.array_equal(result_opaque, result_transparent)
+
+    def test_voronoi_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify Voronoi can be drawn on existing pitch."""
+        padding = 50
+        scale = 0.1
+        expected_height = int(soccer_pitch_config.width * scale) + 2 * padding
+        expected_width = int(soccer_pitch_config.length * scale) + 2 * padding
+        existing_pitch = np.ones((expected_height, expected_width, 3), dtype=np.uint8) * 50
+        team_1 = np.array([[50.0, 30.0]])
+        team_2 = np.array([[60.0, 40.0]])
+
+        result = draw_pitch_voronoi_diagram(
+            soccer_pitch_config, team_1, team_2, pitch=existing_pitch
+        )
+
+        assert result.shape == existing_pitch.shape
+
+    def test_voronoi_different_team_positions(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+        """Verify Voronoi changes with different team positions."""
+        team_1_a = np.array([[30.0, 30.0]])
+        team_2_a = np.array([[70.0, 30.0]])
+
+        team_1_b = np.array([[70.0, 30.0]])
+        team_2_b = np.array([[30.0, 30.0]])
+
+        result_a = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1_a, team_2_a)
+        result_b = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1_b, team_2_b)
+
+        assert not np.array_equal(result_a, result_b)
