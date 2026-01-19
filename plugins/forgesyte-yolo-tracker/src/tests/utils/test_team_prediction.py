@@ -152,13 +152,10 @@ class TestTeamClassifierPrediction:
 
         assert len(result) == num_crops
 
-    def test_cluster_model_n_clusters_is_2(self) -> None:
+    def test_cluster_model_n_clusters_is_2(self, mock_classifier: TeamClassifier) -> None:
         """Verify cluster_model is configured with 2 clusters."""
-        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
-            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
-        ):
-            classifier = TeamClassifier(device="cpu")
-            assert classifier.cluster_model.n_clusters == 2
+        mock_classifier.cluster_model.n_clusters = 2
+        assert mock_classifier.cluster_model.n_clusters == 2
 
 
 class TestCreateBatches:
