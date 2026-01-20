@@ -1,6 +1,5 @@
 """Tests for soccer pitch configuration."""
 
-import pytest
 
 
 class TestSoccerPitchConfiguration:

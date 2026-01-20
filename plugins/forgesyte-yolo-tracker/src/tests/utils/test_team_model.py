@@ -24,8 +24,8 @@ class TestTeamClassifier:
 
     def test_initialization(self) -> None:
         """Test TeamClassifier initialization."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu", batch_size=32)
 
@@ -36,21 +36,21 @@ class TestTeamClassifier:
 
     def test_initialization_gpu(self) -> None:
         """Test initialization with GPU."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cuda", batch_size=64)
 
             assert classifier.device == "cuda"
             assert classifier.batch_size == 64
 
-    @patch("sports.common.team.tqdm")
-    @patch("sports.common.team.torch")
+    @patch("forgesyte_yolo_tracker.utils.team.tqdm")
+    @patch("forgesyte_yolo_tracker.utils.team.torch")
     def test_extract_features_basic(self, mock_torch: MagicMock, mock_tqdm: MagicMock) -> None:
         """Test feature extraction from image crops."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
-        ), patch("sports.common.team.sv.cv2_to_pillow"):
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
+        ), patch("forgesyte_yolo_tracker.utils.team.sv.cv2_to_pillow"):
             classifier = TeamClassifier(device="cpu")
 
             mock_output = MagicMock()
@@ -69,8 +69,8 @@ class TestTeamClassifier:
 
     def test_fit_requires_crops(self) -> None:
         """Test fit method requires crop images."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             crops = [np.zeros((224, 224, 3), dtype=np.uint8)]
@@ -86,8 +86,8 @@ class TestTeamClassifier:
 
     def test_predict_empty_crops(self) -> None:
         """Test predict with empty crops."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             crops: List[np.ndarray] = []
@@ -99,8 +99,8 @@ class TestTeamClassifier:
 
     def test_predict_before_fit(self) -> None:
         """Test predict works without explicit fit (uses default model)."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
 
@@ -119,16 +119,16 @@ class TestTeamClassifierReducer:
 
     def test_reducer_is_not_none(self) -> None:
         """Verify reducer is initialized."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert classifier.reducer is not None
 
     def test_reducer_has_fit_transform_method(self) -> None:
         """Verify reducer has fit_transform method for training."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert hasattr(classifier.reducer, "fit_transform")
@@ -136,8 +136,8 @@ class TestTeamClassifierReducer:
 
     def test_reducer_has_transform_method(self) -> None:
         """Verify reducer has transform method for prediction."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert hasattr(classifier.reducer, "transform")
@@ -145,8 +145,8 @@ class TestTeamClassifierReducer:
 
     def test_cluster_model_n_clusters_is_two(self) -> None:
         """Verify cluster_model is configured for 2 teams."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert classifier.cluster_model.n_clusters == 2
@@ -157,16 +157,16 @@ class TestTeamClassifierClusterModel:
 
     def test_cluster_model_is_not_none(self) -> None:
         """Verify cluster_model is initialized."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert classifier.cluster_model is not None
 
     def test_cluster_model_has_predict_method(self) -> None:
         """Verify cluster_model has predict method."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert hasattr(classifier.cluster_model, "predict")
@@ -174,8 +174,8 @@ class TestTeamClassifierClusterModel:
 
     def test_cluster_model_has_fit_method(self) -> None:
         """Verify cluster_model has fit method."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             assert hasattr(classifier.cluster_model, "fit")
@@ -183,8 +183,8 @@ class TestTeamClassifierClusterModel:
 
     def test_cluster_model_predict_returns_binary_labels(self) -> None:
         """Verify cluster_model.predict returns 0 or 1 labels."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             test_projections = np.random.rand(10, 3)
@@ -193,8 +193,8 @@ class TestTeamClassifierClusterModel:
 
     def test_cluster_model_predict_returns_correct_count(self) -> None:
         """Verify predict returns one label per input sample."""
-        with patch("sports.common.team.SiglipVisionModel"), patch(
-            "sports.common.team.AutoProcessor"
+        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"), patch(
+            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
         ):
             classifier = TeamClassifier(device="cpu")
             test_projections = np.random.rand(7, 3)
