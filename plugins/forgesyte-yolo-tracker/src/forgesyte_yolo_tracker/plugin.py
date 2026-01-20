@@ -184,6 +184,12 @@ class YOLOTrackerPlugin:
             "name": "forgesyte-yolo-tracker",
             "version": "0.1.0",
             "description": "YOLO-based football analysis plugin",
+            "license": "MIT",
+            "config_schema": {
+                "device": {"type": "string", "default": "cpu"},
+                "annotated": {"type": "boolean", "default": False},
+                "confidence": {"type": "number", "default": 0.25},
+            },
         }
 
     def analyze(self, image_data: bytes, **kwargs: Any) -> Dict[str, Any]:
