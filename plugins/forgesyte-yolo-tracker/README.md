@@ -69,11 +69,21 @@ src/forgesyte_yolo_tracker/
 │   └── (imports from sports.common)
 ├── configs/
 │   └── soccer.py            # SoccerPitchConfiguration
-└── models/                  # Model weights (placeholders)
+└── models/                  # Model weights (download required)
     ├── football-player-detection-v3.pt
     ├── football-ball-detection-v2.pt
     └── football-pitch-detection-v1.pt
 ```
+
+## Model Files
+
+The model files in `models/` are placeholders. Download the actual YOLO models from Roboflow:
+
+1. **Player Detection v3**: https://universe.roboflow.com/roger-t/football-player-detection-v3
+2. **Ball Detection v2**: https://universe.roboflow.com/roger-t/football-ball-detection-v2
+3. **Pitch Detection v1**: https://universe.roboflow.com/roger-t/football-pitch-detection-v1
+
+Download the `.pt` files and place them in `src/forgesyte_yolo_tracker/models/`
 
 ## Development
 
