@@ -77,13 +77,19 @@ src/forgesyte_yolo_tracker/
 
 ## Model Files
 
-The model files in `models/` are placeholders. Download the actual YOLO models from Roboflow:
+The model files in `models/` are **placeholder text files**. Download the trained YOLO models from GitHub Releases:
 
-1. **Player Detection v3**: https://universe.roboflow.com/roger-t/football-player-detection-v3
-2. **Ball Detection v2**: https://universe.roboflow.com/roger-t/football-ball-detection-v2
-3. **Pitch Detection v1**: https://universe.roboflow.com/roger-t/football-pitch-detection-v1
+**Download from:** https://github.com/rogermt/forgesyte-plugins/releases
 
-Download the `.pt` files and place them in `src/forgesyte_yolo_tracker/models/`
+Required model files:
+- `football-player-detection-v3.pt` - Player/goalkeeper/referee detection
+- `football-ball-detection-v2.pt` - Ball detection
+- `football-pitch-detection-v1.pt` - Pitch keypoint detection
+
+**Installation:**
+1. Go to https://github.com/rogermt/forgesyte-plugins/releases
+2. Download the model assets from the latest release
+3. Extract to `src/forgesyte_yolo_tracker/models/`
 
 ## Development
 
