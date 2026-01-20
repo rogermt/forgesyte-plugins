@@ -6,6 +6,7 @@ Provides JSON and JSON+Base64 modes for player detection:
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import cv2
@@ -14,9 +15,12 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
+MODEL_NAME = get_model_path("player_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
+DEFAULT_CONFIDENCE = get_confidence("player")
 
 CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}
 TEAM_COLORS = {
@@ -24,7 +28,6 @@ TEAM_COLORS = {
     1: "#FFD700",  # Goalkeeper: Gold
     2: "#FF6347",  # Referee: Tomato
 }
-DEFAULT_CONFIDENCE = 0.25
 DEFAULT_NMS = 0.45
 
 _model: Optional[YOLO] = None

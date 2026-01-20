@@ -1,0 +1,17 @@
+# Model configuration for ForgeSyte YOLO Tracker
+# This file configures model paths and detection settings
+
+# Model file names (relative to the models/ directory)
+models:
+  player_detection: "football-player-detection-v3.pt"
+  ball_detection: "football-ball-detection-v2.pt"
+  pitch_detection: "football-pitch-detection-v1.pt"
+
+# Confidence thresholds for detection
+confidence:
+  player: 0.25
+  ball: 0.20
+  pitch: 0.25
+
+# Default device for inference
+device: "cpu"

@@ -6,6 +6,7 @@ Provides JSON and JSON+Base64 modes for pitch detection:
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import cv2
@@ -14,14 +15,16 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-pitch-detection-v1.pt"
+MODEL_NAME = get_model_path("pitch_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
+DEFAULT_CONFIDENCE = get_confidence("pitch")
 
 PITCH_COLOR = sv.Color.from_hex("#00FF00")
 KEYPOINT_COLOR = sv.Color.from_hex("#FF0000")
 
-DEFAULT_CONFIDENCE = 0.25
 DEFAULT_NMS = 0.45
 
 _model: Optional[YOLO] = None

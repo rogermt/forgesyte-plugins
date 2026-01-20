@@ -6,6 +6,7 @@ Provides JSON and JSON+Base64 modes for ball detection:
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import cv2
@@ -13,10 +14,13 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-ball-detection-v2.pt"
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
+
+MODEL_NAME = get_model_path("ball_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+DEFAULT_CONFIDENCE = get_confidence("ball")
 
 BALL_COLOR = sv.Color.from_hex("#FF6347")
-DEFAULT_CONFIDENCE = 0.20
 DEFAULT_NMS = 0.10
 
 _model: Optional[YOLO] = None
