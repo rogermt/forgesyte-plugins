@@ -11,7 +11,6 @@ dependencies = [
     "numpy>=1.24.0",
     "Pillow>=10.0.0",
     "pydantic>=2.0.0",
-    "forgesyte @ git+https://github.com/rogermt/forgesyte.git",
 ]
 
 [project.optional-dependencies]
