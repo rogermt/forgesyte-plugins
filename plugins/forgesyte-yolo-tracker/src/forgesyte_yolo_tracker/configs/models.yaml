@@ -14,4 +14,4 @@ confidence:
   pitch: 0.25
 
 # Default device for inference
-device: "cpu"
+device: "cuda"
