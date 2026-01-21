@@ -76,6 +76,157 @@ uv run black src/
 uv run isort src/
 ```
 
+### Running Quality Checks
+
+Always run these before committing:
+
+```bash
+# Lint and format
+uv run ruff check src/ --fix
+
+# Type check
+uv run mypy src/
+
+# Run tests
+uv run pytest src/tests/ -v
+```
+
+## Branching and Pull Request Workflow
+
+### 1. Create a Branch
+
+Always create a new branch for changes:
+
+```bash
+# Create and switch to new branch
+git checkout -b feature/my-new-feature
+
+# Or for bug fixes
+git checkout -b fix/description-of-fix
+
+# Or for refactoring
+git checkout -b refactor/component-being-refactored
+```
+
+### 2. Make Changes and Commit
+
+```bash
+# Stage changes
+git add .
+
+# Commit with proper message format
+git commit -m "feat(yolo-tracker): Add player detection inference
+
+Implement detect_players_json() and detect_players_json_with_annotated_frame()
+
+Closes #32"
+```
+
+### 3. Push Branch
+
+```bash
+# Push branch to remote
+git push -u origin feature/my-new-feature
+```
+
+### 4. Create Pull Request
+
+```bash
+# Create PR using gh CLI
+gh pr create --title "feat(yolo-tracker): Add player detection" \
+  --body "## Summary
+
+Add player detection inference module.
+
+## Changes
+
+- Add inference/player_detection.py
+- Add tests for detect_players_json
+- Update manifest.json
+
+## Testing
+
+- All tests pass
+- Ruff lint clean
+- Mypy type check clean
+
+Closes #32" \
+  --label enhancement
+```
+
+### 5. Get Review and Merge
+
+1. Wait for review/approval
+2. Merge PR via GitHub UI or CLI:
+   ```bash
+   gh pr merge --admin --merge
+   ```
+3. Delete branch after merge:
+   ```bash
+   git checkout main && git pull && git branch -d feature/my-new-feature
+   ```
+
+### Branch Naming Conventions
+
+| Type | Prefix | Example |
+|------|--------|---------|
+| Feature | `feature/` | `feature/radar-visualization` |
+| Bug Fix | `fix/` | `fix/memory-leak-detection` |
+| Refactor | `refactor/` | `refactor/plugin-initialization` |
+| Docs | `docs/` | `docs/update-readme` |
+| Experiment | `experiment/` | `experiment/new-tracking-algorithm` |
+
+### PR Title Format
+
+```
+<type>(<scope>): <subject>
+
+- feat(yolo-tracker): Add radar visualization
+- fix(ocr): Fix text extraction bug
+- refactor(moderation): Simplify rule engine
+- docs(readme): Add installation instructions
+```
+
+### When to Create a Branch
+
+**ALWAYS create a branch for:**
+- New features
+- Bug fixes
+- Refactoring changes
+- Documentation updates
+- Test additions
+
+**Direct commits to main are NOT allowed.**
+
+### PR Description Template
+
+```markdown
+## Summary
+
+Brief description of changes.
+
+## Changes
+
+- List of files changed
+- What was modified in each file
+
+## Testing
+
+- Test results
+- Any manual testing done
+
+## Checklist
+
+- [ ] Tests pass
+- [ ] Ruff lint clean
+- [ ] Mypy type check clean
+- [ ] Documentation updated (if applicable)
+
+## Related Issue
+
+Closes #XX
+```
+
 ## TDD Workflow for this Project
 
 ### 1. Test Structure
