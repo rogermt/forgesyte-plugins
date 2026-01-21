@@ -10,10 +10,13 @@ Frame-based JSON tools for football analysis:
 """
 
 import base64
-from typing import Dict, Any
+from typing import Any, Dict
 
 import cv2
 import numpy as np
+import torch
+
+from app.models import AnalysisResult, PluginMetadata
 
 from forgesyte_yolo_tracker.inference.player_detection import (
     detect_players_json,
@@ -167,34 +170,52 @@ def radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Di
     return radar_json(frame, device=device)
 
 
-class YOLOTrackerPlugin:
-    """ForgeSyte plugin entry point for YOLO Tracker.
+class Plugin:
+    """ForgeSyte YOLO Tracker plugin (old interface)."""
 
-    This class provides the standard ForgeSyte plugin interface.
-    Individual tools are available as module-level functions.
-    """
+    name: str = "yolo-tracker"
+    version: str = "0.1.0"
 
-    def __init__(self) -> None:
-        """Initialize the plugin."""
-        pass
-
-    def metadata(self) -> Dict[str, Any]:
+    def metadata(self) -> PluginMetadata:
         """Return plugin metadata."""
-        return {
-            "name": "forgesyte-yolo-tracker",
-            "version": "0.1.0",
-            "description": "YOLO-based football analysis plugin",
-            "license": "MIT",
-            "config_schema": {
+        return PluginMetadata(
+            name=self.name,
+            description="YOLO-based football analysis plugin",
+            version=self.version,
+            inputs=["image"],
+            outputs=["json"],
+            config_schema={
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
                 "confidence": {"type": "number", "default": 0.25},
             },
-        }
+        )
 
-    def analyze(self, image_data: bytes, **kwargs: Any) -> Dict[str, Any]:
-        """Legacy analyze method."""
-        import base64
+    def analyze(self, image_data: bytes, options: Dict[str, Any] | None = None) -> AnalysisResult:
+        """Legacy analyze method — defaults to player detection."""
+        if torch.cuda.is_available():
+            device = "cuda"
+        else:
+            device = "cpu"
 
-        frame_base64 = base64.b64encode(image_data).decode("utf-8")
-        return player_detection(frame_base64, device="cpu")
+        frame_b64 = base64.b64encode(image_data).decode("utf-8")
+        frame = _decode_frame_base64(frame_b64)
+
+        result = detect_players_json(frame, device=device)
+
+        return AnalysisResult(
+            text="",
+            blocks=[],
+            confidence=1.0,
+            language=None,
+            error=None,
+            extra=result,
+        )
+
+    def on_load(self) -> None:
+        """Called when plugin is loaded."""
+        print("YOLO Tracker plugin loaded")
+
+    def on_unload(self) -> None:
+        """Called when plugin is unloaded."""
+        print("YOLO Tracker plugin unloaded")
