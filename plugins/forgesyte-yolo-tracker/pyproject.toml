@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.entry-points."forgesyte.plugins"]
-yolo-tracker = "forgesyte_yolo_tracker.plugin:YOLOTrackerPlugin"
+yolo-tracker = "forgesyte_yolo_tracker.plugin:Plugin"
 
 [tool.setuptools]
 packages = ["forgesyte_yolo_tracker"]
