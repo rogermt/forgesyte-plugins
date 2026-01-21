@@ -1,6 +1,5 @@
 """Tests for player detection inference module."""
 
-import os
 import pytest
 import numpy as np
 from unittest.mock import MagicMock, patch

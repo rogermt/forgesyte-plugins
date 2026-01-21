@@ -1,6 +1,5 @@
 """Tests for pitch detection inference module."""
 
-import os
 import pytest
 import numpy as np
 

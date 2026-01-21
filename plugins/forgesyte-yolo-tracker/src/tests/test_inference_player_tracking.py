@@ -1,6 +1,5 @@
 """Tests for player tracking inference module."""
 
-import os
 import pytest
 import numpy as np
 

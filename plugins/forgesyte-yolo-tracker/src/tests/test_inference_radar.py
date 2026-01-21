@@ -1,6 +1,5 @@
 """Tests for radar inference module."""
 
-import os
 import pytest
 import numpy as np
 
