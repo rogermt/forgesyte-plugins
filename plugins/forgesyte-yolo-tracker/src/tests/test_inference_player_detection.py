@@ -3,19 +3,10 @@
 import os
 import pytest
 import numpy as np
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from tests.constants import RUN_MODEL_TESTS, MODELS_EXIST
 
-RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
-
-MODEL_PATH = (
-    Path(__file__).parents[2]
-    / "forgesyte_yolo_tracker"
-    / "models"
-    / "football-player-detection-v3.pt"
-)
-MODELS_EXIST = MODEL_PATH.exists()
 
 pytestmark = pytest.mark.skipif(
     not RUN_MODEL_TESTS or not MODELS_EXIST,
