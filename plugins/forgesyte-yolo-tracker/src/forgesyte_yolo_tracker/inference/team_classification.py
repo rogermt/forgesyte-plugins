@@ -8,6 +8,7 @@ Team classification uses on-the-fly clustering (collect crops → UMAP → KMean
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import cv2
@@ -15,15 +16,16 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 from forgesyte_yolo_tracker.utils import TeamClassifier
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
+MODEL_NAME = get_model_path("player_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+DEFAULT_CONFIDENCE = get_confidence("player")
 
 TEAM_A_COLOR = sv.Color.from_hex("#00BFFF")  # DeepSkyBlue
 TEAM_B_COLOR = sv.Color.from_hex("#FF1493")  # DeepPink
 GK_COLOR = sv.Color.from_hex("#FFD700")  # Gold
-
-DEFAULT_CONFIDENCE = 0.25
 
 _model: Optional[YOLO] = None
 _team_classifier: Optional[TeamClassifier] = None

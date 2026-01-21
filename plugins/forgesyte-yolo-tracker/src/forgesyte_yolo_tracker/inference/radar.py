@@ -8,6 +8,7 @@ Radar uses ViewTransformer to map frame coordinates to pitch coordinates.
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import cv2
@@ -16,11 +17,14 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 from forgesyte_yolo_tracker.utils import ViewTransformer
 
-PLAYER_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
-PITCH_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-pitch-detection-v1.pt"
-CONFIG = SoccerPitchConfiguration()
+PLAYER_MODEL_NAME = get_model_path("player_detection")
+PLAYER_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PLAYER_MODEL_NAME)
+PITCH_MODEL_NAME = get_model_path("pitch_detection")
+PITCH_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PITCH_MODEL_NAME)
+DEFAULT_CONFIDENCE = get_confidence("pitch")
 
 TEAM_A_COLOR = (0, 191, 255)  # DeepSkyBlue BGR
 TEAM_B_COLOR = (255, 20, 147)  # DeepPink BGR
@@ -32,6 +36,7 @@ DEFAULT_CONFIDENCE = 0.25
 _player_model: Optional[YOLO] = None
 _pitch_model: Optional[YOLO] = None
 _view_transformer: Optional[ViewTransformer] = None
+CONFIG = SoccerPitchConfiguration()
 
 
 def get_player_detection_model(device: str = "cpu") -> YOLO:

@@ -6,6 +6,7 @@ Provides JSON and JSON+Base64 modes for player tracking with ByteTrack:
 """
 
 import base64
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
 import cv2
@@ -14,13 +15,15 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
+MODEL_NAME = get_model_path("player_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
+DEFAULT_CONFIDENCE = get_confidence("player")
 
 CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}
 TRACK_COLORS = sv.ColorPalette.from_hex(["#00BFFF", "#FFD700", "#FF6347"])
-DEFAULT_CONFIDENCE = 0.25
 DEFAULT_NMS = 0.45
 
 _model: Optional[YOLO] = None

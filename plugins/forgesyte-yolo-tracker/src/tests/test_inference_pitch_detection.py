@@ -48,16 +48,16 @@ class TestPitchDetectionJSON:
 
 
 class TestPitchDetectionJSONWithAnnotated:
-    """Tests for detect_pitch_json_with_annotated function."""
+    """Tests for detect_pitch_json_with_annotated_frame function."""
 
     def test_returns_annotated_frame_base64(self) -> None:
         """Verify returns base64 encoded annotated frame."""
         from forgesyte_yolo_tracker.inference.pitch_detection import (
-            detect_pitch_json_with_annotated,
+            detect_pitch_json_with_annotated_frame,
         )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
-        result = detect_pitch_json_with_annotated(frame, device="cpu")
+        result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
 
         assert "annotated_frame_base64" in result
         assert isinstance(result["annotated_frame_base64"], str)
