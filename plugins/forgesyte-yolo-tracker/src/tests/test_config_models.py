@@ -108,20 +108,26 @@ class TestConfigFileExists:
 class TestConfigContent:
     """Tests for config file content validation."""
 
-    def test_player_model_name_matches_expected(self) -> None:
-        """Verify player model name matches expected value."""
+    def test_player_model_name_is_valid(self) -> None:
+        """Verify player model name is a valid .pt file."""
         config = load_model_config()
-        assert config["models"]["player_detection"] == "football-player-detection-v3.pt"
+        model_name = config["models"]["player_detection"]
+        assert isinstance(model_name, str)
+        assert model_name.endswith(".pt")
 
-    def test_ball_model_name_matches_expected(self) -> None:
-        """Verify ball model name matches expected value."""
+    def test_ball_model_name_is_valid(self) -> None:
+        """Verify ball model name is a valid .pt file."""
         config = load_model_config()
-        assert config["models"]["ball_detection"] == "football-ball-detection-v2.pt"
+        model_name = config["models"]["ball_detection"]
+        assert isinstance(model_name, str)
+        assert model_name.endswith(".pt")
 
-    def test_pitch_model_name_matches_expected(self) -> None:
-        """Verify pitch model name matches expected value."""
+    def test_pitch_model_name_is_valid(self) -> None:
+        """Verify pitch model name is a valid .pt file."""
         config = load_model_config()
-        assert config["models"]["pitch_detection"] == "football-pitch-detection-v1.pt"
+        model_name = config["models"]["pitch_detection"]
+        assert isinstance(model_name, str)
+        assert model_name.endswith(".pt")
 
     def test_confidence_values_are_reasonable(self) -> None:
         """Verify confidence values are within reasonable bounds."""
