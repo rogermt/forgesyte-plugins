@@ -57,26 +57,6 @@ class ImageSize(BaseModel):  # type: ignore[misc]
     height: int
 
 
-class OCRResponse(BaseModel):  # type: ignore[misc]
-    """OCR analysis response with validated data.
-
-    Attributes:
-        text: Full extracted text
-        blocks: List of detected text blocks with positions
-        confidence: Average confidence score across blocks
-        language: Language used for OCR
-        image_size: Dimensions of input image
-        error: Error message if analysis failed, None on success
-    """
-
-    text: str
-    blocks: list[TextBlock]
-    confidence: float
-    language: Optional[str] = None
-    image_size: Optional[ImageSize] = None
-    error: Optional[str] = None
-
-
 class Plugin:
     """OCR plugin for text extraction from images using Tesseract.
 

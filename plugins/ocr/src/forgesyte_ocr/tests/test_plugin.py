@@ -16,7 +16,7 @@ from unittest.mock import patch
 import pytest
 from PIL import Image
 
-from forgesyte_ocr.plugin import ImageSize, OCRResponse, Plugin, TextBlock
+from forgesyte_ocr.plugin import ImageSize, Plugin, TextBlock
 
 
 class TestOCRPlugin:
@@ -303,48 +303,6 @@ class TestOCRPlugin:
         assert size.width == 100
         assert size.height == 200
 
-    def test_ocr_response_model_validation(self, sample_image_bytes: bytes) -> None:
-        """Test OCRResponse Pydantic model validates."""
-        block = TextBlock(
-            text="test",
-            confidence=90.0,
-            bbox={"x": 0, "y": 0, "width": 50, "height": 20},
-            level=4,
-            block_num=1,
-            line_num=1,
-        )
-        size = ImageSize(width=100, height=100)
-
-        response = OCRResponse(
-            text="test output",
-            blocks=[block],
-            confidence=90.0,
-            language="eng",
-            image_size=size,
-            error=None,
-        )
-
-        assert response.text == "test output"
-        assert len(response.blocks) == 1
-        assert response.language == "eng"
-        assert response.error is None
-
-    def test_ocr_response_serialization(self) -> None:
-        """Test OCRResponse can be serialized."""
-        response = OCRResponse(
-            text="test",
-            blocks=[],
-            confidence=0.0,
-            language="eng",
-            image_size=ImageSize(width=100, height=100),
-            error=None,
-        )
-
-        data = response.model_dump()
-        assert data["text"] == "test"
-        assert data["language"] == "eng"
-        assert data["image_size"]["width"] == 100
-
     # Integration tests
     @patch("forgesyte_ocr.plugin.pytesseract")
     @patch("forgesyte_ocr.plugin.HAS_TESSERACT", True)
@@ -436,7 +394,7 @@ class TestOCRPlugin:
         sample_image_bytes: bytes,
     ) -> None:
         """Test OCR extracts specific expected text from test image.
-        
+
         Verifies extraction of known text patterns without LLM judgment.
         """
         # Simulate OCR output from gemini-cli test image
@@ -499,7 +457,7 @@ class TestOCRPlugin:
         sample_image_bytes: bytes,
     ) -> None:
         """Test OCR maintains acceptable confidence threshold (>80%).
-        
+
         Verifies extracted text meets quality standards without LLM judgment.
         """
         mock_tesseract.image_to_string.return_value = "test output"
@@ -534,6 +492,4 @@ class TestOCRPlugin:
         confidence = call_kwargs["confidence"]
 
         # Average: (92 + 88 + 85) / 3 / 100 = 0.8833...
-        assert confidence > 0.80, (
-            f"Confidence {confidence} below 80% threshold"
-        )
+        assert confidence > 0.80, f"Confidence {confidence} below 80% threshold"
