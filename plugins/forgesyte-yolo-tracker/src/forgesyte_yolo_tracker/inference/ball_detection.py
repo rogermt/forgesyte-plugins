@@ -54,9 +54,10 @@ def detect_ball_json(
 
     Returns:
         Dictionary with:
-        - detections: List of ball detections
-        - ball: Primary ball detection (or None)
+        - detections: List of ball detections with xyxy, confidence
+        - ball: Primary ball detection (highest confidence, or None)
         - ball_detected: Boolean indicating if ball was found
+        - count: Total number of detections
     """
     model = get_ball_detection_model(device=device)
     result = model(frame, imgsz=640, conf=confidence, verbose=False)[0]
@@ -82,6 +83,7 @@ def detect_ball_json(
         "detections": detection_list,
         "ball": primary_ball,
         "ball_detected": primary_ball is not None,
+        "count": len(detection_list),
     }
 
 
@@ -98,7 +100,7 @@ def detect_ball_json_with_annotated_frame(
         confidence: Detection confidence threshold
 
     Returns:
-        Dictionary with detections, ball, and annotated_frame_base64
+        Dictionary with detections, ball, ball_detected, count, and annotated_frame_base64
     """
     model = get_ball_detection_model(device=device)
     result = model(frame, imgsz=640, conf=confidence, verbose=False)[0]
@@ -130,6 +132,7 @@ def detect_ball_json_with_annotated_frame(
         "detections": detection_list,
         "ball": primary_ball,
         "ball_detected": primary_ball is not None,
+        "count": len(detection_list),
         "annotated_frame_base64": _encode_frame_to_base64(annotated),
     }
 
