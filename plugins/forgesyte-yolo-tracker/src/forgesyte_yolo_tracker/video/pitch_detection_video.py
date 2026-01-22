@@ -17,7 +17,7 @@ from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.configs import get_model_path
 
 MODEL_NAME = get_model_path("pitch_detection")
-MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
 
 PITCH_COLOR = sv.Color.from_hex("#00FF00")

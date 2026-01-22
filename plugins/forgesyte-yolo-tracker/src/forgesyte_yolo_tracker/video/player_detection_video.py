@@ -16,7 +16,7 @@ from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.configs import get_model_path
 
 MODEL_NAME = get_model_path("player_detection")
-MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
 
 CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}

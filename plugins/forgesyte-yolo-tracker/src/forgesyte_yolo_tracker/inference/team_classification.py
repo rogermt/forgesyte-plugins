@@ -20,7 +20,7 @@ from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 from forgesyte_yolo_tracker.utils import TeamClassifier
 
 MODEL_NAME = get_model_path("player_detection")
-MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 DEFAULT_CONFIDENCE = get_confidence("player")
 
 TEAM_A_COLOR = sv.Color.from_hex("#00BFFF")  # DeepSkyBlue
