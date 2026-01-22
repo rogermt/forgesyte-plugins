@@ -5,6 +5,7 @@ Roboflow-style full video processing:
 - run_radar_video_frames(): Generator yielding frames with radar
 """
 
+from pathlib import Path
 from typing import Iterator, Optional, Tuple
 
 import cv2
@@ -14,9 +15,12 @@ from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.utils import ViewTransformer
+from forgesyte_yolo_tracker.configs import get_model_path
 
-PLAYER_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-player-detection-v3.pt"
-PITCH_MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-pitch-detection-v1.pt"
+PLAYER_MODEL_NAME = get_model_path("player_detection")
+PLAYER_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PLAYER_MODEL_NAME)
+PITCH_MODEL_NAME = get_model_path("pitch_detection")
+PITCH_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PITCH_MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
 
 TEAM_A_COLOR = (0, 191, 255)

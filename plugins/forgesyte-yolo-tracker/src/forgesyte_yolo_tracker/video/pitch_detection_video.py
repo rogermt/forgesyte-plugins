@@ -5,6 +5,7 @@ Roboflow-style full video processing:
 - run_pitch_detection_video_frames(): Generator yielding annotated frames
 """
 
+from pathlib import Path
 from typing import Iterator, Optional
 
 import cv2
@@ -13,8 +14,10 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.configs import get_model_path
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-pitch-detection-v1.pt"
+MODEL_NAME = get_model_path("pitch_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
 CONFIG = SoccerPitchConfiguration()
 
 PITCH_COLOR = sv.Color.from_hex("#00FF00")

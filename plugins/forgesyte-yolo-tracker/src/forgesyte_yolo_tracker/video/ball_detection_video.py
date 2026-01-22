@@ -5,13 +5,17 @@ Roboflow-style full video processing:
 - run_ball_detection_video_frames(): Generator yielding annotated frames
 """
 
+from pathlib import Path
 from typing import Iterator, Optional
 
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-MODEL_PATH = "src/forgesyte_yolo_tracker/models/football-ball-detection-v2.pt"
+from forgesyte_yolo_tracker.configs import get_model_path
+
+MODEL_NAME = get_model_path("ball_detection")
+MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
 BALL_COLOR = sv.Color.from_hex("#FF6347")
 DEFAULT_CONFIDENCE = 0.20
 
