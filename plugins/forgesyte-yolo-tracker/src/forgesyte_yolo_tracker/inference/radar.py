@@ -21,9 +21,9 @@ from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 from forgesyte_yolo_tracker.utils import ViewTransformer
 
 PLAYER_MODEL_NAME = get_model_path("player_detection")
-PLAYER_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PLAYER_MODEL_NAME)
+PLAYER_MODEL_PATH = str(Path(__file__).parent.parent / "models" / PLAYER_MODEL_NAME)
 PITCH_MODEL_NAME = get_model_path("pitch_detection")
-PITCH_MODEL_PATH = str(Path(__file__).parents[2] / "models" / PITCH_MODEL_NAME)
+PITCH_MODEL_PATH = str(Path(__file__).parent.parent / "models" / PITCH_MODEL_NAME)
 DEFAULT_CONFIDENCE = get_confidence("pitch")
 
 TEAM_A_COLOR = (0, 191, 255)  # DeepSkyBlue BGR

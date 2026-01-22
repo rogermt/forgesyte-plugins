@@ -15,7 +15,7 @@ from ultralytics import YOLO
 from forgesyte_yolo_tracker.configs import get_model_path
 
 MODEL_NAME = get_model_path("ball_detection")
-MODEL_PATH = str(Path(__file__).parents[2] / "models" / MODEL_NAME)
+MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 BALL_COLOR = sv.Color.from_hex("#FF6347")
 DEFAULT_CONFIDENCE = 0.20
 
