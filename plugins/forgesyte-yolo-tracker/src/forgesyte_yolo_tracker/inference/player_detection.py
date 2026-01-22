@@ -143,16 +143,16 @@ def detect_players_json(
         )
 
         if class_name in class_counts:
-             class_counts[class_name] += 1
+            class_counts[class_name] += 1
 
-        logger.info(f"✅ Detection complete: {len(detection_list)} players found")
-        logger.debug(f"✅ Class breakdown: {class_counts}")
-        
-        return {
+    logger.info(f"✅ Detection complete: {len(detection_list)} players found")
+    logger.info(f"✅ Class breakdown: {class_counts}")
+    
+    return {
         "detections": detection_list,
         "count": len(detection_list),
         "classes": class_counts,
-        }
+    }
 
 
 def detect_players_json_with_annotated_frame(
