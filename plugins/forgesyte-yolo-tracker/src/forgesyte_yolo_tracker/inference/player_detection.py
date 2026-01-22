@@ -29,11 +29,12 @@ CONFIG = SoccerPitchConfiguration()
 DEFAULT_CONFIDENCE = get_confidence("player")
 logger.debug(f"🔍 Default confidence threshold: {DEFAULT_CONFIDENCE}")
 
-CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}
+CLASS_NAMES = {0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"}
 TEAM_COLORS = {
-    0: "#00BFFF",  # Team A: DeepSkyBlue
+    0: "#FFFFFF",  # Ball: White
     1: "#FFD700",  # Goalkeeper: Gold
-    2: "#FF6347",  # Referee: Tomato
+    2: "#00BFFF",  # Player: DeepSkyBlue
+    3: "#FF6347",  # Referee: Tomato
 }
 DEFAULT_NMS = 0.45
 
@@ -125,7 +126,7 @@ def detect_players_json(
     logger.info(f"📊 Found {len(detections)} detections")
 
     detection_list = []
-    class_counts = {"player": 0, "goalkeeper": 0, "referee": 0}
+    class_counts = {"ball": 0, "goalkeeper": 0, "player": 0, "referee": 0}
 
     for i in range(len(detections)):
         xyxy = detections.xyxy[i]
@@ -145,7 +146,7 @@ def detect_players_json(
         if class_name in class_counts:
             class_counts[class_name] += 1
 
-    logger.info(f"✅ Detection complete: {len(detection_list)} players found")
+    logger.info(f"✅ Detection complete: {len(detection_list)} objects found")
     logger.info(f"✅ Class breakdown: {class_counts}")
     
     return {
@@ -179,7 +180,7 @@ def detect_players_json_with_annotated_frame(
     detections = sv.Detections.from_ultralytics(result)
 
     detection_list = []
-    class_counts = {"player": 0, "goalkeeper": 0, "referee": 0}
+    class_counts = {"ball": 0, "goalkeeper": 0, "player": 0, "referee": 0}
 
     for i in range(len(detections)):
         xyxy = detections.xyxy[i]
