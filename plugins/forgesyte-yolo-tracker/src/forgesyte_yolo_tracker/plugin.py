@@ -42,6 +42,7 @@ from forgesyte_yolo_tracker.inference.team_classification import (
     classify_teams_json,
     classify_teams_json_with_annotated_frame,
 )
+from forgesyte_yolo_tracker.configs import get_default_detections
 
 
 def _decode_frame_base64(frame_b64: str) -> np.ndarray:
@@ -216,8 +217,11 @@ class Plugin:
         else:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
-        # Determine which detections to run (default: all three)
-        requested_detections = options.get("detections", ["players", "ball", "pitch"])
+        # Determine which detections to run (from config or options override)
+        if "detections" in options:
+            requested_detections = options["detections"]
+        else:
+            requested_detections = get_default_detections()
         
         frame_b64 = base64.b64encode(image_data).decode("utf-8")
         frame = _decode_frame_base64(frame_b64)

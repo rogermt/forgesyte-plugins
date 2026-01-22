@@ -15,3 +15,10 @@ confidence:
 
 # Default device for inference
 device: "cuda"
+
+# Default detections to run in analyze()
+# Enable/disable each detection type. Set to true/false to control which run.
+default_detections:
+  players: true
+  ball: true
+  pitch: true

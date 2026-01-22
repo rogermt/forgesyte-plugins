@@ -10,6 +10,7 @@ __all__ = [
     "load_model_config",
     "get_model_path",
     "get_confidence",
+    "get_default_detections",
     "MODEL_CONFIG_PATH",
 ]
 
@@ -29,6 +30,11 @@ DEFAULT_MODEL_CONFIG: Dict[str, Any] = {
         "pitch": 0.25,
     },
     "device": "cpu",
+    "default_detections": {
+        "players": True,
+        "ball": True,
+        "pitch": True,
+    },
 }
 
 
@@ -62,6 +68,8 @@ def load_model_config(config_path: Path = MODEL_CONFIG_PATH) -> Dict[str, Any]:
         merged["confidence"].update(config["confidence"])
     if "device" in config:
         merged["device"] = config["device"]
+    if "default_detections" in config:
+        merged["default_detections"] = config["default_detections"]
 
     return merged
 
@@ -96,3 +104,18 @@ def get_confidence(task: str) -> float:
     """
     config = load_model_config()
     return config["confidence"][task]
+
+
+def get_default_detections() -> list:
+    """Get list of detections enabled in config.
+
+    Returns:
+        List of detection types to run (e.g., ['players', 'pitch']).
+    """
+    config = load_model_config()
+    detections_config = config.get(
+        "default_detections",
+        {"players": True, "ball": True, "pitch": True},
+    )
+    # Convert dict {name: bool} to list of enabled names
+    return [name for name, enabled in detections_config.items() if enabled]
