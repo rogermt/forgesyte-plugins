@@ -6,6 +6,7 @@ Provides JSON and JSON+Base64 modes for player detection:
 """
 
 import base64
+import logging
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -17,10 +18,16 @@ from ultralytics import YOLO
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 
+logger = logging.getLogger(__name__)
+
 MODEL_NAME = get_model_path("player_detection")
 MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
+logger.debug(f"🔍 Player detection model: {MODEL_NAME}")
+logger.debug(f"🔍 Model path: {MODEL_PATH}")
+
 CONFIG = SoccerPitchConfiguration()
 DEFAULT_CONFIDENCE = get_confidence("player")
+logger.debug(f"🔍 Default confidence threshold: {DEFAULT_CONFIDENCE}")
 
 CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}
 TEAM_COLORS = {
@@ -44,7 +51,14 @@ def get_player_detection_model(device: str = "cpu") -> YOLO:
     """
     global _model
     if _model is None:
+        logger.info(f"📦 Loading player detection model from: {MODEL_PATH}")
+        model_file = Path(MODEL_PATH)
+        model_size_kb = model_file.stat().st_size / 1024 if model_file.exists() else 0
+        logger.info(f"📦 Model file size: {model_size_kb:.2f} KB")
+        if model_size_kb < 1:
+            logger.warning(f"⚠️  Model is a stub ({model_size_kb:.2f} KB)! Replace with real model.")
         _model = YOLO(MODEL_PATH).to(device=device)
+        logger.info(f"✅ Model loaded successfully on device: {device}")
     return _model
 
 
@@ -99,9 +113,16 @@ def detect_players_json(
         - count: Total number of detections
         - classes: Dict of class_name -> count
     """
+    logger.info(f"🎬 Starting player detection (device={device}, confidence={confidence})")
+    logger.debug(f"🎬 Frame shape: {frame.shape}")
+    
     model = get_player_detection_model(device=device)
+    logger.info(f"🔫 Running YOLO inference...")
     result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
+    logger.info(f"🔫 Inference complete. Processing results...")
+    
     detections = sv.Detections.from_ultralytics(result)
+    logger.info(f"📊 Found {len(detections)} detections")
 
     detection_list = []
     class_counts = {"player": 0, "goalkeeper": 0, "referee": 0}
@@ -122,13 +143,16 @@ def detect_players_json(
         )
 
         if class_name in class_counts:
-            class_counts[class_name] += 1
+             class_counts[class_name] += 1
 
-    return {
+        logger.info(f"✅ Detection complete: {len(detection_list)} players found")
+        logger.debug(f"✅ Class breakdown: {class_counts}")
+        
+        return {
         "detections": detection_list,
         "count": len(detection_list),
         "classes": class_counts,
-    }
+        }
 
 
 def detect_players_json_with_annotated_frame(
