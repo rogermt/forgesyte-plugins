@@ -18,6 +18,14 @@ import torch
 
 from app.models import AnalysisResult, PluginMetadata
 
+from forgesyte_yolo_tracker.inference.ball_detection import (
+    detect_ball_json,
+    detect_ball_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.pitch_detection import (
+    detect_pitch_json,
+    detect_pitch_json_with_annotated_frame,
+)
 from forgesyte_yolo_tracker.inference.player_detection import (
     detect_players_json,
     detect_players_json_with_annotated_frame,
@@ -26,21 +34,13 @@ from forgesyte_yolo_tracker.inference.player_tracking import (
     track_players_json,
     track_players_json_with_annotated_frame,
 )
-from forgesyte_yolo_tracker.inference.ball_detection import (
-    detect_ball_json,
-    detect_ball_json_with_annotated_frame,
+from forgesyte_yolo_tracker.inference.radar import (
+    generate_radar_json as radar_json,
+    radar_json_with_annotated_frame,
 )
 from forgesyte_yolo_tracker.inference.team_classification import (
     classify_teams_json,
     classify_teams_json_with_annotated_frame,
-)
-from forgesyte_yolo_tracker.inference.pitch_detection import (
-    detect_pitch_json,
-    detect_pitch_json_with_annotated_frame,
-)
-from forgesyte_yolo_tracker.inference.radar import (
-    generate_radar_json as radar_json,
-    radar_json_with_annotated_frame,
 )
 
 
@@ -192,16 +192,47 @@ class Plugin:
         )
 
     def analyze(self, image_data: bytes, options: Dict[str, Any] | None = None) -> AnalysisResult:
-        """Legacy analyze method — defaults to player detection."""
-        if torch.cuda.is_available():
-            device = "cuda"
-        else:
-            device = "cpu"
+        """Analyze image with configurable detections: players, ball, pitch.
 
+        Args:
+            image_data: Raw image bytes
+            options: Optional dict with:
+                - detections: list of detection types to run (default: ["players", "ball", "pitch"])
+                  Valid values: "players", "ball", "pitch"
+                - device: "cpu" or "cuda" (default: auto-detect)
+
+        Example:
+            # Run only players and pitch
+            options = {"detections": ["players", "pitch"]}
+
+            # Run all (default)
+            options = {"detections": ["players", "ball", "pitch"]}
+        """
+        options = options or {}
+        
+        # Determine device
+        if "device" in options:
+            device = options["device"]
+        else:
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+
+        # Determine which detections to run (default: all three)
+        requested_detections = options.get("detections", ["players", "ball", "pitch"])
+        
         frame_b64 = base64.b64encode(image_data).decode("utf-8")
         frame = _decode_frame_base64(frame_b64)
 
-        result = detect_players_json(frame, device=device)
+        combined = {}
+
+        # Run requested detections
+        if "players" in requested_detections:
+            combined["players"] = detect_players_json(frame, device=device)
+        
+        if "ball" in requested_detections:
+            combined["ball"] = detect_ball_json(frame, device=device)
+        
+        if "pitch" in requested_detections:
+            combined["pitch"] = detect_pitch_json(frame, device=device)
 
         return AnalysisResult(
             text="",
@@ -209,7 +240,7 @@ class Plugin:
             confidence=1.0,
             language=None,
             error=None,
-            extra=result,
+            extra=combined,
         )
 
     def on_load(self) -> None:
