@@ -33,6 +33,8 @@ dev = [
     "black==24.1.1",
     "ruff==0.9.1",
     "mypy==1.14.0",
+    "types-PyYAML>=6.0",
+    "types-tqdm>=4.65",
 ]
 
 [project.entry-points."forgesyte.plugins"]
