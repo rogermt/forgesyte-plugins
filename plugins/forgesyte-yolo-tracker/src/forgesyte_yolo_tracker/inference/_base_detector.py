@@ -20,7 +20,7 @@ import numpy as np
 import supervision as sv
 
 if TYPE_CHECKING:
-    from ultralytics import YOLO
+    pass
 
 logger = logging.getLogger(__name__)
 

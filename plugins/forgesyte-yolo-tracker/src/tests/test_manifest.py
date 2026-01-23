@@ -55,12 +55,13 @@ class TestManifestContent:
             "player_detection",
             "player_tracking",
             "ball_detection",
-            "team_classification",
             "pitch_detection",
             "radar_visualization",
         ]
         for capability in expected_capabilities:
-            assert capability in manifest["capabilities"]
+            assert capability in manifest["capabilities"], (
+                f"Missing capability '{capability}' in manifest"
+            )
 
     def test_manifest_models_structure(self, manifest: dict) -> None:
         """Test models array structure if present."""

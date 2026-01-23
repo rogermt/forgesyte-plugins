@@ -5,11 +5,6 @@ This module tests the generic detection base class that all detectors
 """
 
 import base64
-import logging
-import os
-from pathlib import Path
-from typing import Any, Dict, Optional
-from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest

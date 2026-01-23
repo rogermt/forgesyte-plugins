@@ -1,8 +1,7 @@
 """Test plugin analyze method runs all three detections."""
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 import numpy as np
-import pytest
 
 try:
     from app.models import AnalysisResult
