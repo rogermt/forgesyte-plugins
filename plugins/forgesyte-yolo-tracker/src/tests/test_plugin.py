@@ -6,6 +6,8 @@ Tests cover:
 - Lifecycle hooks (on_load/on_unload)
 - Tool method availability (module-level functions)
 - Error handling
+
+Note: analyze method tests require RUN_MODEL_TESTS=1 (GPU environment)
 """
 
 import io
@@ -15,6 +17,7 @@ import pytest
 from PIL import Image
 
 from forgesyte_yolo_tracker.plugin import Plugin
+from tests.constants import RUN_MODEL_TESTS
 
 
 def make_analysis_result(
@@ -81,6 +84,10 @@ class TestPluginMetadata:
         assert "YOLO" in description or "football" in description.lower()
 
 
+@pytest.mark.skipif(
+    not RUN_MODEL_TESTS,
+    reason="Set RUN_MODEL_TESTS=1 to run (requires YOLO model loading)"
+)
 class TestPluginAnalyze:
     """Test suite for plugin analyze method."""
 
@@ -207,6 +214,10 @@ class TestPluginLifecycle:
         """Test on_unload lifecycle hook executes without error."""
         plugin.on_unload()
 
+    @pytest.mark.skipif(
+        not RUN_MODEL_TESTS,
+        reason="Set RUN_MODEL_TESTS=1 to run (requires YOLO model loading)"
+    )
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_plugin_lifecycle_sequence(

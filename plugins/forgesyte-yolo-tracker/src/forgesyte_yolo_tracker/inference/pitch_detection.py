@@ -22,6 +22,9 @@ logger = logging.getLogger(__name__)
 
 CONFIG = SoccerPitchConfiguration()
 
+# Model path for tests
+MODEL_PATH = str(__import__("pathlib").Path(__file__).parent.parent / "models" / get_model_path("pitch_detection"))
+
 # Pitch detector instance with configuration
 PITCH_DETECTOR = BaseDetector(
     detector_name="pitch",

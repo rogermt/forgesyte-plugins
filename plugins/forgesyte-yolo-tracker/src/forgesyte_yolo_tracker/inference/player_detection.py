@@ -18,19 +18,26 @@ from forgesyte_yolo_tracker.inference._base_detector import BaseDetector
 
 logger = logging.getLogger(__name__)
 
+# Export class names and colors for tests and external use
+CLASS_NAMES = {0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"}
+TEAM_COLORS = {
+    0: "#FFFFFF",  # Ball: White
+    1: "#FFD700",  # Goalkeeper: Gold
+    2: "#00BFFF",  # Player: DeepSkyBlue
+    3: "#FF6347",  # Referee: Tomato
+}
+
+# Model path for tests
+MODEL_PATH = str(__import__("pathlib").Path(__file__).parent.parent / "models" / get_model_path("player_detection"))
+
 # Player detector instance with configuration
 PLAYER_DETECTOR = BaseDetector(
     detector_name="player",
     model_name=get_model_path("player_detection"),
     default_confidence=get_confidence("player"),
     imgsz=1280,
-    class_names={0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"},
-    colors={
-        0: "#FFFFFF",  # Ball: White
-        1: "#FFD700",  # Goalkeeper: Gold
-        2: "#00BFFF",  # Player: DeepSkyBlue
-        3: "#FF6347",  # Referee: Tomato
-    },
+    class_names=CLASS_NAMES,
+    colors=TEAM_COLORS,
 )
 
 

@@ -1,9 +1,13 @@
 """Tests for model file validation.
 
 Ensures model files exist and are not stubs (size > 1KB).
+Stub size tests require RUN_MODEL_TESTS=1 (GPU environment).
 """
 
+import pytest
 from pathlib import Path
+
+from tests.constants import RUN_MODEL_TESTS
 
 
 class TestModelFiles:
@@ -39,6 +43,10 @@ class TestModelFiles:
 
         assert model_file.exists(), f"Pitch model missing: {model_file}"
 
+    @pytest.mark.skipif(
+        not RUN_MODEL_TESTS,
+        reason="Set RUN_MODEL_TESTS=1 to run (requires real models from GPU environment)"
+    )
     def test_player_model_is_not_stub(self) -> None:
         """Verify player model file is not a stub (size > 1KB)."""
         from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
@@ -53,6 +61,10 @@ class TestModelFiles:
             f"Download real model from Roboflow on GPU environment."
         )
 
+    @pytest.mark.skipif(
+        not RUN_MODEL_TESTS,
+        reason="Set RUN_MODEL_TESTS=1 to run (requires real models from GPU environment)"
+    )
     def test_ball_model_is_not_stub(self) -> None:
         """Verify ball model file is not a stub (size > 1KB)."""
         from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
@@ -67,6 +79,10 @@ class TestModelFiles:
             f"Download real model from Roboflow on GPU environment."
         )
 
+    @pytest.mark.skipif(
+        not RUN_MODEL_TESTS,
+        reason="Set RUN_MODEL_TESTS=1 to run (requires real models from GPU environment)"
+    )
     def test_pitch_model_is_not_stub(self) -> None:
         """Verify pitch model file is not a stub (size > 1KB)."""
         from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH

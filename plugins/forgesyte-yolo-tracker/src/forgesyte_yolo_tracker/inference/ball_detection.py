@@ -18,6 +18,9 @@ from forgesyte_yolo_tracker.inference._base_detector import BaseDetector
 
 logger = logging.getLogger(__name__)
 
+# Model path for tests
+MODEL_PATH = str(__import__("pathlib").Path(__file__).parent.parent / "models" / get_model_path("ball_detection"))
+
 # Ball detector instance with configuration
 BALL_DETECTOR = BaseDetector(
     detector_name="ball",

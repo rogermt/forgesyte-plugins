@@ -1,7 +1,13 @@
-"""Test plugin analyze method runs all three detections."""
+"""Test plugin analyze method runs all three detections.
+
+Note: These tests require RUN_MODEL_TESTS=1 (GPU environment).
+"""
 
 from unittest.mock import patch
 import numpy as np
+import pytest
+
+from tests.constants import RUN_MODEL_TESTS
 
 try:
     from app.models import AnalysisResult
@@ -13,6 +19,10 @@ except ImportError:
                 setattr(self, k, v)
 
 
+@pytest.mark.skipif(
+    not RUN_MODEL_TESTS,
+    reason="Set RUN_MODEL_TESTS=1 to run (requires YOLO model loading)"
+)
 class TestPluginAllDetections:
     """Tests for plugin.analyze() returning all three detection types."""
 
