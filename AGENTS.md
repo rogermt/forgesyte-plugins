@@ -473,3 +473,33 @@ Closes #32
 - See `README.md` for plugin documentation
 - See `docs/development/` for general guidelines
 - Check existing tests in `src/tests/` for patterns
+
+---
+
+## Video Tracker Integration (Current)
+
+**Goal:** Integrate YOLO tracker with forgesyte web-ui for real-time video streaming
+
+**Status:** Web-UI integration in progress (see forgesyte/AGENTS.md)
+
+### What This Means for Plugins
+
+✅ **No plugin code changes required** — your plugin is already compatible!
+
+- Manifest is frozen (no changes)
+- Tool functions remain as-is (player_detection, player_tracking, etc.)
+- Frame input/output contracts are stable
+
+### Web-UI Will Do
+- Discover your tools from manifest.json
+- Call `/plugins/{id}/tools/{tool}/run` with base64 frames
+- Render results using generic canvas overlays
+
+### When to Test
+- Week 3: GPU tests on Kaggle with real YOLO models
+- Command: `RUN_MODEL_TESTS=1 pytest tests/integration/` 
+
+### Quick Reference
+- Your tools: player_detection, player_tracking, ball_detection, pitch_detection, radar
+- Your manifest: Defines input/output contracts (don't modify)
+- Your tests: Keep them passing (CPU-only in CI, GPU on Kaggle)
