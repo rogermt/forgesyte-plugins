@@ -41,12 +41,11 @@ class TestModelsDirectoryStructure:
         from forgesyte_yolo_tracker.inference.player_tracking import MODEL_PATH as pt_path
         from forgesyte_yolo_tracker.inference.ball_detection import MODEL_PATH as bd_path
         from forgesyte_yolo_tracker.inference.pitch_detection import MODEL_PATH as pit_path
-        from forgesyte_yolo_tracker.inference.team_classification import MODEL_PATH as tc_path
         from forgesyte_yolo_tracker.inference.radar import PLAYER_MODEL_PATH as r_player
         from forgesyte_yolo_tracker.inference.radar import PITCH_MODEL_PATH as r_pitch
 
         # All should contain "forgesyte_yolo_tracker/models"
-        paths = [pd_path, pt_path, bd_path, pit_path, tc_path, r_player, r_pitch]
+        paths = [pd_path, pt_path, bd_path, pit_path, r_player, r_pitch]
         for path in paths:
             assert "forgesyte_yolo_tracker" in path, (
                 f"Path should contain 'forgesyte_yolo_tracker': {path}"
@@ -63,12 +62,11 @@ class TestModelsDirectoryStructure:
         from forgesyte_yolo_tracker.video.player_tracking_video import MODEL_PATH as pt_path
         from forgesyte_yolo_tracker.video.ball_detection_video import MODEL_PATH as bd_path
         from forgesyte_yolo_tracker.video.pitch_detection_video import MODEL_PATH as pit_path
-        from forgesyte_yolo_tracker.video.team_classification_video import MODEL_PATH as tc_path
         from forgesyte_yolo_tracker.video.radar_video import PLAYER_MODEL_PATH as r_player
         from forgesyte_yolo_tracker.video.radar_video import PITCH_MODEL_PATH as r_pitch
 
         # All should contain "forgesyte_yolo_tracker/models"
-        paths = [pd_path, pt_path, bd_path, pit_path, tc_path, r_player, r_pitch]
+        paths = [pd_path, pt_path, bd_path, pit_path, r_player, r_pitch]
         for path in paths:
             assert "forgesyte_yolo_tracker" in path, (
                 f"Path should contain 'forgesyte_yolo_tracker': {path}"

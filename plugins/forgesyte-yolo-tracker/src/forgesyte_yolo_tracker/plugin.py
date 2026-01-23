@@ -4,7 +4,6 @@ Frame-based JSON tools for football analysis:
 - player_detection
 - player_tracking
 - ball_detection
-- team_classification
 - pitch_detection
 - radar
 """
@@ -37,10 +36,6 @@ from forgesyte_yolo_tracker.inference.player_tracking import (
 from forgesyte_yolo_tracker.inference.radar import (
     generate_radar_json as radar_json,
     radar_json_with_annotated_frame,
-)
-from forgesyte_yolo_tracker.inference.team_classification import (
-    classify_teams_json,
-    classify_teams_json_with_annotated_frame,
 )
 from forgesyte_yolo_tracker.configs import get_default_detections
 
@@ -114,25 +109,6 @@ def ball_detection(
     if annotated:
         return detect_ball_json_with_annotated_frame(frame, device=device)
     return detect_ball_json(frame, device=device)
-
-
-def team_classification(
-    frame_base64: str, device: str = "cpu", annotated: bool = False
-) -> Dict[str, Any]:
-    """Classify players into teams using SigLIP embeddings + UMAP + KMeans.
-
-    Args:
-        frame_base64: Base64 encoded image
-        device: Device to run model on ('cpu' or 'cuda')
-        annotated: If True, return annotated frame
-
-    Returns:
-        Dictionary with detections, team_ids, team_counts
-    """
-    frame = _decode_frame_base64(frame_base64)
-    if annotated:
-        return classify_teams_json_with_annotated_frame(frame, device=device)
-    return classify_teams_json(frame, device=device)
 
 
 def pitch_detection(

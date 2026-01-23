@@ -1,6 +1,5 @@
 """Test player detection class mapping."""
 
-import pytest
 
 
 class TestClassMapping:
