@@ -1,11 +1,12 @@
 """Pitch detection inference module.
 
 Provides JSON and JSON+Base64 modes for pitch detection:
-- detect_pitch_json(): Returns keypoints and pitch polygon
+- detect_pitch_json(): Returns structured keypoint data
 - detect_pitch_json_with_annotated_frame(): Returns data + annotated frame
 """
 
 import base64
+import logging
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -17,29 +18,55 @@ from ultralytics import YOLO
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.configs import get_model_path, get_confidence
 
+logger = logging.getLogger(__name__)
+
 MODEL_NAME = get_model_path("pitch_detection")
 MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
+logger.debug(f"🔍 Pitch detection model: {MODEL_NAME}")
+logger.debug(f"🔍 Model path: {MODEL_PATH}")
+
 CONFIG = SoccerPitchConfiguration()
 DEFAULT_CONFIDENCE = get_confidence("pitch")
+logger.debug(f"🔍 Default confidence threshold: {DEFAULT_CONFIDENCE}")
 
 PITCH_COLOR = sv.Color.from_hex("#00FF00")
 KEYPOINT_COLOR = sv.Color.from_hex("#FF0000")
-
 DEFAULT_NMS = 0.45
 
 _model: Optional[YOLO] = None
 
 
 def get_pitch_detection_model(device: str = "cpu") -> YOLO:
-    """Get or create cached YOLO model."""
+    """Get or create cached YOLO model.
+
+    Args:
+        device: Device to run model on ('cpu' or 'cuda')
+
+    Returns:
+        YOLO model instance
+    """
     global _model
     if _model is None:
+        logger.info(f"📦 Loading pitch detection model from: {MODEL_PATH}")
+        model_file = Path(MODEL_PATH)
+        model_size_kb = model_file.stat().st_size / 1024 if model_file.exists() else 0
+        logger.info(f"📦 Model file size: {model_size_kb:.2f} KB")
+        if model_size_kb < 1:
+            logger.warning(f"⚠️  Model is a stub ({model_size_kb:.2f} KB)! Replace with real model.")
         _model = YOLO(MODEL_PATH).to(device=device)
+        logger.info(f"✅ Model loaded successfully on device: {device}")
     return _model
 
 
 def _encode_frame_to_base64(frame: np.ndarray) -> str:
-    """Encode frame to base64 JPEG."""
+    """Encode frame to base64 JPEG.
+
+    Args:
+        frame: Input image frame
+
+    Returns:
+        Base64 encoded JPEG string
+    """
     _, buffer = cv2.imencode(".jpg", frame)
     return base64.b64encode(buffer).decode("utf-8")
 
@@ -59,12 +86,18 @@ def detect_pitch_json(
     Returns:
         Dictionary with:
         - keypoints: List of keypoint dicts with xy, confidence, name
+        - count: Total number of keypoints
         - pitch_polygon: List of polygon vertices
-        - pitch_detected: Boolean indicating success
-        - homography: Optional homography matrix for coordinate transform
+        - pitch_detected: Boolean
+        - homography: Optional homography matrix
     """
+    logger.info(f"🎬 Starting pitch detection (device={device}, confidence={confidence})")
+    logger.debug(f"🎬 Frame shape: {frame.shape}")
+    
     model = get_pitch_detection_model(device=device)
+    logger.info(f"🔫 Running YOLO inference...")
     result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
+    logger.info(f"🔫 Inference complete. Processing results...")
 
     keypoint_list = []
     if result.keypoints is not None and result.keypoints.xy is not None:
@@ -84,7 +117,6 @@ def detect_pitch_json(
     pitch_polygon = []
     valid_keypoints = [kp for kp in keypoint_list if kp["confidence"] > confidence * 0.5]
     if len(valid_keypoints) >= 4:
-        # Use first 4 corner keypoints for polygon
         corner_names = [
             "bottom_left_corner",
             "top_left_corner",
@@ -108,8 +140,12 @@ def detect_pitch_json(
         except Exception:
             pass
 
+    logger.info(f"✅ Detection complete: {len(keypoint_list)} keypoints found")
+    logger.info(f"✅ Pitch detected: {len(pitch_polygon) >= 4}")
+    
     return {
         "keypoints": keypoint_list,
+        "count": len(keypoint_list),
         "pitch_polygon": pitch_polygon,
         "pitch_detected": len(pitch_polygon) >= 4,
         "homography": homography,
@@ -129,7 +165,12 @@ def detect_pitch_json_with_annotated_frame(
         confidence: Detection confidence threshold
 
     Returns:
-        Dictionary with keypoints, pitch_polygon, annotated_frame_base64
+        Dictionary with:
+        - keypoints: List of keypoint dicts
+        - count: Total number of keypoints
+        - pitch_polygon: Polygon vertices
+        - pitch_detected: Boolean
+        - annotated_frame_base64: Base64 encoded annotated frame
     """
     model = get_pitch_detection_model(device=device)
     result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
@@ -187,6 +228,7 @@ def detect_pitch_json_with_annotated_frame(
 
     return {
         "keypoints": keypoint_list,
+        "count": len(keypoint_list),
         "pitch_polygon": pitch_polygon,
         "pitch_detected": len(pitch_polygon) >= 4,
         "annotated_frame_base64": _encode_frame_to_base64(annotated),
@@ -194,7 +236,15 @@ def detect_pitch_json_with_annotated_frame(
 
 
 def run_pitch_detection(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
-    """Legacy function for plugin.py compatibility."""
+    """Legacy function for plugin.py compatibility.
+
+    Args:
+        frame: Input image frame
+        config: Configuration dictionary
+
+    Returns:
+        Detection results
+    """
     device = config.get("device", "cpu")
     confidence = config.get("confidence", DEFAULT_CONFIDENCE)
     include_annotated = config.get("include_annotated", False)
