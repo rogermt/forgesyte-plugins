@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: validate-yolo-manifest
+        name: Validate YOLO manifest
+        entry: uv run validate_manifest.py plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/manifest.json
+        language: system
+        files: manifest\.json$
+        pass_filenames: false
+        stages: [commit]
