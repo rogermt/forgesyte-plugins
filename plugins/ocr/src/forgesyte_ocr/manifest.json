@@ -1,0 +1,30 @@
+{
+  "id": "ocr",
+  "name": "ocr",
+  "version": "1.0.0",
+  "description": "Extract text from images using Tesseract OCR with language support and confidence scores.",
+  "author": "Roger",
+  "license": "MIT",
+  "entrypoint": "forgesyte_ocr.plugin",
+  "mode": "image",
+  "capabilities": [
+    "text_extraction"
+  ],
+  "tools": [
+    {
+      "name": "analyze",
+      "description": "Extract text and text blocks from an uploaded image.",
+      "inputs": {
+        "image_base64": "string",
+        "language": "string",
+        "psm": "integer"
+      },
+      "outputs": {
+        "text": "string",
+        "blocks": "array",
+        "confidence": "number",
+        "language": "string"
+      }
+    }
+  ]
+}

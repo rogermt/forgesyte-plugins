@@ -1,0 +1,33 @@
+name: Validate Plugin Manifests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - "**"   # validate on all PRs
+
+jobs:
+  validate-manifests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install validator dependencies
+        run: |
+          pip install --upgrade pip
+
+      - name: Run manifest validator for all plugins
+        run: |
+          echo "Scanning for manifest.json files..."
+          find . -type f -name "manifest.json" | while read manifest; do
+            echo "Validating: $manifest"
+            MANIFEST_PATH="$manifest" python3 validate_manifest.py
+          done
