@@ -97,32 +97,44 @@ class TestPluginAnalyze:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_returns_analysis_result(
         self,
         mock_result: MagicMock,
-        mock_detect: MagicMock,
+        mock_detect_players: MagicMock,
+        mock_detect_ball: MagicMock,
+        mock_detect_pitch: MagicMock,
         plugin: Plugin,
         sample_image_bytes: bytes,
     ) -> None:
         """Test analyze returns AnalysisResult object."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         result = plugin.analyze(sample_image_bytes)
         assert isinstance(result, dict)
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_returns_analysis_result_compatible_dict(
         self,
         mock_result: MagicMock,
-        mock_detect: MagicMock,
+        mock_detect_players: MagicMock,
+        mock_detect_ball: MagicMock,
+        mock_detect_pitch: MagicMock,
         plugin: Plugin,
         sample_image_bytes: bytes,
     ) -> None:
         """Test analyze returns AnalysisResult compatible dictionary with required fields."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         result = plugin.analyze(sample_image_bytes)
 
@@ -130,43 +142,57 @@ class TestPluginAnalyze:
         for field in required_fields:
             assert field in result, f"Missing AnalysisResult field: {field}"
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_with_options(
         self,
         mock_result: MagicMock,
-        mock_detect: MagicMock,
+        mock_detect_players: MagicMock,
+        mock_detect_ball: MagicMock,
+        mock_detect_pitch: MagicMock,
         plugin: Plugin,
         sample_image_bytes: bytes,
     ) -> None:
         """Test analyze accepts options parameter."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         result = plugin.analyze(
             sample_image_bytes, {"confidence_threshold": 0.7, "max_detections": 50}
         )
         assert isinstance(result, dict)
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_handles_invalid_image_gracefully(
-        self, mock_result: MagicMock, mock_detect: MagicMock, plugin: Plugin
+        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
     ) -> None:
         """Test analyze handles invalid image data without crashing."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         result = plugin.analyze(b"invalid image data")
 
         assert isinstance(result, dict)
         assert "error" in result
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_with_grayscale_image(
-        self, mock_result: MagicMock, mock_detect: MagicMock, plugin: Plugin
+        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
     ) -> None:
         """Test analyze can handle grayscale images."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         img = Image.new("L", (640, 480), color=128)
         img_bytes = io.BytesIO()
@@ -175,13 +201,17 @@ class TestPluginAnalyze:
         result = plugin.analyze(img_bytes.getvalue())
         assert isinstance(result, dict)
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_analyze_with_rgba_image(
-        self, mock_result: MagicMock, mock_detect: MagicMock, plugin: Plugin
+        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
     ) -> None:
         """Test analyze can handle RGBA images."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
         img = Image.new("RGBA", (640, 480), color=(255, 255, 255, 255))
         img_bytes = io.BytesIO()
@@ -207,13 +237,17 @@ class TestPluginLifecycle:
         """Test on_unload lifecycle hook executes without error."""
         plugin.on_unload()
 
+    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
+    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
     @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
     @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
     def test_plugin_lifecycle_sequence(
-        self, mock_result: MagicMock, mock_detect: MagicMock, plugin: Plugin
+        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
     ) -> None:
         """Test complete plugin lifecycle: load -> analyze -> unload."""
-        mock_detect.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
+        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
+        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
         mock_result.side_effect = make_analysis_result
 
         img = Image.new("RGB", (640, 480), color="white")

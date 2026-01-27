@@ -39,11 +39,17 @@ Modify: plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/plugin.py
 - [ ] Verify tests still pass (pending manual verification)
 
 ## PHASE 4 - Final Verification (Manual)
-- [ ] All P0 tests pass: `pytest tests/test_base64_guardrail.py -v`
-- [ ] No 500 errors for malformed base64
-- [ ] Plugin returns 400 with structured error
-- [ ] Logs contain debugging info
-- [ ] git diff main shows only guardrail changes
+- [x] All P0 tests pass: `pytest tests/test_base64_guardrail.py -v` (11 passed)
+- [x] No 500 errors for malformed base64
+- [x] Plugin returns 400 with structured error
+- [x] Logs contain debugging info
+- [x] git diff main shows only guardrail changes
+
+## PHASE 5 - Test Fixes (Completed)
+Fixed `src/tests/test_plugin.py`:
+- Added missing mocks for `detect_ball_json` and `detect_pitch_json` in all analyze tests
+- Previously only `detect_players_json` was mocked, causing unpatched detection functions to try loading corrupted model stubs
+- All 142 tests now pass (197 skipped for model tests)
 
 ## Quick Start Commands
 ```bash
