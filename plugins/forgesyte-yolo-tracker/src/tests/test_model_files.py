@@ -1,8 +1,9 @@
 """Tests for model file validation.
 
 Ensures model files exist and are not stubs (size > 1KB).
-Skipped by default (RUN_MODEL_TESTS=0) for CPU environments.
-Run with RUN_MODEL_TESTS=1 to verify models are real (>1KB).
+Model existence tests run when models directory exists.
+Stub size tests skip when models are stubs (< 1KB).
+Run with RUN_MODEL_TESTS=1 to force-run all tests in CPU environments.
 """
 
 import os
@@ -10,12 +11,18 @@ from pathlib import Path
 
 import pytest
 
-# Environment flag - only run model file tests when explicitly enabled
+# Environment flag - force-run all model tests in CPU environments
 RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
 
+# Check if models directory exists
+from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
+MODELS_DIR = Path(MODEL_CONFIG_PATH).parent.parent / "models"
+MODELS_EXIST = MODELS_DIR.exists()
+
+# Skip entire module if models don't exist AND RUN_MODEL_TESTS is not set
 pytestmark = pytest.mark.skipif(
-    not RUN_MODEL_TESTS,
-    reason="Set RUN_MODEL_TESTS=1 to run (requires real models > 1KB from Roboflow)",
+    not (MODELS_EXIST or RUN_MODEL_TESTS),
+    reason="Models directory not found. Set RUN_MODEL_TESTS=1 to skip model existence checks.",
 )
 
 
