@@ -1,6 +1,6 @@
 {
-  "id": "forgesyte-yolo-tracker",
-  "name": "forgesyte-yolo-tracker",
+  "id": "yolo-tracker",
+  "name": "YOLO Tracker",
   "version": "1.0.0",
   "description": "ForgeSyte plugin for football player, ball, pitch, and radar analysis using YOLO + Supervision.",
   "author": "Roger",
