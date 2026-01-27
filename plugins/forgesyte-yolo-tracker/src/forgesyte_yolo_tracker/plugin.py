@@ -356,23 +356,24 @@ class Plugin:
         print("YOLO Tracker plugin unloaded")
 
     # Tool methods - delegate to module functions for MCP tool exposure
-    def player_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    # NOTE: Parameter name must match manifest.json ("frame_base64")
+    def player_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
         """Detect players in a single frame."""
-        return player_detection(frame_b64, device, annotated)
+        return player_detection(frame_base64, device, annotated)
 
-    def player_tracking(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    def player_tracking(self, frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
         """Track players across frames using ByteTrack."""
-        return player_tracking(frame_b64, device, annotated)
+        return player_tracking(frame_base64, device, annotated)
 
-    def ball_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    def ball_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
         """Detect the football in a single frame."""
-        return ball_detection(frame_b64, device, annotated)
+        return ball_detection(frame_base64, device, annotated)
 
-    def pitch_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    def pitch_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
         """Detect pitch keypoints for homography mapping."""
-        return pitch_detection(frame_b64, device, annotated)
+        return pitch_detection(frame_base64, device, annotated)
 
-    def radar(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+    def radar(self, frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
         """Generate radar (bird's-eye) view of player positions."""
-        return radar(frame_b64, device, annotated)
+        return radar(frame_base64, device, annotated)
 

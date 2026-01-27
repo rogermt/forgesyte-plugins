@@ -1,0 +1,156 @@
+# Issue: Manifest ID Mismatch Causes Video Tracker to Fail (Issue #110)
+
+## Summary
+
+Commit 338cd59 introduced a regression that breaks the Yolo Tracker video functionality. The manifest.json ID was changed from `"yolo-tracker"` to `"forgesyte-yolo-tracker"` but `Plugin.name` was not updated to match, causing plugin lookup failures.
+
+## Severity
+
+**Critical** - Video tracker functionality completely broken, returns "Invalid JSON from tool" error.
+
+## Status
+
+- [x] Issue identified
+- [ ] Fix applied
+- [ ] Tests verified
+- [ ] Deployed
+
+---
+
+## Root Cause
+
+### What Changed in Commit 338cd59
+
+```
+commit 338cd59e2bc46223116c7356ea92978215b57976
+Author: Roger Taylor <roger_taylor@ymail.com>
+Date:   Mon Jan 19 11:05:44 2026 +0000
+
+    fix: all tests now passing (74/74) - updated manifest schema and plugin lifecycle hooks
+
+Changed files:
+- plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/manifest.json
+- plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/plugin.py
+- plugins/forgesyte-yolo-tracker/src/tests/test_plugin.py
+```
+
+### The Mismatch
+
+| Component | Value | Status |
+|-----------|-------|--------|
+| **Plugin.name** (plugin.py line 250) | `"yolo-tracker"` | ✅ Correct |
+| **Entry point** (pyproject.toml) | `yolo-tracker = "forgesyte_yolo_tracker.plugin:Plugin"` | ✅ Correct |
+| **Manifest ID** (manifest.json) | `"forgesyte-yolo-tracker"` | ❌ Wrong |
+
+### Current Broken State
+
+**manifest.json** (INCORRECT):
+```json
+{
+  "id": "forgesyte-yolo-tracker",
+  "name": "forgesyte-yolo-tracker"
+}
+```
+
+**plugin.py** (CORRECT but doesn't match):
+```python
+class Plugin:
+    name: str = "yolo-tracker"  # Does NOT match manifest ID
+```
+
+### Why Tests Passed
+
+The unit tests use mocked plugins and don't test the full manifest reading flow, so this regression wasn't caught.
+
+---
+
+## Error Flow
+
+1. User presses PLAY button on video tracker
+2. Frontend sends `pluginId: "yolo-tracker"` to `/v1/plugins/yolo-tracker/tools/player_detection/run`
+3. Backend calls `registry.get("yolo-tracker")` → finds plugin ✅
+4. Backend calls `get_plugin_manifest("yolo-tracker")`
+5. Backend opens `manifest.json` and reads `{"id": "forgesyte-yolo-tracker"}`
+6. **ID MISMATCH DETECTED** → returns error
+7. Error is plain text (not JSON)
+8. Frontend fails to parse: "Invalid JSON from tool"
+
+---
+
+## Fix
+
+### Option A (Recommended): Revert manifest.json to original
+
+Change manifest.json from:
+```json
+{
+  "id": "forgesyte-yolo-tracker",
+  "name": "forgesyte-yolo-tracker"
+}
+```
+
+To:
+```json
+{
+  "id": "yolo-tracker",
+  "name": "YOLO Tracker"
+}
+```
+
+**Why Option A is better:**
+- `Plugin.name = "yolo-tracker"` is already correct
+- Frontend uses `"yolo-tracker"` for API calls
+- Package name is `forgesyte-yolo-tracker` (separate concern - pip package name)
+- Entry point is `yolo-tracker` (correct)
+
+### Option B: Update Plugin.name (Not Recommended)
+
+Would break frontend compatibility.
+
+---
+
+## Files Affected
+
+- `plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/manifest.json`
+
+## Files NOT Affected
+
+- `plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/plugin.py` (already correct)
+- `pyproject.toml` entry points (already correct)
+
+---
+
+## Reproduction Steps
+
+1. Start ForgeSyte server
+2. Open video tracker UI
+3. Select "yolo-tracker" plugin
+4. Press PLAY button
+5. Observe error: "Invalid JSON from tool"
+
+---
+
+## Expected Behavior After Fix
+
+1. Start ForgeSyte server
+2. Open video tracker UI
+3. Select "yolo-tracker" plugin
+4. Press PLAY button
+5. Video frames processed successfully
+6. Player detections returned as JSON
+
+---
+
+## References
+
+- Issue #110: Error: Invalid JSON from tool - Plugin: yolo-tracker
+- Commit 338cd59: fix: all tests now passing (74/74) - updated manifest schema and plugin lifecycle hooks
+- Commit 338cd59^ (parent): Manifest had correct ID "yolo-tracker"
+
+---
+
+## Related Files
+
+- `docs/issues/PLUGIN_COMPARISON_OCR_YOLO.md` - Full comparison document
+- `forgesyte/server/app/services/plugin_management_service.py` - Plugin management service
+- `forgesyte/server/app/api.py` - API endpoints
