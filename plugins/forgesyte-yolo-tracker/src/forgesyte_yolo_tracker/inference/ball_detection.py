@@ -9,6 +9,7 @@ Ball-specific configuration (single object detection) is applied via wrappers.
 """
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -17,6 +18,10 @@ from forgesyte_yolo_tracker.configs import get_confidence, get_model_path
 from forgesyte_yolo_tracker.inference._base_detector import BaseDetector
 
 logger = logging.getLogger(__name__)
+
+# Model path for ball detection (full path for test compatibility)
+MODEL_NAME = get_model_path("ball_detection")
+MODEL_PATH: str = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 
 # Ball detector instance with configuration
 BALL_DETECTOR = BaseDetector(

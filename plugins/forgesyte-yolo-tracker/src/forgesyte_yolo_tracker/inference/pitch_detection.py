@@ -9,6 +9,7 @@ logic to extract keypoints, corners, and homography transformation matrix.
 """
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import cv2
@@ -21,6 +22,10 @@ from forgesyte_yolo_tracker.inference._base_detector import BaseDetector
 logger = logging.getLogger(__name__)
 
 CONFIG = SoccerPitchConfiguration()
+
+# Model path for pitch detection (full path for test compatibility)
+MODEL_NAME = get_model_path("pitch_detection")
+MODEL_PATH: str = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 
 # Pitch detector instance with configuration
 PITCH_DETECTOR = BaseDetector(

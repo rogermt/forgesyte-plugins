@@ -9,6 +9,7 @@ Player-specific configuration is defined once and reused via wrapper functions.
 """
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -29,8 +30,9 @@ TEAM_COLORS: Dict[int, str] = {
     3: "#FF6347",  # Referee: Tomato
 }
 
-# Model path for player detection
-MODEL_PATH: str = get_model_path("player_detection")
+# Model path for player detection (full path for test compatibility)
+MODEL_NAME = get_model_path("player_detection")
+MODEL_PATH: str = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
 
 # Player detector instance with configuration
 PLAYER_DETECTOR = BaseDetector(
