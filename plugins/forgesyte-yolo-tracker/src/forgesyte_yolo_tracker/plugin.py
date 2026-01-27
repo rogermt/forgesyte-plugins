@@ -151,11 +151,21 @@ def player_detection(
     """
     frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
     if error:
+        logger.error(f"Player detection failed: {error}")
         return error
 
-    if annotated:
-        return detect_players_json_with_annotated_frame(frame, device=device)
-    return detect_players_json(frame, device=device)
+    try:
+        if annotated:
+            return detect_players_json_with_annotated_frame(frame, device=device)
+        return detect_players_json(frame, device=device)
+    except Exception as e:
+        logger.error(f"player_detection tool execution failed: {e}", exc_info=True)
+        return {
+            "error": "tool_execution_failed",
+            "message": str(e),
+            "plugin": "yolo-tracker",
+            "tool": "player_detection",
+        }
 
 
 def player_tracking(
