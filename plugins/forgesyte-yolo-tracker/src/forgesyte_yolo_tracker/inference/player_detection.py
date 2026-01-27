@@ -69,7 +69,11 @@ def detect_players_json(
     if confidence is None:
         confidence = PLAYER_DETECTOR.default_confidence
 
-    return PLAYER_DETECTOR.detect_json(frame, device=device, confidence=confidence)
+    try:
+        return PLAYER_DETECTOR.detect_json(frame, device=device, confidence=confidence)
+    except Exception as e:
+        logger.error(f"detect_players_json failed: {e}", exc_info=True)
+        raise
 
 
 def detect_players_json_with_annotated_frame(
