@@ -296,19 +296,35 @@ class Plugin:
         else:
             requested_detections = get_default_detections()
 
-        frame_b64 = base64.b64encode(image_data).decode("utf-8")
-        frame, error = _decode_frame_base64_safe(frame_b64, "analyze")
-        if error:
-            logger.warning(f"Base64 decode failed in analyze: {error}")
-            # Return error result instead of raising exception
-            return AnalysisResult(
-                text="",
-                blocks=[],
-                confidence=0.0,
-                language=None,
-                error=error,
-                extra={},
-            )
+        # Try to decode image_data directly as PNG/JPEG bytes first
+        arr = np.frombuffer(image_data, dtype=np.uint8)
+        frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        
+        if frame is None:
+            # Fallback: try base64 decode (legacy path)
+            try:
+                frame_b64 = base64.b64encode(image_data).decode("utf-8")
+                frame, error = _decode_frame_base64_safe(frame_b64, "analyze")
+                if error:
+                    logger.warning(f"Base64 decode failed in analyze: {error}")
+                    return AnalysisResult(
+                        text="",
+                        blocks=[],
+                        confidence=0.0,
+                        language=None,
+                        error=error,
+                        extra={},
+                    )
+            except Exception as e:
+                logger.warning(f"Image decode failed in analyze: {e}")
+                return AnalysisResult(
+                    text="",
+                    blocks=[],
+                    confidence=0.0,
+                    language=None,
+                    error={"error": "decode_failed", "message": str(e)},
+                    extra={},
+                )
 
         combined = {}
 

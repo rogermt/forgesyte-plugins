@@ -66,22 +66,27 @@ def detect_pitch_json(
 
     keypoint_list: list[Dict[str, Any]] = []
     if result.keypoints is not None and result.keypoints.xy is not None:
-        keypoints_xy = result.keypoints.xy.cpu().numpy()[0]
-        keypoints_conf = (
-            result.keypoints.conf.cpu().numpy()[0]
-            if result.keypoints.conf is not None
-            else None
-        )
+        keypoints_data = result.keypoints.xy.cpu().numpy()
+        # Guard against empty keypoints array
+        if keypoints_data.size == 0 or len(keypoints_data) == 0:
+            logger.info("No keypoints detected in frame")
+        else:
+            keypoints_xy = keypoints_data[0]
+            keypoints_conf = (
+                result.keypoints.conf.cpu().numpy()[0]
+                if result.keypoints.conf is not None and result.keypoints.conf.numel() > 0
+                else None
+            )
 
-        for i, (x, y) in enumerate(keypoints_xy):
-            kp: Dict[str, Any] = {
-                "xy": [float(x), float(y)],
-                "confidence": (
-                    float(keypoints_conf[i]) if keypoints_conf is not None else 1.0
-                ),
-                "name": CONFIG.keypoint_names.get(i, f"keypoint_{i}"),
-            }
-            keypoint_list.append(kp)
+            for i, (x, y) in enumerate(keypoints_xy):
+                kp: Dict[str, Any] = {
+                    "xy": [float(x), float(y)],
+                    "confidence": (
+                        float(keypoints_conf[i]) if keypoints_conf is not None else 1.0
+                    ),
+                    "name": CONFIG.keypoint_names.get(i, f"keypoint_{i}"),
+                }
+                keypoint_list.append(kp)
 
     # Extract pitch corners
     pitch_polygon: list[list[float]] = []
