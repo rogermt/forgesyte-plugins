@@ -9,14 +9,16 @@ Frame-based JSON tools for football analysis:
 """
 
 import base64
-from typing import Any, Dict
+import logging
+import re
+from typing import Any, Dict, Optional, Tuple
 
 import cv2
 import numpy as np
 import torch
 
 from app.models import AnalysisResult, PluginMetadata
-
+from forgesyte_yolo_tracker.configs import get_default_detections
 from forgesyte_yolo_tracker.inference.ball_detection import (
     detect_ball_json,
     detect_ball_json_with_annotated_frame,
@@ -37,7 +39,87 @@ from forgesyte_yolo_tracker.inference.radar import (
     generate_radar_json as radar_json,
     radar_json_with_annotated_frame,
 )
-from forgesyte_yolo_tracker.configs import get_default_detections
+
+logger = logging.getLogger(__name__)
+
+
+def _validate_base64(frame_b64: str) -> str:
+    """Validate and clean base64 input.
+
+    Args:
+        frame_b64: Raw base64 string or data URL
+
+    Returns:
+        Cleaned base64 string without data URL prefix
+
+    Raises:
+        ValueError: If input is not valid base64
+    """
+    # Strip data URL prefix if present
+    if frame_b64.startswith("data:image"):
+        frame_b64 = frame_b64.split(",", 1)[-1]
+
+    # Validate it's not empty after stripping
+    if not frame_b64 or not frame_b64.strip():
+        raise ValueError("Empty base64 string after processing")
+
+    # Validate characters are valid base64
+    # Allow for padding and URL-safe variants
+    if not re.match(r'^[A-Za-z0-9+/=]+$', frame_b64):
+        raise ValueError("Invalid base64 characters detected")
+
+    return frame_b64
+
+
+def _decode_frame_base64_safe(
+    frame_b64: str, tool_name: str
+) -> Tuple[Optional[np.ndarray], Optional[Dict[str, Any]]]:
+    """Safely decode base64-encoded image with error handling.
+
+    Args:
+        frame_b64: Base64 encoded image data
+        tool_name: Name of the calling tool for error context
+
+    Returns:
+        Tuple of (frame, error_dict) where exactly one is None
+        - On success: (frame, None)
+        - On failure: (None, error_dict)
+    """
+    try:
+        # Validate first
+        cleaned_b64 = _validate_base64(frame_b64)
+        # Then decode
+        data = base64.b64decode(cleaned_b64)
+        arr = np.frombuffer(data, dtype=np.uint8)
+        frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+        if frame is None:
+            raise ValueError("Failed to decode image data")
+
+        return (frame, None)
+
+    except ValueError as e:
+        error_msg = str(e)
+        logger.warning(
+            f"Base64 validation failed in {tool_name}: {error_msg}"
+        )
+        return (None, {
+            "error": "invalid_base64",
+            "message": f"Failed to decode frame: {error_msg}",
+            "plugin": "yolo-tracker",
+            "tool": tool_name,
+        })
+    except Exception as e:
+        error_msg = str(e)
+        logger.warning(
+            f"Base64 decode exception in {tool_name}: {error_msg}"
+        )
+        return (None, {
+            "error": "invalid_base64",
+            "message": f"Failed to decode frame: {error_msg}",
+            "plugin": "yolo-tracker",
+            "tool": tool_name,
+        })
 
 
 def _decode_frame_base64(frame_b64: str) -> np.ndarray:
@@ -67,7 +149,10 @@ def player_detection(
     Returns:
         Dictionary with detections, count, classes
     """
-    frame = _decode_frame_base64(frame_base64)
+    frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
+    if error:
+        return error
+
     if annotated:
         return detect_players_json_with_annotated_frame(frame, device=device)
     return detect_players_json(frame, device=device)
@@ -86,7 +171,10 @@ def player_tracking(
     Returns:
         Dictionary with detections, count, track_ids
     """
-    frame = _decode_frame_base64(frame_base64)
+    frame, error = _decode_frame_base64_safe(frame_base64, "player_tracking")
+    if error:
+        return error
+
     if annotated:
         return track_players_json_with_annotated_frame(frame, device=device)
     return track_players_json(frame, device=device)
@@ -105,7 +193,10 @@ def ball_detection(
     Returns:
         Dictionary with detections, ball, ball_detected
     """
-    frame = _decode_frame_base64(frame_base64)
+    frame, error = _decode_frame_base64_safe(frame_base64, "ball_detection")
+    if error:
+        return error
+
     if annotated:
         return detect_ball_json_with_annotated_frame(frame, device=device)
     return detect_ball_json(frame, device=device)
@@ -124,7 +215,10 @@ def pitch_detection(
     Returns:
         Dictionary with keypoints, pitch_polygon, pitch_detected
     """
-    frame = _decode_frame_base64(frame_base64)
+    frame, error = _decode_frame_base64_safe(frame_base64, "pitch_detection")
+    if error:
+        return error
+
     if annotated:
         return detect_pitch_json_with_annotated_frame(frame, device=device)
     return detect_pitch_json(frame, device=device)
@@ -141,7 +235,10 @@ def radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Di
     Returns:
         Dictionary with radar_points, radar_size, radar_base64 (if annotated)
     """
-    frame = _decode_frame_base64(frame_base64)
+    frame, error = _decode_frame_base64_safe(frame_base64, "radar")
+    if error:
+        return error
+
     if annotated:
         return radar_json_with_annotated_frame(frame, device=device)
     return radar_json(frame, device=device)
@@ -168,7 +265,7 @@ class Plugin:
             },
         )
 
-    def analyze(self, image_data: bytes, options: Dict[str, Any] | None = None) -> AnalysisResult:
+    def analyze(self, image_data: bytes, options: Optional[Dict[str, Any]] = None) -> AnalysisResult:
         """Analyze image with configurable detections: players, ball, pitch.
 
         Args:
@@ -186,7 +283,7 @@ class Plugin:
             options = {"detections": ["players", "ball", "pitch"]}
         """
         options = options or {}
-        
+
         # Determine device
         if "device" in options:
             device = options["device"]
@@ -198,19 +295,46 @@ class Plugin:
             requested_detections = options["detections"]
         else:
             requested_detections = get_default_detections()
+
+        # Try to decode image_data directly as PNG/JPEG bytes first
+        arr = np.frombuffer(image_data, dtype=np.uint8)
+        frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
         
-        frame_b64 = base64.b64encode(image_data).decode("utf-8")
-        frame = _decode_frame_base64(frame_b64)
+        if frame is None:
+            # Fallback: try base64 decode (legacy path)
+            try:
+                frame_b64 = base64.b64encode(image_data).decode("utf-8")
+                frame, error = _decode_frame_base64_safe(frame_b64, "analyze")
+                if error:
+                    logger.warning(f"Base64 decode failed in analyze: {error}")
+                    return AnalysisResult(
+                        text="",
+                        blocks=[],
+                        confidence=0.0,
+                        language=None,
+                        error=error,
+                        extra={},
+                    )
+            except Exception as e:
+                logger.warning(f"Image decode failed in analyze: {e}")
+                return AnalysisResult(
+                    text="",
+                    blocks=[],
+                    confidence=0.0,
+                    language=None,
+                    error={"error": "decode_failed", "message": str(e)},
+                    extra={},
+                )
 
         combined = {}
 
         # Run requested detections
         if "players" in requested_detections:
             combined["players"] = detect_players_json(frame, device=device)
-        
+
         if "ball" in requested_detections:
             combined["ball"] = detect_ball_json(frame, device=device)
-        
+
         if "pitch" in requested_detections:
             combined["pitch"] = detect_pitch_json(frame, device=device)
 
@@ -230,3 +354,25 @@ class Plugin:
     def on_unload(self) -> None:
         """Called when plugin is unloaded."""
         print("YOLO Tracker plugin unloaded")
+
+    # Tool methods - delegate to module functions for MCP tool exposure
+    def player_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+        """Detect players in a single frame."""
+        return player_detection(frame_b64, device, annotated)
+
+    def player_tracking(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+        """Track players across frames using ByteTrack."""
+        return player_tracking(frame_b64, device, annotated)
+
+    def ball_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+        """Detect the football in a single frame."""
+        return ball_detection(frame_b64, device, annotated)
+
+    def pitch_detection(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+        """Detect pitch keypoints for homography mapping."""
+        return pitch_detection(frame_b64, device, annotated)
+
+    def radar(self, frame_b64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
+        """Generate radar (bird's-eye) view of player positions."""
+        return radar(frame_b64, device, annotated)
+

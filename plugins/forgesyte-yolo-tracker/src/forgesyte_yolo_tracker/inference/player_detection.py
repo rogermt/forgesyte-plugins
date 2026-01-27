@@ -9,6 +9,7 @@ Player-specific configuration is defined once and reused via wrapper functions.
 """
 
 import logging
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -18,19 +19,29 @@ from forgesyte_yolo_tracker.inference._base_detector import BaseDetector
 
 logger = logging.getLogger(__name__)
 
+# Class names matching trained model's 4-class structure
+CLASS_NAMES: Dict[int, str] = {0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"}
+
+# Team colors for each class
+TEAM_COLORS: Dict[int, str] = {
+    0: "#FFFFFF",  # Ball: White
+    1: "#FFD700",  # Goalkeeper: Gold
+    2: "#00BFFF",  # Player: DeepSkyBlue
+    3: "#FF6347",  # Referee: Tomato
+}
+
+# Model path for player detection (full path for test compatibility)
+MODEL_NAME = get_model_path("player_detection")
+MODEL_PATH: str = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
+
 # Player detector instance with configuration
 PLAYER_DETECTOR = BaseDetector(
     detector_name="player",
-    model_name=get_model_path("player_detection"),
+    model_name=MODEL_PATH,
     default_confidence=get_confidence("player"),
     imgsz=1280,
-    class_names={0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"},
-    colors={
-        0: "#FFFFFF",  # Ball: White
-        1: "#FFD700",  # Goalkeeper: Gold
-        2: "#00BFFF",  # Player: DeepSkyBlue
-        3: "#FF6347",  # Referee: Tomato
-    },
+    class_names=CLASS_NAMES,
+    colors=TEAM_COLORS,
 )
 
 
