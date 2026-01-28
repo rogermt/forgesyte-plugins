@@ -18,7 +18,7 @@ class TestToolMethodParameterNames:
     def manifest(self) -> dict:
         """Load manifest.json."""
         manifest_path = (
-            Path(__file__).parents[2]
+            Path(__file__).parents[1]
             / "forgesyte_yolo_tracker"
             / "manifest.json"
         )
