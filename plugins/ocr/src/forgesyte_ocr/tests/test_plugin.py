@@ -4,8 +4,8 @@ MIGRATION NOTE (Milestone 1.5):
 ==============================
 
 This test file was originally written for the legacy `app.plugins.base` architecture
-and tested the Plugin class with mocked `AnalysisResult` and `PluginMetadata` from 
-`app.models`. 
+and tested the Plugin class with mocked `AnalysisResult` and `PluginMetadata` from
+`app.models`.
 
 After BasePlugin migration:
 - The Plugin class now delegates to OCREngine (pure isolation)
@@ -26,7 +26,7 @@ Tests cover:
 
 import io
 from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -446,4 +446,6 @@ class TestOCRPlugin:
 
         assert isinstance(response, OCROutput)
         # Average: (92 + 88 + 85) / 3 / 100 = 0.8833...
-        assert response.confidence > 0.80, f"Confidence {response.confidence} below 80% threshold"
+        assert (
+            response.confidence > 0.80
+        ), f"Confidence {response.confidence} below 80% threshold"

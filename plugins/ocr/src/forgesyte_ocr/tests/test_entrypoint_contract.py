@@ -101,7 +101,7 @@ class TestOCREntrypointContract:
     def test_plugin_no_app_imports(self) -> None:
         """Verify plugin.py has no legacy 'app.' imports."""
         plugin_module = importlib.import_module("forgesyte_ocr.plugin")
-        plugin_source = open(plugin_module.__file__, "r").read()  # type: ignore
+        plugin_source = open(plugin_module.__file__).read()  # type: ignore
 
         assert (
             "from app." not in plugin_source
@@ -113,7 +113,7 @@ class TestOCREntrypointContract:
     def test_plugin_imports_from_baseplugin(self) -> None:
         """Verify plugin imports BasePlugin correctly."""
         plugin_module = importlib.import_module("forgesyte_ocr.plugin")
-        plugin_source = open(plugin_module.__file__, "r").read()  # type: ignore
+        plugin_source = open(plugin_module.__file__).read()  # type: ignore
 
         # Should import BasePlugin (either from forgesyte or relative)
         has_baseplugin_import = (
@@ -135,9 +135,11 @@ class TestOCREntrypointContract:
 
     def test_plugin_run_tool_with_valid_args(self) -> None:
         """Verify run_tool can be called with valid arguments."""
-        from forgesyte_ocr.plugin import Plugin
-        from PIL import Image
         import io
+
+        from PIL import Image
+
+        from forgesyte_ocr.plugin import Plugin
 
         plugin = Plugin()
         plugin.on_load()
