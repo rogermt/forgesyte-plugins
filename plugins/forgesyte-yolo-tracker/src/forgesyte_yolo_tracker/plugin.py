@@ -246,12 +246,7 @@ class Plugin(BasePlugin):
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
-        handler = getattr(self, tool_name, None)
-        if not callable(handler):
-            raise ValueError(
-                f"Tool '{tool_name}' in plugin '{self.name}' must define a callable 'handler'"
-            )
-
+        handler = getattr(self, tool_name)
         return handler(
             frame_base64=args.get("frame_base64"),
             device=args.get("device", "cpu"),
