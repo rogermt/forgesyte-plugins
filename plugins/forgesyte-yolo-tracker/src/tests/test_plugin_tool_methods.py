@@ -34,77 +34,78 @@ class TestToolMethodParameterNames:
     def test_player_detection_params_match_manifest(
         self, manifest: dict, plugin
     ) -> None:
-        """Verify player_detection method params match manifest inputs."""
+        """Verify player_detection handler params match manifest inputs."""
         manifest_inputs = set(manifest["tools"]["player_detection"]["inputs"].keys())
-        method = getattr(plugin, "player_detection")
-        sig = inspect.signature(method)
-        # Exclude 'self' from parameters
-        method_params = set(sig.parameters.keys()) - {"self"}
+        # Get handler callable from tools dict
+        handler = plugin.tools["player_detection"]["handler"]
+        sig = inspect.signature(handler)
+        # No 'self' to exclude for module-level functions
+        method_params = set(sig.parameters.keys())
         
         assert manifest_inputs == method_params, (
             f"Parameter mismatch for player_detection!\n"
             f"Manifest inputs: {manifest_inputs}\n"
-            f"Method params: {method_params}"
+            f"Handler params: {method_params}"
         )
 
     def test_player_tracking_params_match_manifest(
         self, manifest: dict, plugin
     ) -> None:
-        """Verify player_tracking method params match manifest inputs."""
+        """Verify player_tracking handler params match manifest inputs."""
         manifest_inputs = set(manifest["tools"]["player_tracking"]["inputs"].keys())
-        method = getattr(plugin, "player_tracking")
-        sig = inspect.signature(method)
-        method_params = set(sig.parameters.keys()) - {"self"}
+        handler = plugin.tools["player_tracking"]["handler"]
+        sig = inspect.signature(handler)
+        method_params = set(sig.parameters.keys())
         
         assert manifest_inputs == method_params, (
             f"Parameter mismatch for player_tracking!\n"
             f"Manifest inputs: {manifest_inputs}\n"
-            f"Method params: {method_params}"
+            f"Handler params: {method_params}"
         )
 
     def test_ball_detection_params_match_manifest(
         self, manifest: dict, plugin
     ) -> None:
-        """Verify ball_detection method params match manifest inputs."""
+        """Verify ball_detection handler params match manifest inputs."""
         manifest_inputs = set(manifest["tools"]["ball_detection"]["inputs"].keys())
-        method = getattr(plugin, "ball_detection")
-        sig = inspect.signature(method)
-        method_params = set(sig.parameters.keys()) - {"self"}
+        handler = plugin.tools["ball_detection"]["handler"]
+        sig = inspect.signature(handler)
+        method_params = set(sig.parameters.keys())
         
         assert manifest_inputs == method_params, (
             f"Parameter mismatch for ball_detection!\n"
             f"Manifest inputs: {manifest_inputs}\n"
-            f"Method params: {method_params}"
+            f"Handler params: {method_params}"
         )
 
     def test_pitch_detection_params_match_manifest(
         self, manifest: dict, plugin
     ) -> None:
-        """Verify pitch_detection method params match manifest inputs."""
+        """Verify pitch_detection handler params match manifest inputs."""
         manifest_inputs = set(manifest["tools"]["pitch_detection"]["inputs"].keys())
-        method = getattr(plugin, "pitch_detection")
-        sig = inspect.signature(method)
-        method_params = set(sig.parameters.keys()) - {"self"}
+        handler = plugin.tools["pitch_detection"]["handler"]
+        sig = inspect.signature(handler)
+        method_params = set(sig.parameters.keys())
         
         assert manifest_inputs == method_params, (
             f"Parameter mismatch for pitch_detection!\n"
             f"Manifest inputs: {manifest_inputs}\n"
-            f"Method params: {method_params}"
+            f"Handler params: {method_params}"
         )
 
     def test_radar_params_match_manifest(
         self, manifest: dict, plugin
     ) -> None:
-        """Verify radar method params match manifest inputs."""
+        """Verify radar handler params match manifest inputs."""
         manifest_inputs = set(manifest["tools"]["radar"]["inputs"].keys())
-        method = getattr(plugin, "radar")
-        sig = inspect.signature(method)
-        method_params = set(sig.parameters.keys()) - {"self"}
+        handler = plugin.tools["radar"]["handler"]
+        sig = inspect.signature(handler)
+        method_params = set(sig.parameters.keys())
         
         assert manifest_inputs == method_params, (
             f"Parameter mismatch for radar!\n"
             f"Manifest inputs: {manifest_inputs}\n"
-            f"Method params: {method_params}"
+            f"Handler params: {method_params}"
         )
 
     def test_all_tools_have_frame_base64_not_frame_b64(

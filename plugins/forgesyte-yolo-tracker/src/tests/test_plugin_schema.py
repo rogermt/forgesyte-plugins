@@ -64,19 +64,15 @@ class TestToolsSchema:
             assert "input_schema" in actual_fields, f"Tool '{tool_name}' missing 'input_schema'"
             assert "output_schema" in actual_fields, f"Tool '{tool_name}' missing 'output_schema'"
 
-    def test_tools_have_handler_strings(self, plugin: Plugin) -> None:
-        """Verify all tools have handler method names as strings (ForgeSyte loader contract)."""
+    def test_tools_have_handler_callables(self, plugin: Plugin) -> None:
+        """Verify all tools have callable handlers (Option A: direct callables)."""
         for tool_name, tool_meta in plugin.tools.items():
             assert "handler" in tool_meta, f"Tool '{tool_name}' missing handler"
             handler = tool_meta["handler"]
-            # Handler must be a string name, resolved at runtime via getattr(self, handler)
-            assert isinstance(handler, str), (
-                f"Tool '{tool_name}' handler must be a string (method name), "
+            # Handler must be callable (function reference)
+            assert callable(handler), (
+                f"Tool '{tool_name}' handler must be callable, "
                 f"got {type(handler)}"
-            )
-            # Verify the handler method exists on the plugin instance
-            assert hasattr(plugin, handler), (
-                f"Tool '{tool_name}' references handler '{handler}' which doesn't exist"
             )
 
     def test_tools_schema_json_serializable(self, plugin: Plugin) -> None:
