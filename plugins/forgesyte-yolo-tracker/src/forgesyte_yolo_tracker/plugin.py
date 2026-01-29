@@ -17,51 +17,8 @@ import cv2
 import numpy as np
 import torch
 
-# Try to import from ForgeSyte server, fallback for testing/Kaggle
-try:
-    from app.plugins.base import BasePlugin
-    from app.models import AnalysisResult, PluginMetadata
-except (ImportError, ModuleNotFoundError):
-    # Fallback stubs for testing/standalone environments
-    class BasePlugin:
-        """Stub BasePlugin for testing."""
-
-        name: str = ""
-        version: str = ""
-        description: str = ""
-        tools: Dict[str, Any] = {}
-
-        def run_tool(self, tool_name: str, args: dict) -> Dict[str, Any]:
-            raise NotImplementedError
-
-        def metadata(self) -> Dict[str, Any]:
-            return {
-                "name": self.name,
-                "version": self.version,
-                "description": self.description,
-            }
-
-        def on_load(self) -> None:
-            pass
-
-        def on_unload(self) -> None:
-            pass
-
-    class AnalysisResult:
-        """Stub AnalysisResult for testing."""
-
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
-
-        def __contains__(self, key: str) -> bool:
-            return hasattr(self, key)
-
-    class PluginMetadata(dict):
-        """Stub PluginMetadata for testing."""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
+# Migrated to BasePlugin architecture (Milestone 1.5)
+# No legacy app.plugins imports - clean BasePlugin contract
 
 
 from forgesyte_yolo_tracker.configs import get_default_detections
