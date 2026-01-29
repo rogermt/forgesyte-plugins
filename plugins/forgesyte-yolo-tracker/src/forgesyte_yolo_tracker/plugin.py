@@ -25,6 +25,7 @@ except (ImportError, ModuleNotFoundError):
     # Fallback stubs for testing/standalone environments
     class BasePlugin:
         """Stub BasePlugin for testing."""
+
         name: str = ""
         version: str = ""
         description: str = ""
@@ -48,6 +49,7 @@ except (ImportError, ModuleNotFoundError):
 
     class AnalysisResult:
         """Stub AnalysisResult for testing."""
+
         def __init__(self, **kwargs):
             for k, v in kwargs.items():
                 setattr(self, k, v)
@@ -57,8 +59,10 @@ except (ImportError, ModuleNotFoundError):
 
     class PluginMetadata(dict):
         """Stub PluginMetadata for testing."""
+
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
+
 
 from forgesyte_yolo_tracker.configs import get_default_detections
 from forgesyte_yolo_tracker.inference.ball_detection import (
@@ -129,7 +133,7 @@ def _decode_frame_base64_safe(
 
 
 # ---------------------------------------------------------
-# Module-level tool functions (no name collisions)
+# Tool functions
 # ---------------------------------------------------------
 def _tool_player_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
@@ -177,7 +181,7 @@ def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False)
 
 
 # ---------------------------------------------------------
-# BasePlugin implementation
+# Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
 # ---------------------------------------------------------
 class Plugin(BasePlugin):
     """YOLO Tracker plugin with BasePlugin architecture."""
@@ -186,8 +190,8 @@ class Plugin(BasePlugin):
     version: str = "0.2.0"
     description: str = "YOLO-based football analysis plugin"
 
-    # Class-level tools dict (required by ForgeSyte loader contract)
-    # Handler names are strings, resolved at runtime via getattr(self, handler_name)
+    # CLASS-LEVEL tools dict (required by ForgeSyte loader contract)
+    # Handler values are strings (method names), resolved at runtime
     tools: Dict[str, Dict[str, Any]] = {
         "player_detection": {
             "description": "Detect players in a frame",
@@ -241,38 +245,9 @@ class Plugin(BasePlugin):
         },
     }
 
-    # -----------------------------
-    # MCP dispatcher
-    # -----------------------------
-    def run_tool(self, tool_name: str, args: dict):
-        if tool_name not in self.tools:
-            raise ValueError(f"Unknown tool: {tool_name}")
-
-        handler = getattr(self, tool_name)
-        return handler(
-            frame_base64=args.get("frame_base64"),
-            device=args.get("device", "cpu"),
-            annotated=args.get("annotated", False),
-        )
-
-    # Metadata for UI
-    # -----------------------------
-    def metadata(self) -> PluginMetadata:
-        return PluginMetadata(
-            name=self.name,
-            description=self.description,
-            version=self.version,
-            inputs=["image"],
-            outputs=["json"],
-            config_schema={
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
-                "confidence": {"type": "number", "default": 0.25},
-            },
-        )
-
-    # Plugin methods (delegate to module functions)
-    # -----------------------------
+    # -------------------------------------------------------
+    # Handler methods
+    # -------------------------------------------------------
     def player_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_player_detection(frame_base64, device, annotated)
 
@@ -288,9 +263,40 @@ class Plugin(BasePlugin):
     def radar(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_radar(frame_base64, device, annotated)
 
-    # -----------------------------
+    # -------------------------------------------------------
+    # Dispatcher
+    # -------------------------------------------------------
+    def run_tool(self, tool_name: str, args: dict) -> Any:
+        if tool_name not in self.tools:
+            raise ValueError(f"Unknown tool: {tool_name}")
+
+        handler = getattr(self, tool_name)
+        return handler(
+            frame_base64=args.get("frame_base64"),
+            device=args.get("device", "cpu"),
+            annotated=args.get("annotated", False),
+        )
+
+    # -------------------------------------------------------
+    # Metadata
+    # -------------------------------------------------------
+    def metadata(self) -> PluginMetadata:
+        return PluginMetadata(
+            name=self.name,
+            description=self.description,
+            version=self.version,
+            inputs=["image"],
+            outputs=["json"],
+            config_schema={
+                "device": {"type": "string", "default": "cpu"},
+                "annotated": {"type": "boolean", "default": False},
+                "confidence": {"type": "number", "default": 0.25},
+            },
+        )
+
+    # -------------------------------------------------------
     # Legacy analyze() for tests
-    # -----------------------------
+    # -------------------------------------------------------
     def analyze(
         self, image_data: bytes, options: Optional[Dict[str, Any]] = None
     ) -> AnalysisResult:
@@ -345,9 +351,9 @@ class Plugin(BasePlugin):
             extra=combined,
         )
 
-    # -----------------------------
+    # -------------------------------------------------------
     # Lifecycle hooks
-    # -----------------------------
+    # -------------------------------------------------------
     def on_load(self) -> None:
         logger.info("YOLO Tracker plugin loaded")
 
