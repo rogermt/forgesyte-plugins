@@ -17,8 +17,27 @@ import cv2
 import numpy as np
 import torch
 
-# Migrated to BasePlugin architecture (Milestone 1.5)
-# No legacy app.plugins imports - clean BasePlugin contract
+# Try to import BasePlugin from server, fallback for testing
+try:
+    from app.plugins.base import BasePlugin
+except (ImportError, ModuleNotFoundError):
+    # Fallback for standalone/test environments
+    from abc import ABC
+
+    class BasePlugin(ABC):  # type: ignore
+        """Fallback BasePlugin for testing."""
+
+        name: str = ""
+        tools: Dict[str, Any] = {}
+
+        def run_tool(self, tool_name: str, args: dict[str, Any]) -> Any:
+            raise NotImplementedError
+
+        def on_load(self) -> None:
+            pass
+
+        def on_unload(self) -> None:
+            pass
 
 
 from forgesyte_yolo_tracker.configs import get_default_detections
@@ -289,6 +308,10 @@ class Plugin(BasePlugin):
             error=None,
             extra=combined,
         )
+
+    def __init__(self) -> None:
+        """Initialize YOLO Tracker plugin."""
+        super().__init__()  # Call BasePlugin __init__ for contract validation
 
     # -------------------------------------------------------
     # Lifecycle hooks
