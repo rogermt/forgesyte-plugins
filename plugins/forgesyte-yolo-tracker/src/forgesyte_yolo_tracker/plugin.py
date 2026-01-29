@@ -1,4 +1,4 @@
-"""ForgeSyte YOLO Tracker Plugin — BasePlugin Architecture (Corrected).
+"""ForgeSyte YOLO Tracker Plugin — BasePlugin Architecture.
 
 Frame-based JSON tools for football analysis:
 - player_detection
@@ -17,52 +17,8 @@ import cv2
 import numpy as np
 import torch
 
-try:
-    from app.plugins.base import BasePlugin
-    from app.models import AnalysisResult, PluginMetadata
-except ImportError:
-    # Fallback for testing/standalone mode
-    class BasePlugin:
-        """Stub BasePlugin for testing."""
-        name: str = ""
-        version: str = ""
-        description: str = ""
-        tools: Dict[str, Any] = {}
-
-        def run_tool(self, tool_name: str, args: dict) -> Dict[str, Any]:
-            """Dispatch tool execution."""
-            raise NotImplementedError
-
-        def metadata(self) -> Dict[str, Any]:
-            """Return plugin metadata."""
-            return {
-                "name": self.name,
-                "version": self.version,
-                "description": self.description,
-            }
-
-        def on_load(self) -> None:
-            """Called when plugin is loaded."""
-            pass
-
-        def on_unload(self) -> None:
-            """Called when plugin is unloaded."""
-            pass
-
-    class AnalysisResult:
-        """Stub AnalysisResult for testing."""
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
-
-        def __contains__(self, key: str) -> bool:
-            """Support 'in' operator for dict-like access."""
-            return hasattr(self, key)
-
-    class PluginMetadata(dict):
-        """Stub PluginMetadata for testing (dict subclass)."""
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
+from app.plugins.base import BasePlugin
+from app.models import AnalysisResult, PluginMetadata
 
 from forgesyte_yolo_tracker.configs import get_default_detections
 from forgesyte_yolo_tracker.inference.ball_detection import (
@@ -90,16 +46,17 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------
-# Base64 helpers (unchanged)
+# Base64 helpers
 # ---------------------------------------------------------
 def _validate_base64(frame_b64: str) -> str:
+    """Validate and normalize base64 input."""
     if frame_b64.startswith("data:image"):
         frame_b64 = frame_b64.split(",", 1)[-1]
 
     if not frame_b64 or not frame_b64.strip():
         raise ValueError("Empty base64 string after processing")
 
-    if not re.match(r'^[A-Za-z0-9+/=]+$', frame_b64):
+    if not re.match(r"^[A-Za-z0-9+/=]+$", frame_b64):
         raise ValueError("Invalid base64 characters detected")
 
     return frame_b64
@@ -108,6 +65,7 @@ def _validate_base64(frame_b64: str) -> str:
 def _decode_frame_base64_safe(
     frame_b64: str, tool_name: str
 ) -> Tuple[Optional[np.ndarray], Optional[Dict[str, Any]]]:
+    """Safely decode base64-encoded image with error handling."""
     try:
         cleaned_b64 = _validate_base64(frame_b64)
         data = base64.b64decode(cleaned_b64)
@@ -117,91 +75,78 @@ def _decode_frame_base64_safe(
         if frame is None:
             raise ValueError("Failed to decode image data")
 
-        return (frame, None)
+        return frame, None
 
     except Exception as e:
         msg = str(e)
         logger.warning(f"Base64 decode failed in {tool_name}: {msg}")
-        return (
-            None,
-            {
-                "error": "invalid_base64",
-                "message": f"Failed to decode frame: {msg}",
-                "plugin": "yolo-tracker",
-                "tool": tool_name,
-            },
-        )
+        return None, {
+            "error": "invalid_base64",
+            "message": f"Failed to decode frame: {msg}",
+            "plugin": "yolo-tracker",
+            "tool": tool_name,
+        }
 
 
 # ---------------------------------------------------------
-# Renamed module-level tool functions (NO name collisions)
+# Module-level tool functions (no name collisions)
 # ---------------------------------------------------------
-def _tool_player_detection(frame_base64: str, device="cpu", annotated=False):
+def _tool_player_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
     if error:
         return error
-    return (
-        detect_players_json_with_annotated_frame(frame, device=device)
-        if annotated
-        else detect_players_json(frame, device=device)
-    )
+    if annotated:
+        return detect_players_json_with_annotated_frame(frame, device=device)
+    return detect_players_json(frame, device=device)
 
 
-def _tool_player_tracking(frame_base64: str, device="cpu", annotated=False):
+def _tool_player_tracking(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "player_tracking")
     if error:
         return error
-    return (
-        track_players_json_with_annotated_frame(frame, device=device)
-        if annotated
-        else track_players_json(frame, device=device)
-    )
+    if annotated:
+        return track_players_json_with_annotated_frame(frame, device=device)
+    return track_players_json(frame, device=device)
 
 
-def _tool_ball_detection(frame_base64: str, device="cpu", annotated=False):
+def _tool_ball_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "ball_detection")
     if error:
         return error
-    return (
-        detect_ball_json_with_annotated_frame(frame, device=device)
-        if annotated
-        else detect_ball_json(frame, device=device)
-    )
+    if annotated:
+        return detect_ball_json_with_annotated_frame(frame, device=device)
+    return detect_ball_json(frame, device=device)
 
 
-def _tool_pitch_detection(frame_base64: str, device="cpu", annotated=False):
+def _tool_pitch_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "pitch_detection")
     if error:
         return error
-    return (
-        detect_pitch_json_with_annotated_frame(frame, device=device)
-        if annotated
-        else detect_pitch_json(frame, device=device)
-    )
+    if annotated:
+        return detect_pitch_json_with_annotated_frame(frame, device=device)
+    return detect_pitch_json(frame, device=device)
 
 
-def _tool_radar(frame_base64: str, device="cpu", annotated=False):
+def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False):
     frame, error = _decode_frame_base64_safe(frame_base64, "radar")
     if error:
         return error
-    return (
-        radar_json_with_annotated_frame(frame, device=device)
-        if annotated
-        else radar_json(frame, device=device)
-    )
+    if annotated:
+        return radar_json_with_annotated_frame(frame, device=device)
+    return radar_json(frame, device=device)
 
 
 # ---------------------------------------------------------
-# BasePlugin Implementation
+# BasePlugin implementation
 # ---------------------------------------------------------
 class Plugin(BasePlugin):
     """YOLO Tracker plugin with BasePlugin architecture."""
 
-    name = "yolo-tracker"
-    version = "0.2.0"
-    description = "YOLO-based football analysis plugin"
+    name: str = "yolo-tracker"
+    version: str = "0.2.0"
+    description: str = "YOLO-based football analysis plugin"
 
-    tools = {
+    tools: Dict[str, Any] = {
         "player_detection": {
             "description": "Detect players in a frame",
             "inputs": {
@@ -254,50 +199,46 @@ class Plugin(BasePlugin):
         },
     }
 
+    # -----------------------------
     # MCP dispatcher
+    # -----------------------------
     def run_tool(self, tool_name: str, args: dict):
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
-        handler = getattr(self, tool_name)
+        handler = getattr(self, tool_name, None)
+        if not callable(handler):
+            raise ValueError(
+                f"Tool '{tool_name}' in plugin '{self.name}' must define a callable 'handler'"
+            )
+
         return handler(
             frame_base64=args.get("frame_base64"),
             device=args.get("device", "cpu"),
             annotated=args.get("annotated", False),
         )
 
-    # Metadata for UI
-    def metadata(self) -> PluginMetadata:
-        return PluginMetadata(
-            name=self.name,
-            description=self.description,
-            version=self.version,
-            inputs=["image"],
-            outputs=["json"],
-            config_schema={
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
-                "confidence": {"type": "number", "default": 0.25},
-            },
-        )
-
-    # Plugin methods (delegate to renamed module functions)
-    def player_detection(self, frame_base64, device="cpu", annotated=False):
+    # -----------------------------
+    # Plugin methods (delegate to module functions)
+    # -----------------------------
+    def player_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_player_detection(frame_base64, device, annotated)
 
-    def player_tracking(self, frame_base64, device="cpu", annotated=False):
+    def player_tracking(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_player_tracking(frame_base64, device, annotated)
 
-    def ball_detection(self, frame_base64, device="cpu", annotated=False):
+    def ball_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_ball_detection(frame_base64, device, annotated)
 
-    def pitch_detection(self, frame_base64, device="cpu", annotated=False):
+    def pitch_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_pitch_detection(frame_base64, device, annotated)
 
-    def radar(self, frame_base64, device="cpu", annotated=False):
+    def radar(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
         return _tool_radar(frame_base64, device, annotated)
 
-    # Legacy analyze() for test compatibility
+    # -----------------------------
+    # Legacy analyze() for tests
+    # -----------------------------
     def analyze(
         self, image_data: bytes, options: Optional[Dict[str, Any]] = None
     ) -> AnalysisResult:
@@ -332,7 +273,7 @@ class Plugin(BasePlugin):
                     extra={},
                 )
 
-        combined = {}
+        combined: Dict[str, Any] = {}
 
         if "players" in detections:
             combined["players"] = detect_players_json(frame, device=device)
@@ -352,9 +293,11 @@ class Plugin(BasePlugin):
             extra=combined,
         )
 
+    # -----------------------------
     # Lifecycle hooks
-    def on_load(self):
+    # -----------------------------
+    def on_load(self) -> None:
         logger.info("YOLO Tracker plugin loaded")
 
-    def on_unload(self):
+    def on_unload(self) -> None:
         logger.info("YOLO Tracker plugin unloaded")
