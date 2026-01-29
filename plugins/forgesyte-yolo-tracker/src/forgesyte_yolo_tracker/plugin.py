@@ -193,52 +193,52 @@ class Plugin(BasePlugin):
         self.tools = {
             "player_detection": {
                 "description": "Detect players in a frame",
-                "inputs": {
+                "input_schema": {
                     "frame_base64": {"type": "string"},
                     "device": {"type": "string", "default": "cpu"},
                     "annotated": {"type": "boolean", "default": False},
                 },
-                "outputs": {"result": {"type": "object"}},
+                "output_schema": {"result": {"type": "object"}},
                 "handler": self.player_detection,
             },
             "player_tracking": {
                 "description": "Track players across frames",
-                "inputs": {
+                "input_schema": {
                     "frame_base64": {"type": "string"},
                     "device": {"type": "string", "default": "cpu"},
                     "annotated": {"type": "boolean", "default": False},
                 },
-                "outputs": {"result": {"type": "object"}},
+                "output_schema": {"result": {"type": "object"}},
                 "handler": self.player_tracking,
             },
             "ball_detection": {
                 "description": "Detect the football",
-                "inputs": {
+                "input_schema": {
                     "frame_base64": {"type": "string"},
                     "device": {"type": "string", "default": "cpu"},
                     "annotated": {"type": "boolean", "default": False},
                 },
-                "outputs": {"result": {"type": "object"}},
+                "output_schema": {"result": {"type": "object"}},
                 "handler": self.ball_detection,
             },
             "pitch_detection": {
                 "description": "Detect pitch keypoints",
-                "inputs": {
+                "input_schema": {
                     "frame_base64": {"type": "string"},
                     "device": {"type": "string", "default": "cpu"},
                     "annotated": {"type": "boolean", "default": False},
                 },
-                "outputs": {"result": {"type": "object"}},
+                "output_schema": {"result": {"type": "object"}},
                 "handler": self.pitch_detection,
             },
             "radar": {
                 "description": "Generate radar (bird's-eye) view",
-                "inputs": {
+                "input_schema": {
                     "frame_base64": {"type": "string"},
                     "device": {"type": "string", "default": "cpu"},
                     "annotated": {"type": "boolean", "default": False},
                 },
-                "outputs": {"result": {"type": "object"}},
+                "output_schema": {"result": {"type": "object"}},
                 "handler": self.radar,
             },
         }
