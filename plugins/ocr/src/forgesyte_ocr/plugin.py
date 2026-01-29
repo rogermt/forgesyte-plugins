@@ -8,7 +8,30 @@ Migrated to BasePlugin architecture (Milestone 1.5).
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any, Dict, Optional
+
+# Try to import BasePlugin from server, fallback for testing
+try:
+    from app.plugins.base import BasePlugin
+except (ImportError, ModuleNotFoundError):
+    # Fallback for standalone/test environments
+    from abc import ABC
+
+    class BasePlugin(ABC):  # type: ignore
+        """Fallback BasePlugin for testing."""
+
+        name: str = ""
+        tools: Dict[str, Any] = {}
+
+        def run_tool(self, tool_name: str, args: dict[str, Any]) -> Any:
+            raise NotImplementedError
+
+        def on_load(self) -> None:
+            pass
+
+        def on_unload(self) -> None:
+            pass
+
 
 from .ocr_engine import OCREngine
 from .schemas import ImageSize, OCRInput, OCROutput, TextBlock
@@ -16,7 +39,7 @@ from .schemas import ImageSize, OCRInput, OCROutput, TextBlock
 logger = logging.getLogger(__name__)
 
 
-class Plugin:
+class Plugin(BasePlugin):
     """OCR plugin for text extraction from images using Tesseract.
 
     Implements BasePlugin contract:
@@ -42,6 +65,9 @@ class Plugin:
                 "handler": "analyze",  # STRING, not callable
             }
         }
+
+        # Call parent __init__ (BasePlugin validates contract)
+        super().__init__()
 
     def run_tool(self, tool_name: str, args: dict[str, Any]) -> Any:
         """Execute a tool by name with the given arguments.

@@ -107,16 +107,24 @@ class TestOCREntrypointContract:
             pytest.fail(f"on_load() raised exception: {e}")
 
     def test_plugin_no_app_imports(self) -> None:
-        """Verify plugin.py has no legacy 'app.' imports."""
+        """Verify plugin.py has no legacy 'app.' imports (except BasePlugin)."""
         plugin_module = importlib.import_module("forgesyte_ocr.plugin")
         plugin_source = open(plugin_module.__file__).read()  # type: ignore
 
-        assert (
-            "from app." not in plugin_source
-        ), "Plugin still contains legacy 'from app.' imports"
-        assert (
-            "import app." not in plugin_source
-        ), "Plugin still contains legacy 'import app.' imports"
+        # Allow `from app.plugins.base import BasePlugin` (required)
+        # Disallow other `from app.*` imports (legacy)
+        has_baseplugin_import = "from app.plugins.base import BasePlugin" in plugin_source
+        other_app_imports = (
+            plugin_source.replace("from app.plugins.base import BasePlugin", "")
+        )
+
+        assert has_baseplugin_import, "Plugin missing BasePlugin import"
+        assert "from app." not in other_app_imports, (
+            "Plugin contains legacy 'from app.' imports (other than BasePlugin)"
+        )
+        assert "import app." not in other_app_imports, (
+            "Plugin contains legacy 'import app.' imports"
+        )
 
     def test_plugin_imports_from_baseplugin(self) -> None:
         """Verify plugin imports BasePlugin correctly."""
