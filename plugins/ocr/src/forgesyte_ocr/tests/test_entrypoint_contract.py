@@ -5,7 +5,9 @@ Tests should run without models/GPU (CPU-safe).
 """
 
 import importlib
+import sys
 from importlib.metadata import entry_points
+from typing import Any
 
 import pytest
 
@@ -15,7 +17,10 @@ class TestOCREntrypointContract:
 
     def test_ocr_entrypoint_exists(self) -> None:
         """Verify OCR entrypoint is registered in forgesyte.plugins."""
-        eps = entry_points(group="forgesyte.plugins")
+        if sys.version_info >= (3, 10):
+            eps = entry_points(group="forgesyte.plugins")
+        else:
+            eps = entry_points().get("forgesyte.plugins", [])  # type: ignore
         ocr_eps = [ep for ep in eps if ep.name == "ocr"]
 
         assert len(ocr_eps) > 0, (
@@ -25,11 +30,14 @@ class TestOCREntrypointContract:
 
     def test_ocr_entrypoint_loads_plugin_class(self) -> None:
         """Verify OCR entrypoint loads the Plugin class successfully."""
-        eps = entry_points(group="forgesyte.plugins")
+        if sys.version_info >= (3, 10):
+            eps = entry_points(group="forgesyte.plugins")
+        else:
+            eps = entry_points().get("forgesyte.plugins", [])  # type: ignore
         ocr_eps = [ep for ep in eps if ep.name == "ocr"]
         ep = ocr_eps[0]
 
-        plugin_class = ep.load()
+        plugin_class: Any = ep.load()
         assert plugin_class is not None, "Entrypoint failed to load"
         assert hasattr(plugin_class, "__name__"), "Loaded object is not a class"
 

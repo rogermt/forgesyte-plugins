@@ -38,14 +38,14 @@ from forgesyte_ocr.schemas import OCROutput
 class TestOCRPlugin:
     """Test suite for OCR Plugin."""
 
-    @pytest.fixture  # type: ignore[untyped-decorator]
+    @pytest.fixture
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         p = Plugin()
         p.on_load()  # Initialize on load
         return p
 
-    @pytest.fixture  # type: ignore[untyped-decorator]
+    @pytest.fixture
     def sample_image_bytes(self) -> bytes:
         """Generate sample image bytes for testing."""
         img = Image.new("RGB", (100, 100), color="white")
@@ -53,7 +53,7 @@ class TestOCRPlugin:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
-    @pytest.fixture  # type: ignore[untyped-decorator]
+    @pytest.fixture
     def mock_pytesseract_data(self) -> dict[str, Any]:
         """Mock pytesseract output data."""
         return {
@@ -227,7 +227,7 @@ class TestOCRPlugin:
         response = plugin.analyze(sample_image_bytes)
 
         assert isinstance(response, OCROutput)
-        assert "Tesseract error" in response.error
+        assert response.error and "Tesseract error" in response.error
 
     # Fallback tests
     @patch("forgesyte_ocr.ocr_engine.HAS_TESSERACT", False)

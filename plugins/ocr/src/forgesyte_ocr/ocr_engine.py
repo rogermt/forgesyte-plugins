@@ -44,7 +44,7 @@ class OCREngine:
         options = options or {}
 
         try:
-            img = Image.open(io.BytesIO(image_bytes))
+            img: Image.Image = Image.open(io.BytesIO(image_bytes))
 
             if img.mode not in ("L", "RGB"):
                 img = img.convert("RGB")

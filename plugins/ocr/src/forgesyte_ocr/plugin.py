@@ -57,8 +57,11 @@ class Plugin:
             ValueError: If tool name not found
         """
         if tool_name == "analyze":
+            image_bytes = args.get("image_bytes")
+            if not isinstance(image_bytes, bytes):
+                raise ValueError("image_bytes must be bytes")
             return self.analyze(
-                image_bytes=args.get("image_bytes"),
+                image_bytes=image_bytes,
                 options=args.get("options"),
             )
         raise ValueError(f"Unknown tool: {tool_name}")
