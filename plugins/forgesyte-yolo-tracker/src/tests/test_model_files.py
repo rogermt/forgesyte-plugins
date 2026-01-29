@@ -11,11 +11,12 @@ from pathlib import Path
 
 import pytest
 
+from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
+
 # Environment flag - force-run all model tests in CPU environments
 RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
 
 # Check if models directory exists
-from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
 MODELS_DIR = Path(MODEL_CONFIG_PATH).parent.parent / "models"
 MODELS_EXIST = MODELS_DIR.exists()
 

@@ -8,7 +8,6 @@ Validates:
 """
 
 import json
-from typing import Any, Dict
 
 import pytest
 
@@ -57,7 +56,6 @@ class TestToolsSchema:
 
     def test_tools_dict_structure(self, plugin: Plugin) -> None:
         """Verify each tool has required schema fields."""
-        required_fields = {"description", "input_schema", "output_schema"}
         for tool_name, tool_meta in plugin.tools.items():
             assert isinstance(tool_meta, dict), f"Tool '{tool_name}' must be a dict"
             actual_fields = set(tool_meta.keys())

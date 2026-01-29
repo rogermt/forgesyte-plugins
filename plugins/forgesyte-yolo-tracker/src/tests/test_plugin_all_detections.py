@@ -157,7 +157,7 @@ class TestPluginAllDetections:
             # Import and instantiate INSIDE the with block
             from forgesyte_yolo_tracker.plugin import Plugin
             plugin = Plugin()
-            result = plugin.analyze(image_data)  # No options, default behavior
+            plugin.analyze(image_data)  # No options, default behavior
 
             # Verify all three were called
             mock_players.assert_called_once()
