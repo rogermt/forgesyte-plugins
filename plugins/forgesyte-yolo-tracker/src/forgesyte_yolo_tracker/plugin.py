@@ -15,56 +15,30 @@ from typing import Any, Dict, Optional, Tuple
 
 import cv2
 import numpy as np
-import torch
 
-# Try to import from ForgeSyte server, fallback for testing/Kaggle
+# Try to import BasePlugin from server, fallback for testing
 try:
     from app.plugins.base import BasePlugin
-    from app.models import AnalysisResult, PluginMetadata
 except (ImportError, ModuleNotFoundError):
-    # Fallback stubs for testing/standalone environments
-    class BasePlugin:
-        """Stub BasePlugin for testing."""
+    # Fallback for standalone/test environments
+    from abc import ABC
+
+    class BasePlugin(ABC):  # type: ignore  # noqa: B024, F811
+        """Fallback BasePlugin for testing."""
 
         name: str = ""
-        version: str = ""
-        description: str = ""
         tools: Dict[str, Any] = {}
 
-        def run_tool(self, tool_name: str, args: dict) -> Dict[str, Any]:
-            raise NotImplementedError
+        def run_tool(self, tool_name: str, args: dict[str, Any]) -> Any:
+            raise NotImplementedError  # pragma: no cover
 
-        def metadata(self) -> Dict[str, Any]:
-            return {
-                "name": self.name,
-                "version": self.version,
-                "description": self.description,
-            }
-
-        def on_load(self) -> None:
+        def on_load(self) -> None:  # pragma: no cover  # noqa: B027
             pass
 
-        def on_unload(self) -> None:
+        def on_unload(self) -> None:  # pragma: no cover  # noqa: B027
             pass
 
-    class AnalysisResult:
-        """Stub AnalysisResult for testing."""
 
-        def __init__(self, **kwargs):
-            for k, v in kwargs.items():
-                setattr(self, k, v)
-
-        def __contains__(self, key: str) -> bool:
-            return hasattr(self, key)
-
-    class PluginMetadata(dict):
-        """Stub PluginMetadata for testing."""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-
-
-from forgesyte_yolo_tracker.configs import get_default_detections
 from forgesyte_yolo_tracker.inference.ball_detection import (
     detect_ball_json,
     detect_ball_json_with_annotated_frame,
@@ -259,79 +233,11 @@ class Plugin(BasePlugin):
             annotated=args.get("annotated", False),
         )
 
-    # -------------------------------------------------------
-    # Metadata
-    # -------------------------------------------------------
-    def metadata(self) -> PluginMetadata:
-        return PluginMetadata(
-            name=self.name,
-            description=self.description,
-            version=self.version,
-            inputs=["image"],
-            outputs=["json"],
-            config_schema={
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
-                "confidence": {"type": "number", "default": 0.25},
-            },
-        )
 
-    # -------------------------------------------------------
-    # Legacy analyze() for tests
-    # -------------------------------------------------------
-    def analyze(
-        self, image_data: bytes, options: Optional[Dict[str, Any]] = None
-    ) -> AnalysisResult:
-        """Legacy compatibility wrapper for old tests."""
-        options = options or {}
-        detections = options.get("detections", get_default_detections())
-        device = options.get("device", "cuda" if torch.cuda.is_available() else "cpu")
 
-        arr = np.frombuffer(image_data, dtype=np.uint8)
-        frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-
-        if frame is None:
-            try:
-                frame_b64 = base64.b64encode(image_data).decode("utf-8")
-                frame, error = _decode_frame_base64_safe(frame_b64, "analyze")
-                if error:
-                    return AnalysisResult(
-                        text="",
-                        blocks=[],
-                        confidence=0.0,
-                        language=None,
-                        error=error,
-                        extra={},
-                    )
-            except Exception as e:
-                return AnalysisResult(
-                    text="",
-                    blocks=[],
-                    confidence=0.0,
-                    language=None,
-                    error={"error": "decode_failed", "message": str(e)},
-                    extra={},
-                )
-
-        combined: Dict[str, Any] = {}
-
-        if "players" in detections:
-            combined["players"] = detect_players_json(frame, device=device)
-
-        if "ball" in detections:
-            combined["ball"] = detect_ball_json(frame, device=device)
-
-        if "pitch" in detections:
-            combined["pitch"] = detect_pitch_json(frame, device=device)
-
-        return AnalysisResult(
-            text="",
-            blocks=[],
-            confidence=1.0,
-            language=None,
-            error=None,
-            extra=combined,
-        )
+    def __init__(self) -> None:
+        """Initialize YOLO Tracker plugin."""
+        super().__init__()  # Call BasePlugin __init__ for contract validation
 
     # -------------------------------------------------------
     # Lifecycle hooks
