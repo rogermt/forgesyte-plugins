@@ -186,58 +186,62 @@ class Plugin(BasePlugin):
     version: str = "0.2.0"
     description: str = "YOLO-based football analysis plugin"
 
-    tools: Dict[str, Any] = {
-        "player_detection": {
-            "description": "Detect players in a frame",
-            "inputs": {
-                "frame_base64": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
+    def __init__(self):
+        """Initialize plugin with bound method handlers."""
+        super().__init__()
+        # Define tools dict with callable handlers (bound methods)
+        self.tools = {
+            "player_detection": {
+                "description": "Detect players in a frame",
+                "inputs": {
+                    "frame_base64": {"type": "string"},
+                    "device": {"type": "string", "default": "cpu"},
+                    "annotated": {"type": "boolean", "default": False},
+                },
+                "outputs": {"result": {"type": "object"}},
+                "handler": self.player_detection,
             },
-            "outputs": {"result": {"type": "object"}},
-            "handler": "player_detection",
-        },
-        "player_tracking": {
-            "description": "Track players across frames",
-            "inputs": {
-                "frame_base64": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
+            "player_tracking": {
+                "description": "Track players across frames",
+                "inputs": {
+                    "frame_base64": {"type": "string"},
+                    "device": {"type": "string", "default": "cpu"},
+                    "annotated": {"type": "boolean", "default": False},
+                },
+                "outputs": {"result": {"type": "object"}},
+                "handler": self.player_tracking,
             },
-            "outputs": {"result": {"type": "object"}},
-            "handler": "player_tracking",
-        },
-        "ball_detection": {
-            "description": "Detect the football",
-            "inputs": {
-                "frame_base64": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
+            "ball_detection": {
+                "description": "Detect the football",
+                "inputs": {
+                    "frame_base64": {"type": "string"},
+                    "device": {"type": "string", "default": "cpu"},
+                    "annotated": {"type": "boolean", "default": False},
+                },
+                "outputs": {"result": {"type": "object"}},
+                "handler": self.ball_detection,
             },
-            "outputs": {"result": {"type": "object"}},
-            "handler": "ball_detection",
-        },
-        "pitch_detection": {
-            "description": "Detect pitch keypoints",
-            "inputs": {
-                "frame_base64": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
+            "pitch_detection": {
+                "description": "Detect pitch keypoints",
+                "inputs": {
+                    "frame_base64": {"type": "string"},
+                    "device": {"type": "string", "default": "cpu"},
+                    "annotated": {"type": "boolean", "default": False},
+                },
+                "outputs": {"result": {"type": "object"}},
+                "handler": self.pitch_detection,
             },
-            "outputs": {"result": {"type": "object"}},
-            "handler": "pitch_detection",
-        },
-        "radar": {
-            "description": "Generate radar (bird's-eye) view",
-            "inputs": {
-                "frame_base64": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
+            "radar": {
+                "description": "Generate radar (bird's-eye) view",
+                "inputs": {
+                    "frame_base64": {"type": "string"},
+                    "device": {"type": "string", "default": "cpu"},
+                    "annotated": {"type": "boolean", "default": False},
+                },
+                "outputs": {"result": {"type": "object"}},
+                "handler": self.radar,
             },
-            "outputs": {"result": {"type": "object"}},
-            "handler": "radar",
-        },
-    }
+        }
 
     # -----------------------------
     # MCP dispatcher
