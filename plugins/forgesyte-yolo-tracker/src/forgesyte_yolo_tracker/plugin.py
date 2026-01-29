@@ -187,7 +187,7 @@ class Plugin(BasePlugin):
     description: str = "YOLO-based football analysis plugin"
 
     # Class-level tools dict (required by ForgeSyte loader contract)
-    # Handler references are resolved at runtime via getattr(self, tool_name)
+    # Handler names are strings, resolved at runtime via getattr(self, handler_name)
     tools: Dict[str, Dict[str, Any]] = {
         "player_detection": {
             "description": "Detect players in a frame",
@@ -197,7 +197,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": None,  # Resolved at runtime
+            "handler": "player_detection",
         },
         "player_tracking": {
             "description": "Track players across frames",
@@ -207,7 +207,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": None,  # Resolved at runtime
+            "handler": "player_tracking",
         },
         "ball_detection": {
             "description": "Detect the football",
@@ -217,7 +217,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": None,  # Resolved at runtime
+            "handler": "ball_detection",
         },
         "pitch_detection": {
             "description": "Detect pitch keypoints",
@@ -227,7 +227,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": None,  # Resolved at runtime
+            "handler": "pitch_detection",
         },
         "radar": {
             "description": "Generate radar (bird's-eye) view",
@@ -237,7 +237,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": None,  # Resolved at runtime
+            "handler": "radar",
         },
     }
 
