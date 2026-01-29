@@ -258,7 +258,22 @@ class Plugin(BasePlugin):
             annotated=args.get("annotated", False),
         )
 
+    # Metadata for UI
     # -----------------------------
+    def metadata(self) -> PluginMetadata:
+        return PluginMetadata(
+            name=self.name,
+            description=self.description,
+            version=self.version,
+            inputs=["image"],
+            outputs=["json"],
+            config_schema={
+                "device": {"type": "string", "default": "cpu"},
+                "annotated": {"type": "boolean", "default": False},
+                "confidence": {"type": "number", "default": 0.25},
+            },
+        )
+
     # Plugin methods (delegate to module functions)
     # -----------------------------
     def player_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
