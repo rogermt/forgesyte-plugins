@@ -18,6 +18,12 @@ from forgesyte_yolo_tracker.plugin import Plugin
 class TestPluginInstantiation:
     """Test plugin loads and initializes correctly."""
 
+    def test_plugin_class_level_tools(self) -> None:
+        """Verify plugin defines tools as class attribute (ForgeSyte loader contract)."""
+        assert hasattr(Plugin, "tools"), "Plugin must define class-level `tools`"
+        assert isinstance(Plugin.tools, dict), "Class-level tools must be a dict"
+        assert len(Plugin.tools) > 0, "Class-level tools must have at least one tool"
+
     def test_plugin_instantiates(self) -> None:
         """Verify plugin can be instantiated."""
         plugin = Plugin()
@@ -61,13 +67,14 @@ class TestToolsSchema:
             assert "output_schema" in actual_fields, f"Tool '{tool_name}' missing 'output_schema'"
 
     def test_tools_have_handler_callables(self, plugin: Plugin) -> None:
-        """Verify all tools have callable handlers."""
+        """Verify all tools have callable handlers (or None for runtime resolution)."""
         for tool_name, tool_meta in plugin.tools.items():
             assert "handler" in tool_meta, f"Tool '{tool_name}' missing handler"
             handler = tool_meta["handler"]
-            assert callable(handler), (
-                f"Tool '{tool_name}' handler must be callable, "
-                f"got {type(handler)} (not string)"
+            # Handler can be None (resolved at runtime via getattr) or callable
+            assert handler is None or callable(handler), (
+                f"Tool '{tool_name}' handler must be None or callable, "
+                f"got {type(handler)}"
             )
 
     def test_tools_schema_json_serializable(self, plugin: Plugin) -> None:
