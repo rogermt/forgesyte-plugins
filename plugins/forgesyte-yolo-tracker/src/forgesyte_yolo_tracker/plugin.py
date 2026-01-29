@@ -298,6 +298,42 @@ class Plugin(BasePlugin):
             },
         )
 
+    def analyze(
+        self, image_data: bytes, options: Optional[Dict[str, Any]] = None
+    ) -> AnalysisResult:
+        """Legacy compatibility wrapper for old tests.
+        
+        TODO: Refactor after design decision on backward compatibility.
+        See: https://github.com/rogermt/forgesyte-plugins/issues/62
+        """
+        # Convert raw bytes → base64
+        frame_b64 = base64.b64encode(image_data).decode("utf-8")
+
+        # Default detection set
+        options = options or {}
+        detections = options.get("detections", get_default_detections())
+        device = options.get("device", "cuda" if torch.cuda.is_available() else "cpu")
+
+        combined = {}
+
+        if "players" in detections:
+            combined["players"] = detect_players_json(frame_b64, device=device)
+
+        if "ball" in detections:
+            combined["ball"] = detect_ball_json(frame_b64, device=device)
+
+        if "pitch" in detections:
+            combined["pitch"] = detect_pitch_json(frame_b64, device=device)
+
+        return AnalysisResult(
+            text="",
+            blocks=[],
+            confidence=1.0,
+            language=None,
+            error=None,
+            extra=combined,
+        )
+
     # Lifecycle hooks
     def on_load(self) -> None:
         """Called when plugin is loaded."""
