@@ -113,10 +113,9 @@ class TestOCREntrypointContract:
 
         # Allow `from app.plugins.base import BasePlugin` (required)
         # Disallow other `from app.*` imports (legacy)
-        has_baseplugin_import = "from app.plugins.base import BasePlugin" in plugin_source
-        other_app_imports = (
-            plugin_source.replace("from app.plugins.base import BasePlugin", "")
-        )
+        import_str = "from app.plugins.base import BasePlugin"
+        has_baseplugin_import = import_str in plugin_source
+        other_app_imports = plugin_source.replace(import_str, "")
 
         assert has_baseplugin_import, "Plugin missing BasePlugin import"
         assert "from app." not in other_app_imports, (

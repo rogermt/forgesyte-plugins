@@ -17,19 +17,19 @@ except (ImportError, ModuleNotFoundError):
     # Fallback for standalone/test environments
     from abc import ABC
 
-    class BasePlugin(ABC):  # type: ignore
+    class BasePlugin(ABC):  # type: ignore  # noqa: B024, F811
         """Fallback BasePlugin for testing."""
 
         name: str = ""
         tools: Dict[str, Any] = {}
 
         def run_tool(self, tool_name: str, args: dict[str, Any]) -> Any:
-            raise NotImplementedError
+            raise NotImplementedError  # pragma: no cover
 
-        def on_load(self) -> None:
+        def on_load(self) -> None:  # pragma: no cover  # noqa: B027
             pass
 
-        def on_unload(self) -> None:
+        def on_unload(self) -> None:  # pragma: no cover  # noqa: B027
             pass
 
 
@@ -39,7 +39,7 @@ from .schemas import ImageSize, OCRInput, OCROutput, TextBlock
 logger = logging.getLogger(__name__)
 
 
-class Plugin(BasePlugin):
+class Plugin(BasePlugin):  # type: ignore[misc]
     """OCR plugin for text extraction from images using Tesseract.
 
     Implements BasePlugin contract:
