@@ -191,7 +191,7 @@ class Plugin(BasePlugin):
     description: str = "YOLO-based football analysis plugin"
 
     # CLASS-LEVEL tools dict (required by ForgeSyte loader contract)
-    # Handler values are strings (method names), resolved at runtime
+    # Handler values are callables (no magic getattr resolution)
     tools: Dict[str, Dict[str, Any]] = {
         "player_detection": {
             "description": "Detect players in a frame",
@@ -201,7 +201,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": "player_detection",
+            "handler": _tool_player_detection,
         },
         "player_tracking": {
             "description": "Track players across frames",
@@ -211,7 +211,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": "player_tracking",
+            "handler": _tool_player_tracking,
         },
         "ball_detection": {
             "description": "Detect the football",
@@ -221,7 +221,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": "ball_detection",
+            "handler": _tool_ball_detection,
         },
         "pitch_detection": {
             "description": "Detect pitch keypoints",
@@ -231,7 +231,7 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": "pitch_detection",
+            "handler": _tool_pitch_detection,
         },
         "radar": {
             "description": "Generate radar (bird's-eye) view",
@@ -241,27 +241,9 @@ class Plugin(BasePlugin):
                 "annotated": {"type": "boolean", "default": False},
             },
             "output_schema": {"result": {"type": "object"}},
-            "handler": "radar",
+            "handler": _tool_radar,
         },
     }
-
-    # -------------------------------------------------------
-    # Handler methods
-    # -------------------------------------------------------
-    def player_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
-        return _tool_player_detection(frame_base64, device, annotated)
-
-    def player_tracking(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
-        return _tool_player_tracking(frame_base64, device, annotated)
-
-    def ball_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
-        return _tool_ball_detection(frame_base64, device, annotated)
-
-    def pitch_detection(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
-        return _tool_pitch_detection(frame_base64, device, annotated)
-
-    def radar(self, frame_base64: str, device: str = "cpu", annotated: bool = False):
-        return _tool_radar(frame_base64, device, annotated)
 
     # -------------------------------------------------------
     # Dispatcher
@@ -270,7 +252,7 @@ class Plugin(BasePlugin):
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
-        handler = getattr(self, tool_name)
+        handler = self.tools[tool_name]["handler"]
         return handler(
             frame_base64=args.get("frame_base64"),
             device=args.get("device", "cpu"),
