@@ -3,11 +3,10 @@
 import base64
 import numpy as np
 import pytest
-from unittest.mock import patch, MagicMock
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def make_dummy_b64():
+def make_dummy_b64() -> str:
     """Create a dummy base64-encoded image."""
     import cv2
     img = np.zeros((5, 5, 3), dtype=np.uint8)
@@ -16,7 +15,7 @@ def make_dummy_b64():
     return base64.b64encode(buf).decode()
 
 
-def test_dispatch_has_all_tools():
+def test_dispatch_has_all_tools() -> None:
     """Verify plugin has all expected tools."""
     plugin = Plugin()
     
@@ -33,7 +32,7 @@ def test_dispatch_has_all_tools():
         assert callable(plugin.tools[tool_name]["handler"])
 
 
-def test_dispatch_unknown_tool():
+def test_dispatch_unknown_tool() -> None:
     """Verify dispatch raises error for unknown tool."""
     plugin = Plugin()
     

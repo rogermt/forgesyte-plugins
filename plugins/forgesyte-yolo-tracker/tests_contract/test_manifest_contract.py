@@ -1,10 +1,9 @@
 """Validate manifest structure without importing inference."""
 
-import pytest
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def test_manifest_contract_structure():
+def test_manifest_contract_structure() -> None:
     """Verify manifest has required fields."""
     plugin = Plugin()
 

@@ -3,7 +3,7 @@
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def test_tool_registry_structure():
+def test_tool_registry_structure() -> None:
     """Verify tool registry is well-formed."""
     plugin = Plugin()
 

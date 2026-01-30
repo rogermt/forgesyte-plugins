@@ -3,7 +3,7 @@
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def test_tool_schemas_are_well_formed():
+def test_tool_schemas_are_well_formed() -> None:
     """Verify tool schemas have required structure."""
     plugin = Plugin()
 

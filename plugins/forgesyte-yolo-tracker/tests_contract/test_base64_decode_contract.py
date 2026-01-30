@@ -1,10 +1,9 @@
 """Validate base64 error handling without touching inference."""
 
-import pytest
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def test_invalid_base64_handling():
+def test_invalid_base64_handling() -> None:
     """Verify plugin handles invalid base64 gracefully."""
     plugin = Plugin()
     
@@ -22,7 +21,7 @@ def test_invalid_base64_handling():
         pass
 
 
-def test_empty_frame_base64():
+def test_empty_frame_base64() -> None:
     """Verify plugin handles empty frame gracefully."""
     plugin = Plugin()
     
