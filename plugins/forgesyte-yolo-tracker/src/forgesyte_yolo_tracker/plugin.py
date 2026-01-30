@@ -157,7 +157,7 @@ def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False)
 # ---------------------------------------------------------
 # Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
 # ---------------------------------------------------------
-class Plugin(BasePlugin):
+class Plugin(BasePlugin):  # type: ignore[misc]
     """YOLO Tracker plugin with BasePlugin architecture."""
 
     name: str = "yolo-tracker"
