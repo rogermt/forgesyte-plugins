@@ -23,7 +23,6 @@ Tests maintain behavior coverage:
 """
 
 import io
-from typing import Any
 from unittest.mock import patch
 
 import pytest

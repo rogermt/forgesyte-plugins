@@ -3,7 +3,6 @@
 import pytest
 import numpy as np
 
-from tests.constants import RUN_MODEL_TESTS, MODELS_EXIST
 
 
 pytestmark = pytest.mark.skipif(

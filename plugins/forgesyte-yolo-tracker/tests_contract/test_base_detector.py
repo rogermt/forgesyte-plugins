@@ -9,14 +9,6 @@ import base64
 import numpy as np
 import pytest
 
-from tests.constants import MODELS_EXIST, RUN_MODEL_TESTS
-
-# Skip all model-dependent tests if models not available
-pytestmark = pytest.mark.skipif(
-    not RUN_MODEL_TESTS or not MODELS_EXIST,
-    reason="Set RUN_MODEL_TESTS=1 AND download models to run",
-)
-
 
 class TestBaseDetectorInitialization:
     """Tests for BaseDetector initialization."""
