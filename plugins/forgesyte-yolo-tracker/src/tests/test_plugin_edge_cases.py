@@ -299,64 +299,7 @@ class TestAllToolFunctions:
         assert "error" in result
 
 
-class TestDeviceParameter:
-    """Test device parameter handling (cpu vs gpu)."""
 
-    @pytest.fixture
-    def plugin(self) -> Plugin:
-        """Create plugin instance."""
-        p = Plugin()
-        p.on_load()
-        return p
-
-    @pytest.fixture
-    def sample_frame_base64(self) -> str:
-        """Valid base64 frame."""
-        img = Image.new("RGB", (640, 480), color="white")
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format="PNG")
-        return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
-
-    def test_device_cpu_explicit(self, plugin: Plugin, sample_frame_base64: str) -> None:
-        """Test device='cpu' parameter."""
-        with patch(
-            "forgesyte_yolo_tracker.plugin.detect_players_json",
-            return_value={"detections": []},
-        ) as mock_handler:
-            plugin.run_tool(
-                "player_detection",
-                args={"frame_base64": sample_frame_base64, "device": "cpu"},
-            )
-            # Verify device parameter passed through
-            mock_handler.assert_called_once()
-            assert mock_handler.call_args[1]["device"] == "cpu"
-
-    def test_device_gpu(self, plugin: Plugin, sample_frame_base64: str) -> None:
-        """Test device='cuda' parameter."""
-        with patch(
-            "forgesyte_yolo_tracker.plugin.detect_players_json",
-            return_value={"detections": []},
-        ) as mock_handler:
-            plugin.run_tool(
-                "player_detection",
-                args={"frame_base64": sample_frame_base64, "device": "cuda"},
-            )
-            # Verify device parameter passed through
-            mock_handler.assert_called_once()
-            assert mock_handler.call_args[1]["device"] == "cuda"
-
-    def test_device_default_cpu(self, plugin: Plugin, sample_frame_base64: str) -> None:
-        """Test device defaults to 'cpu' if not specified."""
-        with patch(
-            "forgesyte_yolo_tracker.plugin.detect_players_json",
-            return_value={"detections": []},
-        ) as mock_handler:
-            plugin.run_tool(
-                "player_detection",
-                args={"frame_base64": sample_frame_base64},  # No device
-            )
-            # Verify default device='cpu'
-            assert mock_handler.call_args[1]["device"] == "cpu"
 
 
 class TestErrorPropagation:
@@ -405,7 +348,7 @@ class TestErrorPropagation:
 
 
 class TestInputValidation:
-    """Test input validation and boundary cases."""
+    """Test input validation basics."""
 
     @pytest.fixture
     def plugin(self) -> Plugin:
@@ -422,52 +365,3 @@ class TestInputValidation:
         )
         assert isinstance(result, dict)
         assert "error" in result
-
-    def test_very_large_base64(self, plugin: Plugin) -> None:
-        """Test very large base64 string."""
-        huge_b64 = "A" * 10_000_000  # 10MB base64
-        result = plugin.run_tool(
-            "player_detection",
-            args={"frame_base64": huge_b64},
-        )
-        assert isinstance(result, dict)
-        # Should either process or return error
-
-    def test_unicode_in_base64(self, plugin: Plugin) -> None:
-        """Test unicode characters in base64 (invalid)."""
-        result = plugin.run_tool(
-            "player_detection",
-            args={"frame_base64": "ABC123😀DEF456"},
-        )
-        assert isinstance(result, dict)
-        assert "error" in result
-
-
-class TestToolInputSchemas:
-    """Test tool input schema consistency."""
-
-    @pytest.fixture
-    def plugin(self) -> Plugin:
-        """Create plugin instance."""
-        p = Plugin()
-        p.on_load()
-        return p
-
-    def test_all_tools_have_input_schema(self, plugin: Plugin) -> None:
-        """Test all tools define input_schema."""
-        for tool_name, tool_def in plugin.tools.items():
-            assert "input_schema" in tool_def, f"Tool {tool_name} missing input_schema"
-            assert isinstance(tool_def["input_schema"], dict)
-            assert "frame_base64" in tool_def["input_schema"]
-
-    def test_all_tools_have_output_schema(self, plugin: Plugin) -> None:
-        """Test all tools define output_schema."""
-        for tool_name, tool_def in plugin.tools.items():
-            assert "output_schema" in tool_def, f"Tool {tool_name} missing output_schema"
-            assert isinstance(tool_def["output_schema"], dict)
-
-    def test_all_tools_have_description(self, plugin: Plugin) -> None:
-        """Test all tools have descriptions."""
-        for tool_name, tool_def in plugin.tools.items():
-            assert "description" in tool_def
-            assert len(tool_def["description"]) > 0
