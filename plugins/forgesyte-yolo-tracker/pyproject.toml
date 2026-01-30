@@ -55,3 +55,32 @@ python_version = "3.9"
 strict = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+
+[tool.coverage.run]
+omit = [
+    # Exclude YOLO model internals
+    "src/forgesyte_yolo_tracker/inference/*",
+    "src/forgesyte_yolo_tracker/video/*",
+    "src/forgesyte_yolo_tracker/utils/*",
+    "src/forgesyte_yolo_tracker/configs/*",
+    # Exclude tests from coverage
+    "src/tests/*",
+    # Exclude system and temp files
+    "*/sitecustomize.py",
+    "/etc/*",
+    "/usr/*",
+    "/tmp/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.",
+    "raise NotImplementedError",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "gpu: marks tests as requiring GPU (deselect with '-m \"not gpu\"')",
+    "integration: marks tests as integration tests",
+]
