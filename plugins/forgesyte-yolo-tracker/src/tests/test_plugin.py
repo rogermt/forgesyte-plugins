@@ -1,15 +1,30 @@
-"""Unit tests for YOLO tracker plugin.
+"""Unit tests for YOLO tracker plugin — BasePlugin Architecture.
 
-Tests cover:
-- Plugin metadata endpoint
-- analyze method (player detection)
-- Lifecycle hooks (on_load/on_unload)
-- Tool method availability (module-level functions)
-- Error handling
+MIGRATION NOTE (Issue #139):
+============================
+
+This test file was refactored from legacy plugin interface to BasePlugin architecture.
+
+Legacy interface (removed):
+- plugin.metadata() → plugin.tools dict (BasePlugin contract)
+- plugin.analyze() → plugin.run_tool("tool_name", args={}) (BasePlugin contract)
+
+New tests follow the OCR plugin pattern:
+- Use plugin.run_tool() for tool execution
+- Use plugin.tools dict for manifest data
+- Validate JSON-safe output (no numpy, tensors, custom objects)
+- Test lifecycle hooks (on_load, on_unload)
+
+Tests maintain behavior coverage:
+- Image format support (RGB, grayscale, RGBA)
+- Tool parameter routing
+- Error handling (invalid images, missing args)
+- Tool availability and schema validation
 """
 
 import io
-from unittest.mock import patch, MagicMock
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
@@ -17,212 +32,278 @@ from PIL import Image
 from forgesyte_yolo_tracker.plugin import Plugin
 
 
-def make_analysis_result(
-    text="", blocks=None, confidence=1.0, language=None, error=None, extra=None
-):
-    """Factory for AnalysisResult dict."""
-    if blocks is None:
-        blocks = []
-    return {
-        "text": text,
-        "blocks": blocks,
-        "confidence": confidence,
-        "language": language,
-        "error": error,
-        "extra": extra,
-    }
-
-
-class TestPluginMetadata:
-    """Test suite for plugin metadata."""
+class TestPluginTools:
+    """Test BasePlugin tools dict contract."""
 
     @pytest.fixture
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
-        return Plugin()
+        p = Plugin()
+        p.on_load()  # Initialize on load
+        return p
 
-    def test_metadata_returns_dict(self, plugin: Plugin) -> None:
-        """Test metadata endpoint returns a dictionary."""
-        metadata = plugin.metadata()
-        assert isinstance(metadata, dict)
+    def test_plugin_has_tools_dict(self, plugin: Plugin) -> None:
+        """Test plugin has tools dict (BasePlugin contract)."""
+        assert hasattr(plugin, "tools")
+        assert isinstance(plugin.tools, dict)
 
-    def test_metadata_has_required_fields(self, plugin: Plugin) -> None:
-        """Test metadata includes required fields."""
-        metadata = plugin.metadata()
-        required_fields = ["name", "version", "description", "config_schema"]
-        for field in required_fields:
-            assert field in metadata, f"Missing required field: {field}"
+    def test_plugin_has_player_detection_tool(self, plugin: Plugin) -> None:
+        """Test player_detection tool is registered."""
+        assert "player_detection" in plugin.tools
+        tool = plugin.tools["player_detection"]
+        assert "handler" in tool
+        assert "input_schema" in tool
+        assert "output_schema" in tool
 
-    def test_metadata_name_is_yolo_tracker(self, plugin: Plugin) -> None:
-        """Test metadata name is correct."""
-        metadata = plugin.metadata()
-        assert metadata["name"] == "yolo-tracker"
+    def test_plugin_has_ball_detection_tool(self, plugin: Plugin) -> None:
+        """Test ball_detection tool is registered."""
+        assert "ball_detection" in plugin.tools
+        assert "handler" in plugin.tools["ball_detection"]
 
-    def test_metadata_version_is_semantic(self, plugin: Plugin) -> None:
-        """Test metadata version follows semantic versioning."""
-        metadata = plugin.metadata()
-        version = metadata["version"]
-        parts = version.split(".")
-        assert len(parts) == 3
-        assert all(p.isdigit() for p in parts)
+    def test_plugin_has_pitch_detection_tool(self, plugin: Plugin) -> None:
+        """Test pitch_detection tool is registered."""
+        assert "pitch_detection" in plugin.tools
+        assert "handler" in plugin.tools["pitch_detection"]
 
-    def test_metadata_config_schema_includes_parameters(self, plugin: Plugin) -> None:
-        """Test config schema includes expected parameters."""
-        metadata = plugin.metadata()
-        config = metadata["config_schema"]
-        assert isinstance(config, dict)
-        assert len(config) > 0
+    def test_plugin_has_player_tracking_tool(self, plugin: Plugin) -> None:
+        """Test player_tracking tool is registered."""
+        assert "player_tracking" in plugin.tools
+        assert "handler" in plugin.tools["player_tracking"]
 
-    def test_metadata_has_meaningful_description(self, plugin: Plugin) -> None:
-        """Test metadata includes descriptive text."""
-        metadata = plugin.metadata()
-        description = metadata.get("description", "")
-        assert len(description) > 0
-        assert "YOLO" in description or "football" in description.lower()
+    def test_plugin_has_radar_tool(self, plugin: Plugin) -> None:
+        """Test radar tool is registered."""
+        assert "radar" in plugin.tools
+        assert "handler" in plugin.tools["radar"]
+
+    def test_tool_handler_is_callable(self, plugin: Plugin) -> None:
+        """Test tool handlers are callables (BasePlugin contract)."""
+        for tool_name, tool_config in plugin.tools.items():
+            handler = tool_config.get("handler")
+            assert callable(handler), (
+                f"Tool '{tool_name}' handler must be callable, got {type(handler)}"
+            )
 
 
-class TestPluginAnalyze:
-    """Test suite for plugin analyze method."""
+class TestPluginRunTool:
+    """Test plugin.run_tool() method (BasePlugin contract)."""
 
     @pytest.fixture
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
-        return Plugin()
+        p = Plugin()
+        p.on_load()
+        return p
 
     @pytest.fixture
-    def sample_image_bytes(self) -> bytes:
-        """Generate sample image bytes for testing."""
+    def sample_frame_base64(self) -> str:
+        """Generate sample frame as base64 for testing."""
+        import base64
+
         img = Image.new("RGB", (640, 480), color="white")
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
-        return img_bytes.getvalue()
+        return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_returns_analysis_result(
-        self,
-        mock_result: MagicMock,
-        mock_detect_players: MagicMock,
-        mock_detect_ball: MagicMock,
-        mock_detect_pitch: MagicMock,
-        plugin: Plugin,
-        sample_image_bytes: bytes,
+    def test_run_tool_player_detection_routing(
+        self, plugin: Plugin, sample_frame_base64: str
     ) -> None:
-        """Test analyze returns AnalysisResult object."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
-        result = plugin.analyze(sample_image_bytes)
-        assert isinstance(result, dict)
+        """Test run_tool routes to player_detection handler."""
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json",
+            return_value={"detections": []},
+        ):
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": sample_frame_base64,
+                    "device": "cpu",
+                },
+            )
 
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_returns_analysis_result_compatible_dict(
-        self,
-        mock_result: MagicMock,
-        mock_detect_players: MagicMock,
-        mock_detect_ball: MagicMock,
-        mock_detect_pitch: MagicMock,
-        plugin: Plugin,
-        sample_image_bytes: bytes,
+            assert isinstance(result, dict)
+
+    def test_run_tool_invalid_tool_name_raises_error(
+        self, plugin: Plugin, sample_frame_base64: str
     ) -> None:
-        """Test analyze returns AnalysisResult compatible dictionary with required fields."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
-        result = plugin.analyze(sample_image_bytes)
+        """Test run_tool raises ValueError for unknown tool."""
+        with pytest.raises(ValueError, match="Unknown tool"):
+            plugin.run_tool(
+                "nonexistent_tool",
+                args={"frame_base64": sample_frame_base64},
+            )
 
-        required_fields = ["text", "blocks", "confidence", "language", "error", "extra"]
-        for field in required_fields:
-            assert field in result, f"Missing AnalysisResult field: {field}"
-
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_with_options(
-        self,
-        mock_result: MagicMock,
-        mock_detect_players: MagicMock,
-        mock_detect_ball: MagicMock,
-        mock_detect_pitch: MagicMock,
-        plugin: Plugin,
-        sample_image_bytes: bytes,
-    ) -> None:
-        """Test analyze accepts options parameter."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
-        result = plugin.analyze(
-            sample_image_bytes, {"confidence_threshold": 0.7, "max_detections": 50}
+    def test_run_tool_validates_args(self, plugin: Plugin) -> None:
+        """Test run_tool handles missing frame_base64 (returns error dict)."""
+        result = plugin.run_tool(
+            "player_detection",
+            args={},  # Missing frame_base64
         )
-        assert isinstance(result, dict)
-
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_handles_invalid_image_gracefully(
-        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
-    ) -> None:
-        """Test analyze handles invalid image data without crashing."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
-        result = plugin.analyze(b"invalid image data")
-
+        # Tool returns error dict instead of raising
         assert isinstance(result, dict)
         assert "error" in result
 
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_with_grayscale_image(
-        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
-    ) -> None:
-        """Test analyze can handle grayscale images."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
-        img = Image.new("L", (640, 480), color=128)
+
+class TestPluginAnalyzeBehavior:
+    """Test analyze behavior using run_tool interface.
+
+    These tests validate the behavior expected from analyze() but executed
+    through run_tool(), which is the BasePlugin contract.
+    """
+
+    @pytest.fixture
+    def plugin(self) -> Plugin:
+        """Create plugin instance for testing."""
+        p = Plugin()
+        p.on_load()
+        return p
+
+    @pytest.fixture
+    def sample_frame_base64(self) -> str:
+        """Generate sample frame as base64."""
+        import base64
+
+        img = Image.new("RGB", (640, 480), color="white")
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
+        return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
-        result = plugin.analyze(img_bytes.getvalue())
-        assert isinstance(result, dict)
+    @pytest.fixture
+    def grayscale_frame_base64(self) -> str:
+        """Generate grayscale frame as base64."""
+        import base64
 
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_analyze_with_rgba_image(
-        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
-    ) -> None:
-        """Test analyze can handle RGBA images."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
+        img = Image.new("L", (640, 480), color=128)  # Grayscale
+        img_bytes = io.BytesIO()
+        img.save(img_bytes, format="PNG")
+        return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
+
+    @pytest.fixture
+    def rgba_frame_base64(self) -> str:
+        """Generate RGBA frame as base64."""
+        import base64
+
         img = Image.new("RGBA", (640, 480), color=(255, 255, 255, 255))
         img_bytes = io.BytesIO()
         img.save(img_bytes, format="PNG")
+        return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
-        result = plugin.analyze(img_bytes.getvalue())
+    def test_run_tool_handles_rgb_image(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
+        """Test tool handles RGB images correctly."""
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json",
+            return_value={"detections": []},
+        ):
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": sample_frame_base64,
+                    "device": "cpu",
+                },
+            )
+            assert isinstance(result, dict)
+
+    def test_run_tool_handles_grayscale_image(
+        self, plugin: Plugin, grayscale_frame_base64: str
+    ) -> None:
+        """Test tool handles grayscale images gracefully."""
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json",
+            return_value={"detections": []},
+        ):
+            # Should convert grayscale to RGB or handle appropriately
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": grayscale_frame_base64,
+                    "device": "cpu",
+                },
+            )
+            assert isinstance(result, dict)
+
+    def test_run_tool_handles_rgba_image(
+        self, plugin: Plugin, rgba_frame_base64: str
+    ) -> None:
+        """Test tool handles RGBA images (with alpha channel)."""
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json",
+            return_value={"detections": []},
+        ):
+            # Should convert RGBA to RGB or handle appropriately
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": rgba_frame_base64,
+                    "device": "cpu",
+                },
+            )
+            assert isinstance(result, dict)
+
+    def test_run_tool_handles_invalid_image_gracefully(
+        self, plugin: Plugin
+    ) -> None:
+        """Test tool handles invalid image bytes gracefully (returns error dict)."""
+        result = plugin.run_tool(
+            "player_detection",
+            args={
+                "frame_base64": "invalid_base64!!!",
+                "device": "cpu",
+            },
+        )
+        # Tool returns error dict instead of raising
         assert isinstance(result, dict)
+        assert "error" in result
+
+    def test_run_tool_respects_options(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
+        """Test tool respects options parameter."""
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json_with_annotated_frame",
+            return_value={"detections": []},
+        ):
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": sample_frame_base64,
+                    "device": "cpu",
+                    "annotated": True,
+                },
+            )
+            assert isinstance(result, dict)
+
+    def test_run_tool_output_is_json_safe(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
+        """Test tool output is JSON-serializable."""
+        import json
+
+        with patch(
+            "forgesyte_yolo_tracker.plugin.detect_players_json",
+            return_value={
+                "detections": [
+                    {"x1": 100, "y1": 200, "x2": 150, "y2": 350, "confidence": 0.92}
+                ]
+            },
+        ):
+            result = plugin.run_tool(
+                "player_detection",
+                args={
+                    "frame_base64": sample_frame_base64,
+                    "device": "cpu",
+                },
+            )
+
+            # Verify JSON serializable
+            json_str = json.dumps(result)
+            assert json_str is not None
+            parsed = json.loads(json_str)
+            assert parsed == result
 
 
 class TestPluginLifecycle:
-    """Test suite for plugin lifecycle hooks."""
+    """Test plugin lifecycle hooks (BasePlugin contract)."""
 
     @pytest.fixture
     def plugin(self) -> Plugin:
@@ -230,42 +311,20 @@ class TestPluginLifecycle:
         return Plugin()
 
     def test_on_load_does_not_crash(self, plugin: Plugin) -> None:
-        """Test on_load lifecycle hook executes without error."""
-        plugin.on_load()
+        """Test on_load lifecycle hook does not raise errors."""
+        plugin.on_load()  # Should not raise
 
     def test_on_unload_does_not_crash(self, plugin: Plugin) -> None:
-        """Test on_unload lifecycle hook executes without error."""
-        plugin.on_unload()
+        """Test on_unload lifecycle hook does not raise errors."""
+        plugin.on_unload()  # Should not raise
 
-    @patch("forgesyte_yolo_tracker.plugin.detect_pitch_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_ball_json")
-    @patch("forgesyte_yolo_tracker.plugin.detect_players_json")
-    @patch("forgesyte_yolo_tracker.plugin.AnalysisResult")
-    def test_plugin_lifecycle_sequence(
-        self, mock_result: MagicMock, mock_detect_players: MagicMock, mock_detect_ball: MagicMock, mock_detect_pitch: MagicMock, plugin: Plugin
-    ) -> None:
-        """Test complete plugin lifecycle: load -> analyze -> unload."""
-        mock_detect_players.return_value = {"detections": [], "count": 0, "classes": {}}
-        mock_detect_ball.return_value = {"ball": [], "ball_detected": False}
-        mock_detect_pitch.return_value = {"keypoints": [], "pitch_detected": False}
-        mock_result.side_effect = make_analysis_result
+    def test_plugin_lifecycle_sequence(self, plugin: Plugin) -> None:
+        """Test plugin lifecycle sequence (load → use → unload)."""
+        plugin.on_load()  # Initialize
+        assert hasattr(plugin, "tools")  # Tools should be available
+        plugin.on_unload()  # Cleanup
 
-        img = Image.new("RGB", (640, 480), color="white")
-        img_bytes = io.BytesIO()
-        img.save(img_bytes, format="PNG")
-        sample_image_bytes = img_bytes.getvalue()
-
-        plugin.on_load()
-        result = plugin.analyze(sample_image_bytes)
-        plugin.on_unload()
-
-        assert isinstance(result, dict)
-
-
-class TestPluginDocstring:
-    """Test suite for plugin documentation."""
-
-    def test_plugin_class_has_docstring(self) -> None:
-        """Test Plugin class has documentation."""
-        assert Plugin.__doc__ is not None
-        assert len(Plugin.__doc__) > 0
+    def test_plugin_class_has_docstring(self, plugin: Plugin) -> None:
+        """Test plugin class has documentation."""
+        assert plugin.__class__.__doc__ is not None
+        assert len(plugin.__class__.__doc__) > 0
