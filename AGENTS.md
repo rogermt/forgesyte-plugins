@@ -42,24 +42,31 @@ uv pip install -e ".[dev]"
 
 ### Running Tests
 
-**Fast tests only (no model/GPU):**
+**From plugin directory** (`plugins/forgesyte-yolo-tracker/`):
+
+**Contract tests only (fast, CI-safe):**
 ```bash
-uv run pytest src/tests/ -v
+make test-fast
+# or: pytest tests_contract -v --cov --cov-report=term-missing
 ```
 
-**With model tests (requires GPU/network):**
+**Heavy tests only (requires GPU/models):**
 ```bash
-RUN_MODEL_TESTS=1 uv run pytest src/tests/ -v
+make test-heavy
+# or: pytest tests_heavy -v -m heavy
 ```
 
-**Integration tests (requires GPU):**
+**All tests (contract + heavy):**
 ```bash
-RUN_INTEGRATION_TESTS=1 uv run pytest src/tests/integration/ -v
+make test-all
+# or: pytest tests_contract tests_heavy -v
 ```
 
-**Specific test file:**
+**Quality checks:**
 ```bash
-uv run pytest src/tests/utils/test_team.py -v
+make lint          # ruff check + fix
+make format        # black + isort
+make type-check    # mypy
 ```
 
 ### Code Quality
@@ -419,7 +426,7 @@ from sports.common import TeamClassifier, ViewTransformer, create_batches
 
 ## Testing on GPU
 
-Tests requiring GPU should be run on Colab or Kaggle:
+Tests requiring GPU should be run on Kaggle with CUDA available:
 
 ```bash
 git clone https://github.com/rogermt/forgesyte-plugins.git
@@ -434,9 +441,33 @@ uv pip install -e .
 # football-ball-detection-v2.pt
 # football-pitch-detection-v1.pt
 
-# Run all tests
-RUN_MODEL_TESTS=1 RUN_INTEGRATION_TESTS=1 uv run pytest src/tests/ -v
+# Run contract tests only (fast, CI-safe)
+make test-fast
+
+# Run heavy tests only
+make test-heavy
+
+# Run all tests (contract + heavy)
+make test-all
+
+# Run with coverage (excludes model internals)
+pytest tests_contract tests_heavy -v --cov --cov-report=term-missing
 ```
+
+### Test Organization (Issue #79)
+
+Tests are now organized into two categories:
+
+- `tests_contract/` - Fast, mocked, plugin-API tests (run in CI, ~90 tests, 2 min)
+- `tests_heavy/` - Model-dependent, inference tests (optional, ~200 tests, 15 min)
+
+**Why this structure:**
+- CI runs only contract tests (fast, stable)
+- Heavy tests preserved for debugging/research
+- Coverage measures plugin contract, not YOLO internals
+- Professional separation of concerns
+
+See `/docs/design/TEST_FLOW.md` for architecture diagram.
 
 ## Code Style
 

@@ -98,6 +98,8 @@ Contract Tests + Integration Tests
 | - Manifest + Tool Schemas     |
 +-------------------------------+
 
+
+
 Excluded Tests
 --------------
 Do NOT affect coverage.
@@ -127,3 +129,63 @@ Everything flows into:
 They remain in the repo but do not affect coverage.
 
 ---
+
+# **📄 1. Diagram — New Test Execution Flow**
+
+This diagram shows exactly how tests are discovered, filtered, and executed under the new architecture.  
+It’s GitHub‑friendly, uses Mermaid, and visually communicates the separation between **contract tests** and **heavy tests**.
+
+
+
+```
+
+
+---
+
+## **Mermaid Diagram**
+
+```mermaid
+flowchart TD
+
+    %% ENTRY POINT
+    A[Developer or CI runs pytest] --> B{pytest.ini rules}
+
+    %% FILTERING
+    B -->|Default: -m "not heavy"| C[Collect tests from src/tests_contract]
+    B -->|Heavy tests marked @pytest.mark.heavy| D[Skip heavy tests]
+
+    %% CONTRACT TESTS
+    subgraph CONTRACT[Contract Tests (Fast, CI-Safe)]
+        C1[test_plugin_dispatch]
+        C2[test_plugin_schema]
+        C3[test_manifest]
+        C4[test_plugin_tool_methods]
+        C5[test_class_mapping]
+        C6[test_base_detector_json]
+        C7[integration tests]
+    end
+
+    C --> CONTRACT
+
+    %% HEAVY TESTS
+    subgraph HEAVY[Heavy Tests (Optional, Slow)]
+        D1[test_inference_*]
+        D2[test_video_*]
+        D3[test_utils_*]
+        D4[test_*_refactored]
+    end
+
+    D --> HEAVY
+
+    %% EXECUTION PATHS
+    CONTRACT --> E[Run in CI and local dev]
+    HEAVY --> F[Run only via make test-all]
+
+    %% OUTPUT
+    E --> G[Coverage Report (Contract Only)]
+    F --> H[Optional Full Test Run]
+```
+
+---
+
+
