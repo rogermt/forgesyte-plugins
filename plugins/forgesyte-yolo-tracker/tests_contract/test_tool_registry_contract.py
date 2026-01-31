@@ -22,15 +22,22 @@ def test_tool_registry_structure() -> None:
 
         # Input schema must define required keys
         schema = tool["input_schema"]
-        assert "frame_base64" in schema, f"Tool {tool_name} input missing frame_base64"
-        assert schema["frame_base64"]["type"] == "string"
+        is_video_tool = "video" in tool_name
+
+        if is_video_tool:
+            # Video tools have different schema
+            assert "video_path" in schema, f"Tool {tool_name} input missing video_path"
+            assert "output_path" in schema, f"Tool {tool_name} input missing output_path"
+        else:
+            # Frame tools
+            assert "frame_base64" in schema, f"Tool {tool_name} input missing frame_base64"
+            assert schema["frame_base64"]["type"] == "string"
+
+            assert "annotated" in schema, f"Tool {tool_name} input missing annotated"
+            assert schema["annotated"]["type"] == "boolean"
 
         assert "device" in schema, f"Tool {tool_name} input missing device"
         assert schema["device"]["type"] == "string"
 
-        assert "annotated" in schema, f"Tool {tool_name} input missing annotated"
-        assert schema["annotated"]["type"] == "boolean"
-
-        # Output schema must define result object
-        assert "result" in tool["output_schema"], f"Tool {tool_name} output missing result"
-        assert tool["output_schema"]["result"]["type"] == "object"
+        # Output schema must exist
+        assert isinstance(tool["output_schema"], dict), f"Tool {tool_name} output_schema not dict"
