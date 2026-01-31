@@ -1,69 +1,86 @@
-"""Test configuration for template plugin tests."""
+"""Pytest configuration for contract tests — patches inference to prevent YOLO loading."""
 
 import sys
-from typing import Any, Dict
 from unittest.mock import MagicMock
 
-# Mock the app module and its models to allow testing without the full app
-mock_app = MagicMock()
-sys.modules["app"] = mock_app
+# Patch inference modules BEFORE they can be imported
+# This prevents YOLO, Torch, ByteTrack, OpenCV from loading during contract tests
 
-mock_models = MagicMock()
-sys.modules["app.models"] = mock_models
-
-
-def make_plugin_metadata(
-    name: str = "yolo-tracker",
-    description: str = "YOLO-based football analysis plugin",
-    version: str = "0.1.0",
-    inputs=None,
-    outputs=None,
-    config_schema=None,
-) -> Dict[str, Any]:
-    """Factory for PluginMetadata dict."""
-    if inputs is None:
-        inputs = ["image"]
-    if outputs is None:
-        outputs = ["json"]
-    if config_schema is None:
-        config_schema = {
-            "device": {"type": "string", "default": "cpu"},
-            "annotated": {"type": "boolean", "default": False},
-            "confidence": {"type": "number", "default": 0.25},
-        }
-    return {
-        "name": name,
-        "description": description,
-        "version": version,
-        "inputs": inputs,
-        "outputs": outputs,
-        "config_schema": config_schema,
-    }
+def create_mock_module(name: str) -> MagicMock:
+    """Create a mock module with common inference functions."""
+    mock = MagicMock()
+    mock.__name__ = name
+    return mock
 
 
-def make_analysis_result(
-    text: str = "",
-    blocks=None,
-    confidence: float = 1.0,
-    language=None,
-    error=None,
-    extra=None,
-) -> Dict[str, Any]:
-    """Factory for AnalysisResult dict."""
-    if blocks is None:
-        blocks = []
-    return {
-        "text": text,
-        "blocks": blocks,
-        "confidence": confidence,
-        "language": language,
-        "error": error,
-        "extra": extra,
-    }
+# Mock ultralytics (YOLO)
+sys.modules["ultralytics"] = MagicMock()
+sys.modules["ultralytics.YOLO"] = MagicMock()
 
+# Mock torch and related
+sys.modules["torch"] = MagicMock()
+sys.modules["torch.nn"] = MagicMock()
+sys.modules["torchvision"] = MagicMock()
 
-# Configure PluginMetadata mock to return a proper dict
-mock_models.PluginMetadata = make_plugin_metadata
+# Mock supervision
+sys.modules["supervision"] = MagicMock()
 
-# Configure AnalysisResult mock to return a proper dict
-mock_models.AnalysisResult = make_analysis_result
+# Mock ByteTrack
+sys.modules["ByteTrack"] = MagicMock()
+
+# Now mock inference functions themselves
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"] = create_mock_module(
+    "forgesyte_yolo_tracker.inference.player_detection"
+)
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"].detect_players_json = MagicMock(
+    return_value={"detections": [], "count": 0}
+)
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"].detect_players_json_with_annotated_frame = MagicMock(
+    return_value={"detections": [], "count": 0, "annotated_frame": ""}
+)
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"].CLASS_NAMES = {
+    0: "ball", 1: "goalkeeper", 2: "player", 3: "referee"
+}
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"].TEAM_COLORS = {
+    0: "#FFD700", 1: "#00BFFF", 2: "#FF1493", 3: "#FF6347"
+}
+
+sys.modules["forgesyte_yolo_tracker.inference.ball_detection"] = create_mock_module(
+    "forgesyte_yolo_tracker.inference.ball_detection"
+)
+sys.modules["forgesyte_yolo_tracker.inference.ball_detection"].detect_ball_json = MagicMock(
+    return_value={"detections": [], "count": 0}
+)
+sys.modules["forgesyte_yolo_tracker.inference.ball_detection"].detect_ball_json_with_annotated_frame = MagicMock(
+    return_value={"detections": [], "count": 0, "annotated_frame": ""}
+)
+
+sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"] = create_mock_module(
+    "forgesyte_yolo_tracker.inference.pitch_detection"
+)
+sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"].detect_pitch_json = MagicMock(
+    return_value={"pitch": None}
+)
+sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"].detect_pitch_json_with_annotated_frame = MagicMock(
+    return_value={"pitch": None, "annotated_frame": ""}
+)
+
+sys.modules["forgesyte_yolo_tracker.inference.player_tracking"] = create_mock_module(
+    "forgesyte_yolo_tracker.inference.player_tracking"
+)
+sys.modules["forgesyte_yolo_tracker.inference.player_tracking"].track_players_json = MagicMock(
+    return_value={"tracks": [], "count": 0}
+)
+sys.modules["forgesyte_yolo_tracker.inference.player_tracking"].track_players_json_with_annotated_frame = MagicMock(
+    return_value={"tracks": [], "count": 0, "annotated_frame": ""}
+)
+
+sys.modules["forgesyte_yolo_tracker.inference.radar"] = create_mock_module(
+    "forgesyte_yolo_tracker.inference.radar"
+)
+sys.modules["forgesyte_yolo_tracker.inference.radar"].generate_radar_json = MagicMock(
+    return_value={"radar": None}
+)
+sys.modules["forgesyte_yolo_tracker.inference.radar"].radar_json_with_annotated_frame = MagicMock(
+    return_value={"radar": None, "annotated_frame": ""}
+)
