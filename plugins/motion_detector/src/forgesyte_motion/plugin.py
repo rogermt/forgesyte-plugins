@@ -6,12 +6,14 @@ Optimized for high-frequency analysis with adaptive baseline learning.
 import io
 import logging
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-from app.models import AnalysisResult, PluginMetadata
 from PIL import Image
 from pydantic import BaseModel
+
+if TYPE_CHECKING:
+    from app.models import AnalysisResult, PluginMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class Plugin:
         self._last_motion_time: float = 0
         self._motion_history: list[dict[str, Any]] = []
 
-    def metadata(self) -> PluginMetadata:
+    def metadata(self) -> "PluginMetadata":
         """Returns Pydantic-validated metadata for MCP discovery."""
         return PluginMetadata(
             name=self.name,
@@ -89,7 +91,7 @@ class Plugin:
 
     def analyze(
         self, image_bytes: bytes, options: dict[str, Any] | None = None
-    ) -> AnalysisResult:
+    ) -> "AnalysisResult":
         """
         Calculates frame differences and updates adaptive baseline.
         Returns a universal AnalysisResult for ForgeSyte Core.

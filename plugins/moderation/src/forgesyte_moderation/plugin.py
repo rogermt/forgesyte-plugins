@@ -66,7 +66,7 @@ class Plugin(BasePlugin):
     }
 
     # NEW: Required by BasePlugin
-    def run_tool(self, tool_name: str, args: dict):
+    def run_tool(self, tool_name: str, args: dict[str, Any]) -> AnalysisResult:
         if tool_name == "analyze":
             return self.analyze(
                 image_bytes=args.get("image_bytes"),
@@ -144,7 +144,7 @@ class Plugin(BasePlugin):
 
     def _analyze_content(
         self, img: "Image.Image", categories: list[str], sensitivity: str
-    ) -> dict[str, Any]:
+    ) -> dict[str, list[CategoryResult] | float]:
         arr = np.array(img.convert("RGB"))
         results: list[CategoryResult] = []
         threshold = self._get_threshold(sensitivity)
@@ -167,7 +167,7 @@ class Plugin(BasePlugin):
         )
         return {"categories": results, "overall_confidence": overall_conf}
 
-    def _calculate_placeholder_score(self, arr: "np.ndarray", category: str) -> float:
+    def _calculate_placeholder_score(self, arr: "np.ndarray[Any, Any]", category: str) -> float:
         if category == "nsfw":
             r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
             skin_like = (

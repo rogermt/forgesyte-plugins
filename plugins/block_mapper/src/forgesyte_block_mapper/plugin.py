@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 
-class BlockPaletteEntry(BaseModel):  # type: ignore[misc]
+class BlockPaletteEntry(BaseModel):
     """Metadata for a single block type within the result palette."""
 
     count: int
@@ -34,7 +34,7 @@ class BlockPaletteEntry(BaseModel):  # type: ignore[misc]
     rgb: list[int] = Field(min_length=3, max_length=3)
 
 
-class SchematicBlock(BaseModel):  # type: ignore[misc]
+class SchematicBlock(BaseModel):
     """Individual block coordinate within the schematic."""
 
     x: int

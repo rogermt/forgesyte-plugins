@@ -34,6 +34,8 @@ dev = [
     "ruff==0.9.1",
     "mypy==1.14.0",
     "pre-commit>=3.7.0",
+    "types-PyYAML>=6.0.0",
+    "types-tqdm>=4.65.0",
 ]
 
 [project.entry-points."forgesyte.plugins"]

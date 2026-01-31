@@ -11,9 +11,10 @@ ForgeSyte plugins. It mirrors the architecture of the OCR plugin:
 """
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from app.models import AnalysisResult, PluginMetadata
+if TYPE_CHECKING:
+    from app.models import AnalysisResult, PluginMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class Plugin:
     # ---------------------------------------------------------
     # Metadata
     # ---------------------------------------------------------
-    def metadata(self) -> PluginMetadata:
+    def metadata(self) -> "PluginMetadata":
         """
         Return plugin metadata for discovery and configuration.
 
@@ -68,7 +69,7 @@ class Plugin:
         self,
         image_bytes: bytes,
         options: dict[str, Any] | None = None,
-    ) -> AnalysisResult:
+    ) -> "AnalysisResult":
         """
         Main plugin logic.
 

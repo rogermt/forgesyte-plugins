@@ -51,7 +51,7 @@ jobs:
             uv run ruff check src/ --exit-non-zero-on-fix
             cd - > /dev/null
           done
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Type check all plugins
         run: |
