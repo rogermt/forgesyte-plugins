@@ -1,0 +1,59 @@
+name: Plugin Quality Checks
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  plugin-quality:
+    name: Plugin Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Run pre-commit checks
+        run: |
+          uv run pre-commit run --all-files
+
+      - name: Test YOLO plugin (contract tests)
+        run: |
+          cd plugins/forgesyte-yolo-tracker
+          uv pip install -e ".[dev]"
+          make test-fast
+
+      - name: Test OCR plugin (contract tests)
+        run: |
+          cd plugins/ocr
+          uv pip install -e ".[dev]"
+          pytest tests/ -v --cov --cov-report=term-missing
+
+      - name: Lint all plugins
+        run: |
+          for plugin_dir in plugins/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            echo "Linting $plugin_name..."
+            cd "$plugin_dir"
+            uv run ruff check src/ --exit-non-zero-on-fix
+            cd - > /dev/null
+          done
+
+      - name: Type check all plugins
+        run: |
+          for plugin_dir in plugins/*/; do
+            plugin_name=$(basename "$plugin_dir")
+            echo "Type checking $plugin_name..."
+            cd "$plugin_dir"
+            uv run mypy src/ || true
+            cd - > /dev/null
+          done

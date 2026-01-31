@@ -1,10 +1,43 @@
 repos:
-  - repo: local
-    hooks:
-      - id: validate-yolo-manifest
-        name: Validate YOLO manifest
-        entry: uv run validate_manifest.py plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/manifest.json
-        language: system
-        files: manifest\.json$
-        pass_filenames: false
-        stages: [commit]
+   - repo: local
+     hooks:
+       - id: validate-yolo-manifest
+         name: Validate YOLO manifest
+         entry: uv run validate_manifest.py plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/manifest.json
+         language: system
+         files: manifest\.json$
+         pass_filenames: false
+         stages: [commit]
+
+       - id: enforce-plugin-structure
+         name: Enforce canonical plugin structure
+         entry: bash
+         args:
+           - -c
+           - |
+             echo "Checking for duplicate plugin package roots..."
+             FAILED=0
+             for plugin_dir in plugins/*/; do
+               plugin_name=$(basename "$plugin_dir")
+               if [ -d "$plugin_dir/$plugin_name" ]; then
+                 echo "❌ ERROR: Forbidden structure in $plugin_name/"
+                 echo "   Source code found at plugins/$plugin_name/$plugin_name/"
+                 echo "   Must use: plugins/$plugin_name/src/$plugin_name/"
+                 FAILED=1
+               fi
+               if [ -d "$plugin_dir/src/src" ]; then
+                 echo "❌ ERROR: Duplicate src/ in $plugin_name/"
+                 echo "   Found: plugins/$plugin_name/src/src/"
+                 FAILED=1
+               fi
+             done
+             if [ "$FAILED" -eq 1 ]; then
+               echo ""
+               echo "Fix the plugin structure before committing."
+               exit 1
+             fi
+             echo "✓ Plugin structure check passed."
+             exit 0
+         language: system
+         pass_filenames: false
+         stages: [commit]
