@@ -1,0 +1,13 @@
+diff --git a/plugins/forgesyte-yolo-tracker/pyproject.toml b/plugins/forgesyte-yolo-tracker/pyproject.toml
+index 1234567..abcdef0 100644
+--- a/plugins/forgesyte-yolo-tracker/pyproject.toml
++++ b/plugins/forgesyte-yolo-tracker/pyproject.toml
+@@ -32,6 +32,7 @@ dev = [
+     "pytest-cov>=3.0",
+     "black==24.1.1",
+     "ruff==0.9.1",
+     "mypy==1.14.0",
++    "pre-commit>=3.7.0",
+ ]
+ 
+ [project.entry-points."forgesyte.plugins"]
