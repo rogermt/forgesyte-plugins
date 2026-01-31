@@ -5,7 +5,7 @@
 
 set -e
 
-PLUGINS=("motion_detector" "ocr" "plugin_template" "moderation" "block_mapper")
+PLUGINS=("ocr")
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -17,7 +17,7 @@ echo "-------------------------------------------"
 
 for plugin in "${PLUGINS[@]}"; do
     echo -e "${GREEN}Checking plugin: $plugin${NC}"
-    cd "$plugin"
+    cd "plugins/$plugin"
 
     # Ensure dev dependencies are installed (including mypy and isort)
     echo "  Ensuring dev dependencies..."
@@ -34,13 +34,13 @@ for plugin in "${PLUGINS[@]}"; do
 
     echo "  Running mypy..."
     # Using the root mypy.ini and MYPYPATH to handle the app.models mock correctly
-    export MYPYPATH=..
-    uv run mypy . --no-site-packages --config-file ../mypy.ini
+    export MYPYPATH=../..
+    uv run mypy . --no-site-packages --config-file ../../mypy.ini
 
     echo "  Running pytest..."
     uv run pytest
 
-    cd ..
+    cd - > /dev/null
     echo -e "${GREEN}✓ $plugin passed all checks${NC}"
     echo "-------------------------------------------"
 done

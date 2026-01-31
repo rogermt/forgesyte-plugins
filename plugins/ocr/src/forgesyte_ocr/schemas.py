@@ -5,7 +5,7 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field
 
 
-class OCRInput(BaseModel):
+class OCRInput(BaseModel):  # type: ignore[misc]
     """Input schema for OCR analysis."""
 
     image_bytes: bytes = Field(description="Image bytes (PNG, JPG, etc.)")
@@ -14,7 +14,7 @@ class OCRInput(BaseModel):
     )
 
 
-class TextBlock(BaseModel):
+class TextBlock(BaseModel):  # type: ignore[misc]
     """Bounding box and text data for a single OCR block."""
 
     text: str
@@ -25,7 +25,7 @@ class TextBlock(BaseModel):
     line_num: int
 
 
-class OCROutput(BaseModel):
+class OCROutput(BaseModel):  # type: ignore[misc]
     """Output schema for OCR analysis."""
 
     text: str = Field(description="Full extracted text")
@@ -37,7 +37,7 @@ class OCROutput(BaseModel):
     error: Optional[str] = Field(default=None, description="Error message if failed")
 
 
-class ImageSize(BaseModel):
+class ImageSize(BaseModel):  # type: ignore[misc]
     """Image dimensions for OCR analysis."""
 
     width: int

@@ -38,14 +38,14 @@ from forgesyte_ocr.schemas import OCROutput
 class TestOCRPlugin:
     """Test suite for OCR Plugin."""
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[misc]
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         p = Plugin()
         p.on_load()  # Initialize on load
         return p
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[misc]
     def sample_image_bytes(self) -> bytes:
         """Generate sample image bytes for testing."""
         img = Image.new("RGB", (100, 100), color="white")
@@ -53,7 +53,7 @@ class TestOCRPlugin:
         img.save(img_bytes, format="PNG")
         return img_bytes.getvalue()
 
-    @pytest.fixture
+    @pytest.fixture  # type: ignore[misc]
     def mock_pytesseract_data(self) -> dict[str, Any]:
         """Mock pytesseract output data."""
         return {

@@ -95,7 +95,7 @@ wheels = [
 [[package]]
 name = "forgesyte-moderation"
 version = "1.0.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
@@ -103,7 +103,7 @@ dependencies = [
     { name = "pydantic" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "black" },
     { name = "isort" },
@@ -114,19 +114,16 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "black", marker = "extra == 'dev'" },
+    { name = "isort", marker = "extra == 'dev'" },
+    { name = "mypy", marker = "extra == 'dev'" },
     { name = "numpy", specifier = ">=1.24.0" },
     { name = "pillow", specifier = ">=10.0.0" },
     { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
+    { name = "ruff", marker = "extra == 'dev'" },
 ]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black" },
-    { name = "isort" },
-    { name = "mypy" },
-    { name = "pytest", specifier = ">=7.0.0" },
-    { name = "ruff" },
-]
+provides-extras = ["dev"]
 
 [[package]]
 name = "iniconfig"

@@ -118,12 +118,12 @@ class TestOCREntrypointContract:
         other_app_imports = plugin_source.replace(import_str, "")
 
         assert has_baseplugin_import, "Plugin missing BasePlugin import"
-        assert "from app." not in other_app_imports, (
-            "Plugin contains legacy 'from app.' imports (other than BasePlugin)"
-        )
-        assert "import app." not in other_app_imports, (
-            "Plugin contains legacy 'import app.' imports"
-        )
+        assert (
+            "from app." not in other_app_imports
+        ), "Plugin contains legacy 'from app.' imports (other than BasePlugin)"
+        assert (
+            "import app." not in other_app_imports
+        ), "Plugin contains legacy 'import app.' imports"
 
     def test_plugin_imports_from_baseplugin(self) -> None:
         """Verify plugin imports BasePlugin correctly."""

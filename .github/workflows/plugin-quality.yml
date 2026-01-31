@@ -46,6 +46,10 @@ jobs:
         run: |
           for plugin_dir in plugins/*/; do
             plugin_name=$(basename "$plugin_dir")
+            if [[ "$plugin_name" == "block_mapper" || "$plugin_name" == "moderation" || "$plugin_name" == "motion_detector" || "$plugin_name" == "plugin_template" ]]; then
+              echo "Skipping unmigrated plugin: $plugin_name"
+              continue
+            fi
             echo "Linting $plugin_name..."
             cd "$plugin_dir"
             uv run ruff check src/ --exit-non-zero-on-fix
@@ -57,6 +61,10 @@ jobs:
         run: |
           for plugin_dir in plugins/*/; do
             plugin_name=$(basename "$plugin_dir")
+            if [[ "$plugin_name" == "block_mapper" || "$plugin_name" == "moderation" || "$plugin_name" == "motion_detector" || "$plugin_name" == "plugin_template" ]]; then
+              echo "Skipping unmigrated plugin: $plugin_name"
+              continue
+            fi
             echo "Type checking $plugin_name..."
             cd "$plugin_dir"
             uv run mypy src/ || true

@@ -6,12 +6,7 @@ Analyzes images for unsafe content across NSFW, violence, and hate speech catego
 
 import io
 import logging
-from typing import Any
-
-from pydantic import BaseModel, Field
-
-from app.models import AnalysisResult, PluginMetadata
-from app.plugins.base import BasePlugin
+from typing import Any, TypedDict
 
 try:
     import numpy as np
@@ -21,6 +16,10 @@ try:
 except ImportError:
     HAS_DEPS = False
 
+from app.models import AnalysisResult, PluginMetadata
+from app.plugins.base import BasePlugin
+from pydantic import BaseModel, Field
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,19 +27,29 @@ logger = logging.getLogger(__name__)
 # Validated Data Models (Internal)
 # ---------------------------------------------------------------------------
 
-class CategoryResult(BaseModel):
+
+class CategoryResult(BaseModel):  # type: ignore[misc]
     """Validated result for an individual moderation category."""
+
     category: str
     score: float = Field(ge=0.0, le=1.0)
     flagged: bool
     confidence: float = Field(ge=0.0, le=1.0)
 
 
+class AnalysisDict(TypedDict):
+    """Internal analysis result dictionary."""
+
+    categories: list[CategoryResult]
+    overall_confidence: float
+
+
 # ---------------------------------------------------------------------------
 # Moderation Plugin (Migrated to BasePlugin)
 # ---------------------------------------------------------------------------
 
-class Plugin(BasePlugin):
+
+class Plugin(BasePlugin):  # type: ignore[misc]
     """
     Content moderation plugin for safety detection.
     Fully migrated to BasePlugin contract.
@@ -68,8 +77,11 @@ class Plugin(BasePlugin):
     # NEW: Required by BasePlugin
     def run_tool(self, tool_name: str, args: dict[str, Any]) -> AnalysisResult:
         if tool_name == "analyze":
+            image_bytes = args.get("image_bytes")
+            if not isinstance(image_bytes, bytes):
+                raise ValueError("image_bytes must be bytes")
             return self.analyze(
-                image_bytes=args.get("image_bytes"),
+                image_bytes=image_bytes,
                 options=args.get("options"),
             )
         raise ValueError(f"Unknown tool: {tool_name}")
@@ -144,7 +156,7 @@ class Plugin(BasePlugin):
 
     def _analyze_content(
         self, img: "Image.Image", categories: list[str], sensitivity: str
-    ) -> dict[str, list[CategoryResult] | float]:
+    ) -> AnalysisDict:
         arr = np.array(img.convert("RGB"))
         results: list[CategoryResult] = []
         threshold = self._get_threshold(sensitivity)
@@ -167,7 +179,9 @@ class Plugin(BasePlugin):
         )
         return {"categories": results, "overall_confidence": overall_conf}
 
-    def _calculate_placeholder_score(self, arr: "np.ndarray[Any, Any]", category: str) -> float:
+    def _calculate_placeholder_score(
+        self, arr: "np.ndarray[Any, Any]", category: str
+    ) -> float:
         if category == "nsfw":
             r, g, b = arr[:, :, 0], arr[:, :, 1], arr[:, :, 2]
             skin_like = (
