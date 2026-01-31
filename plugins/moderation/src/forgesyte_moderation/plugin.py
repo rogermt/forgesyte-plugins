@@ -8,6 +8,11 @@ import io
 import logging
 from typing import Any
 
+from pydantic import BaseModel, Field
+
+from app.models import AnalysisResult, PluginMetadata
+from app.plugins.base import BasePlugin
+
 try:
     import numpy as np
     from PIL import Image
@@ -15,11 +20,6 @@ try:
     HAS_DEPS = True
 except ImportError:
     HAS_DEPS = False
-
-from pydantic import BaseModel, Field
-
-from app.plugins.base import BasePlugin
-from app.models import AnalysisResult, PluginMetadata
 
 logger = logging.getLogger(__name__)
 
