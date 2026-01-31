@@ -40,7 +40,7 @@ jobs:
         run: |
           cd plugins/ocr
           uv pip install --system -e ".[dev]"
-          pytest tests/ -v --cov --cov-report=term-missing
+          uv run pytest -v --cov --cov-report=term-missing
 
       - name: Lint all plugins
         run: |
