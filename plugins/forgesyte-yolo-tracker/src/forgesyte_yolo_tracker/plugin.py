@@ -154,6 +154,36 @@ def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False)
     return radar_json(frame, device=device)
 
 
+def _tool_player_detection_video(video_path: str, output_path: str, device: str = "cpu"):
+    from forgesyte_yolo_tracker.video.player_detection_video import run_player_detection_video
+    run_player_detection_video(video_path, output_path, device=device)
+    return {"status": "success", "output_path": output_path}
+
+
+def _tool_player_tracking_video(video_path: str, output_path: str, device: str = "cpu"):
+    from forgesyte_yolo_tracker.video.player_tracking_video import run_player_tracking_video
+    run_player_tracking_video(video_path, output_path, device=device)
+    return {"status": "success", "output_path": output_path}
+
+
+def _tool_ball_detection_video(video_path: str, output_path: str, device: str = "cpu"):
+    from forgesyte_yolo_tracker.video.ball_detection_video import run_ball_detection_video
+    run_ball_detection_video(video_path, output_path, device=device)
+    return {"status": "success", "output_path": output_path}
+
+
+def _tool_pitch_detection_video(video_path: str, output_path: str, device: str = "cpu"):
+    from forgesyte_yolo_tracker.video.pitch_detection_video import run_pitch_detection_video
+    run_pitch_detection_video(video_path, output_path, device=device)
+    return {"status": "success", "output_path": output_path}
+
+
+def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu"):
+    from forgesyte_yolo_tracker.video.radar_video import run_radar_video
+    run_radar_video(video_path, output_path, device=device)
+    return {"status": "success", "output_path": output_path}
+
+
 # ---------------------------------------------------------
 # Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
 # ---------------------------------------------------------
@@ -217,6 +247,56 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             "output_schema": {"result": {"type": "object"}},
             "handler": _tool_radar,
         },
+        "player_detection_video": {
+            "description": "Detect players in a video",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "output_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {"status": {"type": "string"}},
+            "handler": _tool_player_detection_video,
+        },
+        "player_tracking_video": {
+            "description": "Track players in a video",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "output_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {"status": {"type": "string"}},
+            "handler": _tool_player_tracking_video,
+        },
+        "ball_detection_video": {
+            "description": "Detect ball in a video",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "output_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {"status": {"type": "string"}},
+            "handler": _tool_ball_detection_video,
+        },
+        "pitch_detection_video": {
+            "description": "Detect pitch in a video",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "output_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {"status": {"type": "string"}},
+            "handler": _tool_pitch_detection_video,
+        },
+        "radar_video": {
+            "description": "Generate radar overlay on video",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "output_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {"status": {"type": "string"}},
+            "handler": _tool_radar_video,
+        },
     }
 
     # -------------------------------------------------------
@@ -227,6 +307,16 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             raise ValueError(f"Unknown tool: {tool_name}")
 
         handler = self.tools[tool_name]["handler"]
+        
+        # Video tools use different args
+        if "video" in tool_name:
+            return handler(
+                video_path=args.get("video_path"),
+                output_path=args.get("output_path"),
+                device=args.get("device", "cpu"),
+            )
+        
+        # Frame tools use frame_base64
         return handler(
             frame_base64=args.get("frame_base64"),
             device=args.get("device", "cpu"),
