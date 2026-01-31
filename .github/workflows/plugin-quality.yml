@@ -25,7 +25,7 @@ jobs:
       - name: Install YOLO plugin dev dependencies (includes pre-commit)
         run: |
           cd plugins/forgesyte-yolo-tracker
-          uv pip install -e ".[dev]"
+          uv pip install --system -e ".[dev]"
 
       - name: Run pre-commit checks
         run: |
