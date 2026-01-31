@@ -86,9 +86,7 @@ def detect_pitch_json(
             for i, (x, y) in enumerate(keypoints_xy):
                 kp: Dict[str, Any] = {
                     "xy": [float(x), float(y)],
-                    "confidence": (
-                        float(keypoints_conf[i]) if keypoints_conf is not None else 1.0
-                    ),
+                    "confidence": (float(keypoints_conf[i]) if keypoints_conf is not None else 1.0),
                     "name": CONFIG.keypoint_names.get(i, f"keypoint_{i}"),
                 }
                 keypoint_list.append(kp)
@@ -113,9 +111,7 @@ def detect_pitch_json(
     homography: Optional[list[list[float]]] = None
     if len(pitch_polygon) >= 4:
         src_pts = np.array([kp["xy"] for kp in valid_keypoints[:4]], dtype=np.float32)
-        tgt_pts = np.array(
-            [CONFIG.vertices[i] for i in range(4)], dtype=np.float32
-        )
+        tgt_pts = np.array([CONFIG.vertices[i] for i in range(4)], dtype=np.float32)
         try:
             m, _ = cv2.findHomography(src_pts, tgt_pts)
             if m is not None:
@@ -204,9 +200,7 @@ def get_pitch_detection_model(device: str = "cpu") -> Any:
     return PITCH_DETECTOR.get_model(device=device)
 
 
-def run_pitch_detection(
-    frame: np.ndarray[Any, Any], config: Dict[str, Any]
-) -> Dict[str, Any]:
+def run_pitch_detection(frame: np.ndarray[Any, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy function for plugin.py compatibility.
 
     Delegates to either detect_pitch_json or detect_pitch_json_with_annotated_frame
@@ -227,7 +221,5 @@ def run_pitch_detection(
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_pitch_json_with_annotated_frame(
-            frame, device=device, confidence=confidence
-        )
+        return detect_pitch_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return detect_pitch_json(frame, device=device, confidence=confidence)

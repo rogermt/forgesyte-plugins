@@ -65,7 +65,8 @@ class TeamClassifier:
             self.reducer = umap.UMAP(n_components=3)
         else:
             # Fallback: use a simple scaler if umap is not available
-            from sklearn.preprocessing import StandardScaler  # type: ignore[import]
+            from sklearn.preprocessing import \
+                StandardScaler  # type: ignore[import]
 
             self.reducer = StandardScaler()  # type: ignore[assignment]
         self.cluster_model = KMeans(n_clusters=2)

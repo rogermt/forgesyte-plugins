@@ -40,25 +40,17 @@ except (ImportError, ModuleNotFoundError):
 
 
 from forgesyte_yolo_tracker.inference.ball_detection import (
-    detect_ball_json,
-    detect_ball_json_with_annotated_frame,
-)
+    detect_ball_json, detect_ball_json_with_annotated_frame)
 from forgesyte_yolo_tracker.inference.pitch_detection import (
-    detect_pitch_json,
-    detect_pitch_json_with_annotated_frame,
-)
+    detect_pitch_json, detect_pitch_json_with_annotated_frame)
 from forgesyte_yolo_tracker.inference.player_detection import (
-    detect_players_json,
-    detect_players_json_with_annotated_frame,
-)
+    detect_players_json, detect_players_json_with_annotated_frame)
 from forgesyte_yolo_tracker.inference.player_tracking import (
-    track_players_json,
-    track_players_json_with_annotated_frame,
-)
-from forgesyte_yolo_tracker.inference.radar import (
-    generate_radar_json as radar_json,
-    radar_json_with_annotated_frame,
-)
+    track_players_json, track_players_json_with_annotated_frame)
+from forgesyte_yolo_tracker.inference.radar import \
+    generate_radar_json as radar_json
+from forgesyte_yolo_tracker.inference.radar import \
+    radar_json_with_annotated_frame
 
 logger = logging.getLogger(__name__)
 
@@ -109,77 +101,112 @@ def _decode_frame_base64_safe(
 # ---------------------------------------------------------
 # Tool functions
 # ---------------------------------------------------------
-def _tool_player_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
+def _tool_player_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
     frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
     if error:
         return error
-    if annotated:
+    if annotated and frame is not None:
         return detect_players_json_with_annotated_frame(frame, device=device)
-    return detect_players_json(frame, device=device)
+    if frame is not None:
+        return detect_players_json(frame, device=device)
+    return {"error": "frame_decode_failed"}
 
 
-def _tool_player_tracking(frame_base64: str, device: str = "cpu", annotated: bool = False):
+def _tool_player_tracking(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
     frame, error = _decode_frame_base64_safe(frame_base64, "player_tracking")
     if error:
         return error
-    if annotated:
+    if annotated and frame is not None:
         return track_players_json_with_annotated_frame(frame, device=device)
-    return track_players_json(frame, device=device)
+    if frame is not None:
+        return track_players_json(frame, device=device)
+    return {"error": "frame_decode_failed"}
 
 
-def _tool_ball_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
+def _tool_ball_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
     frame, error = _decode_frame_base64_safe(frame_base64, "ball_detection")
     if error:
         return error
-    if annotated:
+    if annotated and frame is not None:
         return detect_ball_json_with_annotated_frame(frame, device=device)
-    return detect_ball_json(frame, device=device)
+    if frame is not None:
+        return detect_ball_json(frame, device=device)
+    return {"error": "frame_decode_failed"}
 
 
-def _tool_pitch_detection(frame_base64: str, device: str = "cpu", annotated: bool = False):
+def _tool_pitch_detection(
+    frame_base64: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
     frame, error = _decode_frame_base64_safe(frame_base64, "pitch_detection")
     if error:
         return error
-    if annotated:
+    if annotated and frame is not None:
         return detect_pitch_json_with_annotated_frame(frame, device=device)
-    return detect_pitch_json(frame, device=device)
+    if frame is not None:
+        return detect_pitch_json(frame, device=device)
+    return {"error": "frame_decode_failed"}
 
 
-def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False):
+def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
     frame, error = _decode_frame_base64_safe(frame_base64, "radar")
     if error:
         return error
-    if annotated:
+    if annotated and frame is not None:
         return radar_json_with_annotated_frame(frame, device=device)
-    return radar_json(frame, device=device)
+    if frame is not None:
+        return radar_json(frame, device=device)
+    return {"error": "frame_decode_failed"}
 
 
-def _tool_player_detection_video(video_path: str, output_path: str, device: str = "cpu"):
-    from forgesyte_yolo_tracker.video.player_detection_video import run_player_detection_video
+def _tool_player_detection_video(
+    video_path: str, output_path: str, device: str = "cpu"
+) -> Dict[str, str]:
+    from forgesyte_yolo_tracker.video.player_detection_video import \
+        run_player_detection_video
+
     run_player_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
 
-def _tool_player_tracking_video(video_path: str, output_path: str, device: str = "cpu"):
-    from forgesyte_yolo_tracker.video.player_tracking_video import run_player_tracking_video
+def _tool_player_tracking_video(
+    video_path: str, output_path: str, device: str = "cpu"
+) -> Dict[str, str]:
+    from forgesyte_yolo_tracker.video.player_tracking_video import \
+        run_player_tracking_video
+
     run_player_tracking_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
 
-def _tool_ball_detection_video(video_path: str, output_path: str, device: str = "cpu"):
-    from forgesyte_yolo_tracker.video.ball_detection_video import run_ball_detection_video
+def _tool_ball_detection_video(
+    video_path: str, output_path: str, device: str = "cpu"
+) -> Dict[str, str]:
+    from forgesyte_yolo_tracker.video.ball_detection_video import \
+        run_ball_detection_video
+
     run_ball_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
 
-def _tool_pitch_detection_video(video_path: str, output_path: str, device: str = "cpu"):
-    from forgesyte_yolo_tracker.video.pitch_detection_video import run_pitch_detection_video
+def _tool_pitch_detection_video(
+    video_path: str, output_path: str, device: str = "cpu"
+) -> Dict[str, str]:
+    from forgesyte_yolo_tracker.video.pitch_detection_video import \
+        run_pitch_detection_video
+
     run_pitch_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
 
-def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu"):
+def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu") -> Dict[str, str]:
     from forgesyte_yolo_tracker.video.radar_video import run_radar_video
+
     run_radar_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
@@ -302,12 +329,12 @@ class Plugin(BasePlugin):  # type: ignore[misc]
     # -------------------------------------------------------
     # Dispatcher
     # -------------------------------------------------------
-    def run_tool(self, tool_name: str, args: dict) -> Any:
+    def run_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
         handler = self.tools[tool_name]["handler"]
-        
+
         # Video tools use different args
         if "video" in tool_name:
             return handler(
@@ -315,15 +342,13 @@ class Plugin(BasePlugin):  # type: ignore[misc]
                 output_path=args.get("output_path"),
                 device=args.get("device", "cpu"),
             )
-        
+
         # Frame tools use frame_base64
         return handler(
             frame_base64=args.get("frame_base64"),
             device=args.get("device", "cpu"),
             annotated=args.get("annotated", False),
         )
-
-
 
     def __init__(self) -> None:
         """Initialize YOLO Tracker plugin."""

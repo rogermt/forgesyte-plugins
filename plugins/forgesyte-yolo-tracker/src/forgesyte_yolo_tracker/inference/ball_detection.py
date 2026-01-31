@@ -129,9 +129,7 @@ def get_ball_detection_model(device: str = "cpu") -> Any:
     return BALL_DETECTOR.get_model(device=device)
 
 
-def run_ball_detection(
-    frame: np.ndarray[Any, Any], config: Dict[str, Any]
-) -> Dict[str, Any]:
+def run_ball_detection(frame: np.ndarray[Any, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """Legacy function for plugin.py compatibility.
 
     Delegates to either detect_ball_json or detect_ball_json_with_annotated_frame
@@ -152,7 +150,5 @@ def run_ball_detection(
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_ball_json_with_annotated_frame(
-            frame, device=device, confidence=confidence
-        )
+        return detect_ball_json_with_annotated_frame(frame, device=device, confidence=confidence)
     return detect_ball_json(frame, device=device, confidence=confidence)

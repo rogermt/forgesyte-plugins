@@ -12,13 +12,9 @@ Custom forgeSYTE modules:
 - soccer_pitch.py - Soccer pitch drawing utilities
 """
 
-from .team import create_batches, TeamClassifier
+from . import ball, soccer_pitch
+from .team import TeamClassifier, create_batches
 from .view import ViewTransformer
-
-from . import (
-    ball,
-    soccer_pitch,
-)
 
 __all__ = [
     # From local implementations

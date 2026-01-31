@@ -1,6 +1,7 @@
 """View transformation utilities."""
 
 from typing import Tuple
+
 import cv2
 import numpy as np
 import numpy.typing as npt

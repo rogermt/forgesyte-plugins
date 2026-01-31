@@ -4,9 +4,10 @@ These tests verify the TeamClassifier prediction workflow by properly mocking
 model dependencies to avoid network/model loading during testing.
 """
 
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 from forgesyte_yolo_tracker.utils import TeamClassifier, create_batches
 
@@ -21,9 +22,10 @@ class TestTeamClassifierPrediction:
     @pytest.fixture
     def mock_classifier(self) -> TeamClassifier:
         """Create a TeamClassifier with fully mocked model dependencies."""
-        with patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel") as mock_model, patch(
-            "forgesyte_yolo_tracker.utils.team.AutoProcessor"
-        ) as mock_processor:
+        with (
+            patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel") as mock_model,
+            patch("forgesyte_yolo_tracker.utils.team.AutoProcessor") as mock_processor,
+        ):
             classifier = TeamClassifier.__new__(TeamClassifier)
             classifier.device = "cpu"
             classifier.batch_size = 32

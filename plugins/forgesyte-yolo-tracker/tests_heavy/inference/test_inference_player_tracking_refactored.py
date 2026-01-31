@@ -48,9 +48,8 @@ class TestTrackIDAssignment:
 
     def test_track_id_assignment_single_player(self, sample_frame: np.ndarray) -> None:
         """Verify track ID assigned to single player."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 
@@ -62,9 +61,8 @@ class TestTrackIDAssignment:
 
     def test_track_id_uniqueness_multi_player(self, sample_frame: np.ndarray) -> None:
         """Verify each player gets unique track ID."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -77,9 +75,8 @@ class TestTrackIDAssignment:
 
     def test_track_id_format_is_integer(self, sample_frame: np.ndarray) -> None:
         """Verify tracking_id field is integer."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -90,9 +87,8 @@ class TestTrackIDAssignment:
 
     def test_track_ids_list_contains_valid_ids(self, sample_frame: np.ndarray) -> None:
         """Verify track_ids list contains only valid IDs."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         track_ids = result["track_ids"]
@@ -112,9 +108,8 @@ class TestTrackPersistence:
 
     def test_track_persistence_basic(self, sample_frame: np.ndarray) -> None:
         """Verify same frame returns consistent results."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         # Run same frame twice
         result1 = track_players_json(sample_frame, device="cpu")
@@ -126,9 +121,8 @@ class TestTrackPersistence:
 
     def test_track_persistence_structure(self, sample_frame: np.ndarray) -> None:
         """Verify detection structure is consistent."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -142,9 +136,8 @@ class TestTrackPersistence:
 
     def test_xyxy_format_is_list_of_4(self, sample_frame: np.ndarray) -> None:
         """Verify xyxy format is [x1, y1, x2, y2]."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -157,9 +150,8 @@ class TestTrackPersistence:
 
     def test_confidence_in_valid_range(self, sample_frame: np.ndarray) -> None:
         """Verify confidence values are in [0, 1]."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -180,9 +172,8 @@ class TestOcclusionHandling:
 
     def test_partial_detection_confidence_lower(self, sample_frame: np.ndarray) -> None:
         """Verify partially visible player has valid confidence."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -194,9 +185,8 @@ class TestOcclusionHandling:
 
     def test_multiple_detections_handled(self, sample_frame: np.ndarray) -> None:
         """Verify multiple detections don't crash."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 
@@ -206,9 +196,8 @@ class TestOcclusionHandling:
 
     def test_no_detections_returns_valid_response(self, sample_frame: np.ndarray) -> None:
         """Verify empty detections returns valid response."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         # Create empty frame
         empty_frame = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -229,9 +218,8 @@ class TestTrackJSONOutput:
 
     def test_json_response_structure(self, sample_frame: np.ndarray) -> None:
         """Verify JSON has required top-level keys."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 
@@ -244,9 +232,8 @@ class TestTrackJSONOutput:
         """Verify result is JSON serializable."""
         import json
 
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 
@@ -268,9 +255,8 @@ class TestAnnotatedFrameOutput:
 
     def test_annotated_frame_returns_base64(self, sample_frame: np.ndarray) -> None:
         """Verify annotated frame output includes base64."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json_with_annotated_frame,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json_with_annotated_frame
 
         result = track_players_json_with_annotated_frame(sample_frame, device="cpu")
 
@@ -282,9 +268,8 @@ class TestAnnotatedFrameOutput:
         """Verify base64 string is valid."""
         import base64
 
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json_with_annotated_frame,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json_with_annotated_frame
 
         result = track_players_json_with_annotated_frame(sample_frame, device="cpu")
         b64_str = result["annotated_frame_base64"]
@@ -306,9 +291,8 @@ class TestConfidenceFiltering:
 
     def test_confidence_parameter_accepted(self, sample_frame: np.ndarray) -> None:
         """Verify confidence parameter is accepted."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         # Should accept confidence parameter
         result = track_players_json(sample_frame, device="cpu", confidence=0.5)
@@ -318,9 +302,8 @@ class TestConfidenceFiltering:
 
     def test_high_confidence_threshold(self, sample_frame: np.ndarray) -> None:
         """Verify high confidence threshold reduces detections."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         # Low threshold - should get more detections
         result_low = track_players_json(sample_frame, device="cpu", confidence=0.1)
@@ -341,9 +324,8 @@ class TestDeviceParameter:
 
     def test_device_cpu_accepted(self, sample_frame: np.ndarray) -> None:
         """Verify device='cpu' parameter works."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 
@@ -352,9 +334,8 @@ class TestDeviceParameter:
 
     def test_device_cuda_accepted(self, sample_frame: np.ndarray) -> None:
         """Verify device='cuda' parameter accepted (may fall back to cpu)."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         # Should accept cuda parameter (may use cpu if not available)
         try:
@@ -375,9 +356,8 @@ class TestClassNames:
 
     def test_valid_class_names(self, sample_frame: np.ndarray) -> None:
         """Verify class names are valid."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -388,9 +368,8 @@ class TestClassNames:
 
     def test_class_id_matches_class_name(self, sample_frame: np.ndarray) -> None:
         """Verify class_id and class_name correspond."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
         detections = result["detections"]
@@ -412,9 +391,8 @@ class TestCountConsistency:
 
     def test_count_matches_detections_length(self, sample_frame: np.ndarray) -> None:
         """Verify count matches length of detections list."""
-        from forgesyte_yolo_tracker.inference.player_tracking import (
-            track_players_json,
-        )
+        from forgesyte_yolo_tracker.inference.player_tracking import \
+            track_players_json
 
         result = track_players_json(sample_frame, device="cpu")
 

@@ -12,8 +12,8 @@ import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 from forgesyte_yolo_tracker.configs import get_model_path
+from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
 
 MODEL_NAME = get_model_path("player_detection")
 MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)

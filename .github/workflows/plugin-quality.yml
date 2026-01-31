@@ -52,10 +52,10 @@ jobs:
             fi
             echo "Linting $plugin_name..."
             cd "$plugin_dir"
+            # Use root pyproject.toml for ruff config if needed, or assume default is fine
             uv run ruff check src/ --exit-non-zero-on-fix
             cd - > /dev/null
           done
-        continue-on-error: false
 
       - name: Type check all plugins
         run: |
@@ -67,7 +67,8 @@ jobs:
             fi
             echo "Type checking $plugin_name..."
             cd "$plugin_dir"
-            uv run mypy src/ || true
+            # Explicitly use root mypy.ini and set MYPYPATH
+            export MYPYPATH=../..
+            uv run mypy src/ --config-file ../../mypy.ini
             cd - > /dev/null
           done
-        continue-on-error: true

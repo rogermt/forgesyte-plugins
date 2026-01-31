@@ -71,8 +71,7 @@ class TestToolsSchema:
             handler = tool_meta["handler"]
             # Handler must be callable (function reference)
             assert callable(handler), (
-                f"Tool '{tool_name}' handler must be callable, "
-                f"got {type(handler)}"
+                f"Tool '{tool_name}' handler must be callable, " f"got {type(handler)}"
             )
 
     def test_tools_schema_json_serializable(self, plugin: Plugin) -> None:
@@ -83,16 +82,13 @@ class TestToolsSchema:
             try:
                 json.dumps(serializable)
             except Exception as e:
-                pytest.fail(
-                    f"Tool '{tool_name}' schema not JSON-serializable: {e}"
-                )
+                pytest.fail(f"Tool '{tool_name}' schema not JSON-serializable: {e}")
 
     def test_no_invalid_fields_in_tools(self, plugin: Plugin) -> None:
         """Verify tools don't use old field names (inputs/outputs)."""
         for tool_name, tool_meta in plugin.tools.items():
             assert "inputs" not in tool_meta, (
-                f"Tool '{tool_name}' uses deprecated 'inputs' field. "
-                "Use 'input_schema' instead."
+                f"Tool '{tool_name}' uses deprecated 'inputs' field. " "Use 'input_schema' instead."
             )
             assert "outputs" not in tool_meta, (
                 f"Tool '{tool_name}' uses deprecated 'outputs' field. "

@@ -1,8 +1,9 @@
 """Tests for ball tracking and annotation utilities."""
 
+from collections import deque
+
 import numpy as np
 import supervision as sv
-from collections import deque
 
 from forgesyte_yolo_tracker.utils.ball import BallAnnotator, BallTracker
 

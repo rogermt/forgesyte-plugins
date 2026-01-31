@@ -12,7 +12,8 @@ class TestVideoModelPaths:
 
     def test_player_detection_video_model_path_is_resolved(self) -> None:
         """Verify player detection video uses config-based model path."""
-        from forgesyte_yolo_tracker.video.player_detection_video import MODEL_PATH
+        from forgesyte_yolo_tracker.video.player_detection_video import \
+            MODEL_PATH
 
         assert isinstance(MODEL_PATH, str)
         assert MODEL_PATH.endswith(".pt")
@@ -21,7 +22,8 @@ class TestVideoModelPaths:
 
     def test_player_tracking_video_model_path_is_resolved(self) -> None:
         """Verify player tracking video uses config-based model path."""
-        from forgesyte_yolo_tracker.video.player_tracking_video import MODEL_PATH
+        from forgesyte_yolo_tracker.video.player_tracking_video import \
+            MODEL_PATH
 
         assert isinstance(MODEL_PATH, str)
         assert MODEL_PATH.endswith(".pt")
@@ -30,7 +32,8 @@ class TestVideoModelPaths:
 
     def test_ball_detection_video_model_path_is_resolved(self) -> None:
         """Verify ball detection video uses config-based model path."""
-        from forgesyte_yolo_tracker.video.ball_detection_video import MODEL_PATH
+        from forgesyte_yolo_tracker.video.ball_detection_video import \
+            MODEL_PATH
 
         assert isinstance(MODEL_PATH, str)
         assert MODEL_PATH.endswith(".pt")
@@ -39,7 +42,8 @@ class TestVideoModelPaths:
 
     def test_pitch_detection_video_model_path_is_resolved(self) -> None:
         """Verify pitch detection video uses config-based model path."""
-        from forgesyte_yolo_tracker.video.pitch_detection_video import MODEL_PATH
+        from forgesyte_yolo_tracker.video.pitch_detection_video import \
+            MODEL_PATH
 
         assert isinstance(MODEL_PATH, str)
         assert MODEL_PATH.endswith(".pt")
@@ -66,12 +70,18 @@ class TestVideoModelPaths:
 
     def test_all_video_model_paths_use_absolute_path(self) -> None:
         """Verify all video model paths are absolute."""
-        from forgesyte_yolo_tracker.video.player_detection_video import MODEL_PATH as pd_path
-        from forgesyte_yolo_tracker.video.player_tracking_video import MODEL_PATH as pt_path
-        from forgesyte_yolo_tracker.video.ball_detection_video import MODEL_PATH as bd_path
-        from forgesyte_yolo_tracker.video.pitch_detection_video import MODEL_PATH as pit_path
-        from forgesyte_yolo_tracker.video.radar_video import PLAYER_MODEL_PATH as r_player
-        from forgesyte_yolo_tracker.video.radar_video import PITCH_MODEL_PATH as r_pitch
+        from forgesyte_yolo_tracker.video.ball_detection_video import \
+            MODEL_PATH as bd_path
+        from forgesyte_yolo_tracker.video.pitch_detection_video import \
+            MODEL_PATH as pit_path
+        from forgesyte_yolo_tracker.video.player_detection_video import \
+            MODEL_PATH as pd_path
+        from forgesyte_yolo_tracker.video.player_tracking_video import \
+            MODEL_PATH as pt_path
+        from forgesyte_yolo_tracker.video.radar_video import \
+            PITCH_MODEL_PATH as r_pitch
+        from forgesyte_yolo_tracker.video.radar_video import \
+            PLAYER_MODEL_PATH as r_player
 
         for path in [pd_path, pt_path, bd_path, pit_path, r_player, r_pitch]:
             p = Path(path)

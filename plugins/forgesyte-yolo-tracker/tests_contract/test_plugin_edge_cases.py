@@ -52,7 +52,7 @@ class TestBase64Validation:
 
     def test_empty_base64_after_strip(self, plugin: Plugin) -> None:
         """Test empty base64 string after whitespace strip raises error.
-        
+
         This triggers line 75: raise ValueError("Empty base64 string after processing")
         """
         result = plugin.run_tool(
@@ -70,7 +70,7 @@ class TestBase64Validation:
         b64_data = base64.b64encode(frame_bytes.getvalue()).decode("utf-8")
 
         # Add newlines (common in multi-line base64)
-        b64_with_newlines = "\n".join([b64_data[i:i+80] for i in range(0, len(b64_data), 80)])
+        b64_with_newlines = "\n".join([b64_data[i : i + 80] for i in range(0, len(b64_data), 80)])
 
         result = plugin.run_tool(
             "player_detection",
@@ -137,7 +137,7 @@ class TestAllToolFunctions:
         self, plugin: Plugin, sample_frame_base64: str
     ) -> None:
         """Test _tool_player_tracking with annotated=True.
-        
+
         Triggers lines 122-127: annotated path in _tool_player_tracking
         """
         with patch(
@@ -182,7 +182,7 @@ class TestAllToolFunctions:
         self, plugin: Plugin, sample_frame_base64: str
     ) -> None:
         """Test _tool_ball_detection with annotated=True.
-        
+
         Triggers lines 131-136: annotated path in _tool_ball_detection
         """
         with patch(
@@ -227,7 +227,7 @@ class TestAllToolFunctions:
         self, plugin: Plugin, sample_frame_base64: str
     ) -> None:
         """Test _tool_pitch_detection with annotated=True.
-        
+
         Triggers lines 140-145: annotated path in _tool_pitch_detection
         """
         with patch(
@@ -254,9 +254,7 @@ class TestAllToolFunctions:
         assert "error" in result
 
     # === RADAR ===
-    def test_radar_tool_no_annotated(
-        self, plugin: Plugin, sample_frame_base64: str
-    ) -> None:
+    def test_radar_tool_no_annotated(self, plugin: Plugin, sample_frame_base64: str) -> None:
         """Test _tool_radar without annotated frame."""
         with patch(
             "forgesyte_yolo_tracker.plugin.radar_json",
@@ -268,11 +266,9 @@ class TestAllToolFunctions:
             )
             assert isinstance(result, dict)
 
-    def test_radar_tool_with_annotated(
-        self, plugin: Plugin, sample_frame_base64: str
-    ) -> None:
+    def test_radar_tool_with_annotated(self, plugin: Plugin, sample_frame_base64: str) -> None:
         """Test _tool_radar with annotated=True.
-        
+
         Triggers lines 149-154: annotated path in _tool_radar
         """
         with patch(
@@ -297,9 +293,6 @@ class TestAllToolFunctions:
         )
         assert isinstance(result, dict)
         assert "error" in result
-
-
-
 
 
 class TestErrorPropagation:

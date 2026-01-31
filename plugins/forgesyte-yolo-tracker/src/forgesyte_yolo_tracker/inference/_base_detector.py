@@ -66,9 +66,7 @@ class BaseDetector:
             ValueError: If confidence threshold not in [0.0, 1.0]
         """
         if not 0.0 <= default_confidence <= 1.0:
-            raise ValueError(
-                f"default_confidence must be in [0.0, 1.0], got {default_confidence}"
-            )
+            raise ValueError(f"default_confidence must be in [0.0, 1.0], got {default_confidence}")
 
         self.detector_name: str = detector_name
         self.model_name: str = model_name
@@ -104,6 +102,7 @@ class BaseDetector:
             FileNotFoundError: If model file does not exist
         """
         from ultralytics import YOLO
+
         if self._model is not None:
             logger.debug(f"🎯 Using cached {self.detector_name} model")
             return self._model
@@ -119,8 +118,7 @@ class BaseDetector:
 
         if model_size_kb < 1:
             logger.warning(
-                f"⚠️  Model is a stub ({model_size_kb:.2f} KB)! "
-                "Replace with real model."
+                f"⚠️  Model is a stub ({model_size_kb:.2f} KB)! " "Replace with real model."
             )
 
         self._model = YOLO(self.model_path).to(device=device)
@@ -274,9 +272,7 @@ class BaseDetector:
 
         # Create annotated frame
         model = self.get_model(device=device)
-        detection_result = model(
-            frame, imgsz=self.imgsz, conf=confidence, verbose=False
-        )[0]
+        detection_result = model(frame, imgsz=self.imgsz, conf=confidence, verbose=False)[0]
         detections = sv.Detections.from_ultralytics(detection_result)
 
         # Build labels if class_names provided
@@ -284,10 +280,7 @@ class BaseDetector:
         if self.class_names:
             cls_arr = detections.class_id
             if cls_arr is not None:
-                labels = [
-                    self.class_names.get(int(cls), f"class_{cls}")
-                    for cls in cls_arr
-                ]
+                labels = [self.class_names.get(int(cls), f"class_{cls}") for cls in cls_arr]
 
         # Annotate frame
         annotated = self._annotate_frame(frame, detections, labels)
@@ -325,9 +318,7 @@ class BaseDetector:
         if self.colors:
             cls_arr = detections.class_id
             if cls_arr is not None:
-                color_list = [
-                    self.colors.get(int(cls), "#FFFFFF") for cls in cls_arr
-                ]
+                color_list = [self.colors.get(int(cls), "#FFFFFF") for cls in cls_arr]
                 colors = sv.ColorPalette.from_hex(color_list)
             else:
                 colors = sv.ColorPalette.DEFAULT
@@ -346,8 +337,6 @@ class BaseDetector:
                 text_padding=5,
                 text_thickness=1,
             )
-            annotated = label_annotator.annotate(
-                annotated, detections, labels=labels
-            )
+            annotated = label_annotator.annotate(annotated, detections, labels=labels)
 
         return annotated  # type: ignore[no-any-return]

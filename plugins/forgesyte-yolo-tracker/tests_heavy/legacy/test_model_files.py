@@ -30,6 +30,7 @@ pytestmark = pytest.mark.skipif(
 def _get_model_path(model_name: str) -> Path:
     """Get path to model file."""
     from forgesyte_yolo_tracker.configs import MODEL_CONFIG_PATH
+
     config_dir = Path(MODEL_CONFIG_PATH).parent
     models_dir = config_dir.parent / "models"
     return models_dir / model_name

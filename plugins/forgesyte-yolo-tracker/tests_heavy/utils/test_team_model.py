@@ -6,9 +6,10 @@ These tests are skipped by default. Run with:
 
 import os
 from typing import List
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 from forgesyte_yolo_tracker.utils import TeamClassifier
 

@@ -5,7 +5,7 @@
 
 set -e
 
-PLUGINS=("ocr")
+PLUGINS=("ocr" "forgesyte-yolo-tracker")
 
 # Colors for output
 GREEN='\033[0;32m'
