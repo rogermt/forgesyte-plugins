@@ -11,6 +11,8 @@ from typing import Any, Dict
 import numpy as np
 import pytest
 
+from tests_heavy.constants import RUN_MODEL_TESTS, MODELS_EXIST
+
 
 pytestmark = pytest.mark.skipif(
     not RUN_MODEL_TESTS or not MODELS_EXIST,

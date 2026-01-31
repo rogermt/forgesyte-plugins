@@ -1,0 +1,35 @@
+diff --git a/plugins/PLUGIN_STRUCTURE.md b/plugins/PLUGIN_STRUCTURE.md
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/plugins/PLUGIN_STRUCTURE.md
+@@ Canonical Plugin Structure
+
+Each plugin MUST follow this structure:
+
+```
+plugins/<plugin-name>/
+├── src/
+│   └── <plugin_package>/
+│       ├── __init__.py
+│       ├── plugin.py
+│       ├── manifest.json
+│       ├── inference/
+│       ├── utils/
+│       └── configs/
+├── tests_contract/
+├── tests_heavy/
+├── pyproject.toml
+├── README.md
+└── Makefile
+```
+
+FORBIDDEN STRUCTURES (will be caught by pre-commit hook):
+- plugins/<plugin-name>/<plugin_package>/ (source at root, not in src/)
+- plugins/<plugin-name>/<plugin_package>/<plugin_package>/ (duplicate nesting)
+- plugins/src/ (src at plugins root, not per-plugin)
+
+This ensures:
+✓ One canonical module root per plugin
+✓ Consistent import paths across all plugins
+✓ No duplicate module resolution conflicts
