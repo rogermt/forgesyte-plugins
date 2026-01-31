@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  ci:
+    name: Run Tests + Pre-commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v1
+
+      - name: Install project with dev dependencies
+        run: uv pip install -e ".[dev]"
+
+      - name: Install pre-commit hooks
+        run: uv run pre-commit install --install-hooks
+
+      - name: Diagnostic: Check pre-commit availability
+        run: |
+          echo "Checking pre-commit installation..."
+          uv run python scripts/check_precommit.py
+
+      - name: Run pre-commit
+        run: uv run pre-commit run --all-files
+
+      - name: Run tests
+        run: uv run pytest --cov=app --cov-report=term-missing

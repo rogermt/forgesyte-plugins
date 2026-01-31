@@ -33,6 +33,7 @@ dev = [
     "black==24.1.1",
     "ruff==0.9.1",
     "mypy==1.14.0",
+    "pre-commit>=3.7.0",
 ]
 
 [project.entry-points."forgesyte.plugins"]
