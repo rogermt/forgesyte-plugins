@@ -73,7 +73,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         """Execute a tool by name with the given arguments.
 
         Args:
-            tool_name: Name of tool to execute
+            tool_name: Name of tool to execute (accepts "default" as alias for "analyze")
             args: Tool arguments dict
 
         Returns:
@@ -82,7 +82,8 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         Raises:
             ValueError: If tool name not found
         """
-        if tool_name == "analyze":
+        # Accept "default" as alias for "analyze" (for backward compatibility)
+        if tool_name in ("default", "analyze"):
             image_bytes = args.get("image_bytes")
             if not isinstance(image_bytes, bytes):
                 raise ValueError("image_bytes must be bytes")

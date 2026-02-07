@@ -449,3 +449,30 @@ class TestOCRPlugin:
         assert (
             response.confidence > 0.80
         ), f"Confidence {response.confidence} below 80% threshold"
+
+    def test_run_tool_accepts_default_tool_alias(
+        self, plugin: Plugin, sample_image_bytes: bytes
+    ) -> None:
+        """Plugin should accept 'default' as an alias for 'analyze'.
+
+        This test verifies Issue #164 fix: Plugin now accepts tool_name="default"
+        as a fallback alias for "analyze" for backward compatibility.
+
+        When the API sends tool_name="default", the plugin gracefully accepts
+        it and executes the analyze tool.
+        """
+        # Should NOT raise ValueError - should work
+        result = plugin.run_tool("default", {"image_bytes": sample_image_bytes})
+        assert result is not None
+
+    def test_run_tool_accepts_analyze_tool_name(
+        self, plugin: Plugin, sample_image_bytes: bytes
+    ) -> None:
+        """Plugin should accept 'analyze' as the valid tool_name.
+
+        This is the actual tool name that the plugin exposes via its
+        run_tool() method.
+        """
+        # This should work without raising
+        result = plugin.run_tool("analyze", {"image_bytes": sample_image_bytes})
+        assert result is not None
