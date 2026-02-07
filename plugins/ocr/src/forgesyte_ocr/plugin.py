@@ -73,7 +73,8 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         """Execute a tool by name with the given arguments.
 
         Args:
-            tool_name: Name of tool to execute (accepts "default" as alias for "analyze")
+            tool_name: Name of tool to execute. Accepts "default" as alias
+                for "analyze" for backward compatibility.
             args: Tool arguments dict
 
         Returns:
