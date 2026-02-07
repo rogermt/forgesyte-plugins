@@ -78,14 +78,6 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      - name: Cache uv
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/uv
-          key: uv-${{ runner.os }}-${{ matrix.python-version }}
-          restore-keys: |
-            uv-${{ runner.os }}-
-
       - name: Install YOLO plugin dev dependencies
         run: |
           cd plugins/forgesyte-yolo-tracker
