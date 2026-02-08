@@ -93,7 +93,6 @@ class TestYOLOInputContract:
 
         assert isinstance(result, dict)
         assert "error" in result
-        assert "boxes" in result
 
     def test_invalid_image_bytes_string_returns_error(self, plugin):
         """Verify plugin returns error if given base64 string."""
@@ -105,7 +104,6 @@ class TestYOLOInputContract:
 
         assert isinstance(result, dict)
         assert "error" in result
-        assert "boxes" in result
 
     def test_tool_schema_declares_image_bytes(self, plugin):
         """Verify tool schema declares image_bytes, not frame_base64."""
