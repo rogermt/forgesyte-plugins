@@ -36,18 +36,12 @@ class TestModelsDirectoryStructure:
 
     def test_all_inference_modules_use_correct_models_path(self) -> None:
         """Verify all inference modules resolve models path correctly."""
-        from forgesyte_yolo_tracker.inference.ball_detection import \
-            MODEL_PATH as bd_path
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            MODEL_PATH as pit_path
-        from forgesyte_yolo_tracker.inference.player_detection import \
-            MODEL_PATH as pd_path
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            MODEL_PATH as pt_path
-        from forgesyte_yolo_tracker.inference.radar import \
-            PITCH_MODEL_PATH as r_pitch
-        from forgesyte_yolo_tracker.inference.radar import \
-            PLAYER_MODEL_PATH as r_player
+        from forgesyte_yolo_tracker.inference.ball_detection import MODEL_PATH as bd_path
+        from forgesyte_yolo_tracker.inference.pitch_detection import MODEL_PATH as pit_path
+        from forgesyte_yolo_tracker.inference.player_detection import MODEL_PATH as pd_path
+        from forgesyte_yolo_tracker.inference.player_tracking import MODEL_PATH as pt_path
+        from forgesyte_yolo_tracker.inference.radar import PITCH_MODEL_PATH as r_pitch
+        from forgesyte_yolo_tracker.inference.radar import PLAYER_MODEL_PATH as r_player
 
         # All should contain "forgesyte_yolo_tracker/models"
         paths = [pd_path, pt_path, bd_path, pit_path, r_player, r_pitch]
@@ -61,18 +55,12 @@ class TestModelsDirectoryStructure:
 
     def test_all_video_modules_use_correct_models_path(self) -> None:
         """Verify all video modules resolve models path correctly."""
-        from forgesyte_yolo_tracker.video.ball_detection_video import \
-            MODEL_PATH as bd_path
-        from forgesyte_yolo_tracker.video.pitch_detection_video import \
-            MODEL_PATH as pit_path
-        from forgesyte_yolo_tracker.video.player_detection_video import \
-            MODEL_PATH as pd_path
-        from forgesyte_yolo_tracker.video.player_tracking_video import \
-            MODEL_PATH as pt_path
-        from forgesyte_yolo_tracker.video.radar_video import \
-            PITCH_MODEL_PATH as r_pitch
-        from forgesyte_yolo_tracker.video.radar_video import \
-            PLAYER_MODEL_PATH as r_player
+        from forgesyte_yolo_tracker.video.ball_detection_video import MODEL_PATH as bd_path
+        from forgesyte_yolo_tracker.video.pitch_detection_video import MODEL_PATH as pit_path
+        from forgesyte_yolo_tracker.video.player_detection_video import MODEL_PATH as pd_path
+        from forgesyte_yolo_tracker.video.player_tracking_video import MODEL_PATH as pt_path
+        from forgesyte_yolo_tracker.video.radar_video import PITCH_MODEL_PATH as r_pitch
+        from forgesyte_yolo_tracker.video.radar_video import PLAYER_MODEL_PATH as r_player
 
         # All should contain "forgesyte_yolo_tracker/models"
         paths = [pd_path, pt_path, bd_path, pit_path, r_player, r_pitch]

@@ -169,8 +169,7 @@ class TestAnnotatedRadarFrame:
 
     def test_annotated_radar_returns_base64(self, sample_frame: np.ndarray) -> None:
         """Verify annotated radar includes base64."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
 
@@ -180,8 +179,7 @@ class TestAnnotatedRadarFrame:
 
     def test_annotated_radar_base64_valid(self, sample_frame: np.ndarray) -> None:
         """Verify base64 string is valid."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
         b64_str = result["radar_base64"]
@@ -206,8 +204,7 @@ class TestBase64Encoding:
         if Image is None:
             pytest.skip("PIL not available")
 
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
         b64_str = result["radar_base64"]
@@ -221,8 +218,7 @@ class TestBase64Encoding:
 
     def test_base64_string_not_empty(self, sample_frame: np.ndarray) -> None:
         """Verify base64 string has content."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
         b64_str = result["radar_base64"]
@@ -231,8 +227,7 @@ class TestBase64Encoding:
 
     def test_base64_decode_length(self, sample_frame: np.ndarray) -> None:
         """Verify decoded base64 has reasonable size."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
         b64_str = result["radar_base64"]
@@ -329,8 +324,7 @@ class TestRadarJSONSerialization:
         """Verify annotated radar JSON is serializable."""
         import json
 
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         result = radar_json_with_annotated_frame(sample_frame, device="cpu")
 
@@ -407,8 +401,7 @@ class TestEmptyFrameHandling:
 
     def test_empty_frame_with_annotated(self) -> None:
         """Verify empty frame returns annotated frame."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
         empty_frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = radar_json_with_annotated_frame(empty_frame, device="cpu")

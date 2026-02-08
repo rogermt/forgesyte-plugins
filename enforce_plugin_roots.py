@@ -8,9 +8,8 @@ It prevents duplicate package structures like:
 Both would create ambiguous imports.
 """
 
-from mypy.plugin import Plugin
-from mypy.errors import CompileError
 from mypy.options import Options
+from mypy.plugin import Plugin
 
 
 class EnforcePluginRootsPlugin(Plugin):

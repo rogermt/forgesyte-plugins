@@ -16,8 +16,7 @@ class TestPlayerTrackingJSON:
 
     def test_returns_dict_with_detections(self) -> None:
         """Verify returns dictionary with detections key."""
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json
+        from forgesyte_yolo_tracker.inference.player_tracking import track_players_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json(frame, device="cpu")
@@ -27,8 +26,7 @@ class TestPlayerTrackingJSON:
 
     def test_returns_count(self) -> None:
         """Verify returns count of tracked players."""
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json
+        from forgesyte_yolo_tracker.inference.player_tracking import track_players_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json(frame, device="cpu")
@@ -38,8 +36,7 @@ class TestPlayerTrackingJSON:
 
     def test_detections_have_tracking_id(self) -> None:
         """Verify each detection has tracking_id."""
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json
+        from forgesyte_yolo_tracker.inference.player_tracking import track_players_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json(frame, device="cpu")
@@ -50,8 +47,7 @@ class TestPlayerTrackingJSON:
 
     def test_detections_have_xyxy(self) -> None:
         """Verify each detection has xyxy coordinates."""
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json
+        from forgesyte_yolo_tracker.inference.player_tracking import track_players_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json(frame, device="cpu")
@@ -66,8 +62,9 @@ class TestPlayerTrackingJSONWithAnnotated:
 
     def test_returns_annotated_frame_base64(self) -> None:
         """Verify returns base64 encoded annotated frame."""
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json_with_annotated
+        from forgesyte_yolo_tracker.inference.player_tracking import (
+            track_players_json_with_annotated,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json_with_annotated(frame, device="cpu")
@@ -79,8 +76,9 @@ class TestPlayerTrackingJSONWithAnnotated:
         """Verify annotated frame includes tracking ID labels."""
         import base64
 
-        from forgesyte_yolo_tracker.inference.player_tracking import \
-            track_players_json_with_annotated
+        from forgesyte_yolo_tracker.inference.player_tracking import (
+            track_players_json_with_annotated,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = track_players_json_with_annotated(frame, device="cpu")
