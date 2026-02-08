@@ -306,22 +306,22 @@ class TestErrorPropagation:
         return p
 
     def test_error_dict_structure(self, plugin: Plugin) -> None:
-        """Test error dict has required fields."""
+        """Test error dict has required fields (Phase 12 contract).
+        
+        When image_bytes is invalid, dispatcher returns error dict.
+        """
         result = plugin.run_tool(
             "player_detection",
-            args={"frame_base64": "invalid_base64!!!"},
+            args={"image_bytes": "invalid_not_bytes!!!"},
         )
 
         assert isinstance(result, dict)
         assert "error" in result
         assert "message" in result
-        assert "plugin" in result
-        assert result["plugin"] == "yolo-tracker"
-        assert "tool" in result
-        assert result["tool"] == "player_detection"
+        assert "invalid_image_bytes" in result["error"]
 
     def test_error_dict_all_tools(self, plugin: Plugin) -> None:
-        """Test all tools return consistent error dict structure."""
+        """Test all tools return consistent error when image_bytes invalid."""
         tools = [
             "player_detection",
             "player_tracking",
@@ -333,11 +333,10 @@ class TestErrorPropagation:
         for tool in tools:
             result = plugin.run_tool(
                 tool,
-                args={"frame_base64": "bad_base64!!!"},
+                args={"image_bytes": "bad_not_bytes!!!"},
             )
             assert isinstance(result, dict)
             assert "error" in result, f"Tool {tool} missing 'error' field"
-            assert result["tool"] == tool
 
 
 class TestInputValidation:
