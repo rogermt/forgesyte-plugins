@@ -12,6 +12,7 @@ import io
 import logging
 from typing import Any, Dict, Optional, Tuple
 
+import cv2
 import numpy as np
 from PIL import Image
 
@@ -61,28 +62,18 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------
-# Image decoding helpers (Phase 12 contract: bytes input)
+# Image decoding helpers (Phase 12: bytes input)
 # ---------------------------------------------------------
 def _decode_image_bytes(
     image_bytes: bytes, tool_name: str
 ) -> Tuple[Optional[np.ndarray], Optional[Dict[str, Any]]]:
-    """Decode raw image bytes to numpy array.
-
-    Args:
-        image_bytes: Raw image bytes (PNG, JPG, etc.)
-        tool_name: Name of tool calling this (for error logging)
-
-    Returns:
-        (frame as numpy array, None) or (None, error_dict)
-    """
+    """Decode raw image bytes to numpy array."""
     try:
         if not isinstance(image_bytes, (bytes, bytearray)):
             raise ValueError(f"Expected bytes, got {type(image_bytes).__name__}")
 
-        # Decode bytes → PIL Image → numpy array
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         frame = np.array(image)
-
         return frame, None
 
     except Exception as e:
@@ -97,21 +88,11 @@ def _decode_image_bytes(
 
 
 # ---------------------------------------------------------
-# Tool functions (Phase 12 contract: accept image_bytes)
+# Tool functions
 # ---------------------------------------------------------
 def _tool_player_detection(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    """Detect players in image.
-
-    Args:
-        image_bytes: Raw image bytes (Phase 12 contract)
-        device: Device to run on (cpu/cuda)
-        annotated: Include annotated frame in response
-
-    Returns:
-        Detection result dict with 'boxes' key
-    """
     frame, error = _decode_image_bytes(image_bytes, "player_detection")
     if error:
         return error
@@ -119,22 +100,12 @@ def _tool_player_detection(
         return detect_players_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_players_json(frame, device=device)
-    return {"error": "image_decode_failed", "boxes": []}
+    return {"error": "decode_failed"}
 
 
 def _tool_player_tracking(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    """Track players across frames.
-
-    Args:
-        image_bytes: Raw image bytes (Phase 12 contract)
-        device: Device to run on (cpu/cuda)
-        annotated: Include annotated frame in response
-
-    Returns:
-        Tracking result dict with 'boxes' key
-    """
     frame, error = _decode_image_bytes(image_bytes, "player_tracking")
     if error:
         return error
@@ -142,22 +113,12 @@ def _tool_player_tracking(
         return track_players_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return track_players_json(frame, device=device)
-    return {"error": "image_decode_failed", "boxes": []}
+    return {"error": "decode_failed"}
 
 
 def _tool_ball_detection(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    """Detect ball in image.
-
-    Args:
-        image_bytes: Raw image bytes (Phase 12 contract)
-        device: Device to run on (cpu/cuda)
-        annotated: Include annotated frame in response
-
-    Returns:
-        Detection result dict with 'boxes' key
-    """
     frame, error = _decode_image_bytes(image_bytes, "ball_detection")
     if error:
         return error
@@ -165,22 +126,12 @@ def _tool_ball_detection(
         return detect_ball_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_ball_json(frame, device=device)
-    return {"error": "image_decode_failed", "boxes": []}
+    return {"error": "decode_failed"}
 
 
 def _tool_pitch_detection(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    """Detect pitch in image.
-
-    Args:
-        image_bytes: Raw image bytes (Phase 12 contract)
-        device: Device to run on (cpu/cuda)
-        annotated: Include annotated frame in response
-
-    Returns:
-        Detection result dict with 'boxes' key
-    """
     frame, error = _decode_image_bytes(image_bytes, "pitch_detection")
     if error:
         return error
@@ -188,22 +139,12 @@ def _tool_pitch_detection(
         return detect_pitch_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_pitch_json(frame, device=device)
-    return {"error": "image_decode_failed", "boxes": []}
+    return {"error": "decode_failed"}
 
 
 def _tool_radar(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    """Generate radar view of image.
-
-    Args:
-        image_bytes: Raw image bytes (Phase 12 contract)
-        device: Device to run on (cpu/cuda)
-        annotated: Include annotated frame in response
-
-    Returns:
-        Radar result dict with 'boxes' key
-    """
     frame, error = _decode_image_bytes(image_bytes, "radar")
     if error:
         return error
@@ -211,7 +152,7 @@ def _tool_radar(
         return radar_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return radar_json(frame, device=device)
-    return {"error": "image_decode_failed", "boxes": []}
+    return {"error": "decode_failed"}
 
 
 def _tool_player_detection_video(
@@ -269,7 +210,6 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
     # CLASS-LEVEL tools dict (required by ForgeSyte loader contract)
     # Handler values are callables (no magic getattr resolution)
-    # Phase 12: All tools use image_bytes (bytes) input, not base64
     tools: Dict[str, Dict[str, Any]] = {
         "player_detection": {
             "description": "Detect players in a frame",
@@ -374,20 +314,20 @@ class Plugin(BasePlugin):  # type: ignore[misc]
     }
 
     # -------------------------------------------------------
-    # Dispatcher (Phase 12 contract: image_bytes, no fallbacks)
+    # Dispatcher
     # -------------------------------------------------------
     def run_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
         """Execute a tool by name with the given arguments.
 
         Args:
-            tool_name: Name of tool to execute (must be from manifest, no aliases)
+            tool_name: Name of tool to execute (must be from manifest)
             args: Tool arguments dict
 
         Returns:
             Tool result (dict with detections/keypoints/etc)
 
         Raises:
-            ValueError: If tool name not found or invalid args
+            ValueError: If tool name not found
         """
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
@@ -408,7 +348,6 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             return {
                 "error": "invalid_image_bytes",
                 "message": f"image_bytes must be bytes, got {type(image_bytes).__name__}",
-                "boxes": [],
             }
 
         return handler(
