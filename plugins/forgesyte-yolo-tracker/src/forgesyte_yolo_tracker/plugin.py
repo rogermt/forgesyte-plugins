@@ -40,17 +40,23 @@ except (ImportError, ModuleNotFoundError):
 
 
 from forgesyte_yolo_tracker.inference.ball_detection import (
-    detect_ball_json, detect_ball_json_with_annotated_frame)
+    detect_ball_json,
+    detect_ball_json_with_annotated_frame,
+)
 from forgesyte_yolo_tracker.inference.pitch_detection import (
-    detect_pitch_json, detect_pitch_json_with_annotated_frame)
+    detect_pitch_json,
+    detect_pitch_json_with_annotated_frame,
+)
 from forgesyte_yolo_tracker.inference.player_detection import (
-    detect_players_json, detect_players_json_with_annotated_frame)
+    detect_players_json,
+    detect_players_json_with_annotated_frame,
+)
 from forgesyte_yolo_tracker.inference.player_tracking import (
-    track_players_json, track_players_json_with_annotated_frame)
-from forgesyte_yolo_tracker.inference.radar import \
-    generate_radar_json as radar_json
-from forgesyte_yolo_tracker.inference.radar import \
-    radar_json_with_annotated_frame
+    track_players_json,
+    track_players_json_with_annotated_frame,
+)
+from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_json
+from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
 logger = logging.getLogger(__name__)
 
@@ -167,8 +173,7 @@ def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False)
 def _tool_player_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_detection_video import \
-        run_player_detection_video
+    from forgesyte_yolo_tracker.video.player_detection_video import run_player_detection_video
 
     run_player_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -177,8 +182,7 @@ def _tool_player_detection_video(
 def _tool_player_tracking_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_tracking_video import \
-        run_player_tracking_video
+    from forgesyte_yolo_tracker.video.player_tracking_video import run_player_tracking_video
 
     run_player_tracking_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -187,8 +191,7 @@ def _tool_player_tracking_video(
 def _tool_ball_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.ball_detection_video import \
-        run_ball_detection_video
+    from forgesyte_yolo_tracker.video.ball_detection_video import run_ball_detection_video
 
     run_ball_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -197,8 +200,7 @@ def _tool_ball_detection_video(
 def _tool_pitch_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.pitch_detection_video import \
-        run_pitch_detection_video
+    from forgesyte_yolo_tracker.video.pitch_detection_video import run_pitch_detection_video
 
     run_pitch_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -330,6 +332,23 @@ class Plugin(BasePlugin):  # type: ignore[misc]
     # Dispatcher
     # -------------------------------------------------------
     def run_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
+        """Execute a tool by name with the given arguments.
+
+        Args:
+            tool_name: Name of tool to execute. Accepts "default" as alias
+                for first available tool for backward compatibility (Issue #164).
+            args: Tool arguments dict
+
+        Returns:
+            Tool result (dict with detections/keypoints/etc)
+
+        Raises:
+            ValueError: If tool name not found
+        """
+        # Accept "default" as alias for first tool (backward compatibility - Issue #164)
+        if tool_name == "default":
+            tool_name = next(iter(self.tools.keys()))
+
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
