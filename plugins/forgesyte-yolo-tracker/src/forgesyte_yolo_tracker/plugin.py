@@ -8,13 +8,12 @@ Frame-based JSON tools for football analysis:
 - radar
 """
 
-import base64
+import io
 import logging
-import re
 from typing import Any, Dict, Optional, Tuple
 
-import cv2
 import numpy as np
+from PIL import Image
 
 # Try to import BasePlugin from server, fallback for testing
 try:
@@ -62,112 +61,157 @@ logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------
-# Base64 helpers
+# Image decoding helpers (Phase 12 contract: bytes input)
 # ---------------------------------------------------------
-def _validate_base64(frame_b64: str) -> str:
-    """Validate and normalize base64 input."""
-    if frame_b64.startswith("data:image"):
-        frame_b64 = frame_b64.split(",", 1)[-1]
-
-    if not frame_b64 or not frame_b64.strip():
-        raise ValueError("Empty base64 string after processing")
-
-    if not re.match(r"^[A-Za-z0-9+/=]+$", frame_b64):
-        raise ValueError("Invalid base64 characters detected")
-
-    return frame_b64
-
-
-def _decode_frame_base64_safe(
-    frame_b64: str, tool_name: str
+def _decode_image_bytes(
+    image_bytes: bytes, tool_name: str
 ) -> Tuple[Optional[np.ndarray], Optional[Dict[str, Any]]]:
-    """Safely decode base64-encoded image with error handling."""
-    try:
-        cleaned_b64 = _validate_base64(frame_b64)
-        data = base64.b64decode(cleaned_b64)
-        arr = np.frombuffer(data, dtype=np.uint8)
-        frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    """Decode raw image bytes to numpy array.
 
-        if frame is None:
-            raise ValueError("Failed to decode image data")
+    Args:
+        image_bytes: Raw image bytes (PNG, JPG, etc.)
+        tool_name: Name of tool calling this (for error logging)
+
+    Returns:
+        (frame as numpy array, None) or (None, error_dict)
+    """
+    try:
+        if not isinstance(image_bytes, (bytes, bytearray)):
+            raise ValueError(f"Expected bytes, got {type(image_bytes).__name__}")
+
+        # Decode bytes → PIL Image → numpy array
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        frame = np.array(image)
 
         return frame, None
 
     except Exception as e:
         msg = str(e)
-        logger.warning(f"Base64 decode failed in {tool_name}: {msg}")
+        logger.warning(f"Image decode failed in {tool_name}: {msg}")
         return None, {
-            "error": "invalid_base64",
-            "message": f"Failed to decode frame: {msg}",
+            "error": "invalid_image",
+            "message": f"Failed to decode image: {msg}",
             "plugin": "yolo-tracker",
             "tool": tool_name,
         }
 
 
 # ---------------------------------------------------------
-# Tool functions
+# Tool functions (Phase 12 contract: accept image_bytes)
 # ---------------------------------------------------------
 def _tool_player_detection(
-    frame_base64: str, device: str = "cpu", annotated: bool = False
+    image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    frame, error = _decode_frame_base64_safe(frame_base64, "player_detection")
+    """Detect players in image.
+
+    Args:
+        image_bytes: Raw image bytes (Phase 12 contract)
+        device: Device to run on (cpu/cuda)
+        annotated: Include annotated frame in response
+
+    Returns:
+        Detection result dict with 'boxes' key
+    """
+    frame, error = _decode_image_bytes(image_bytes, "player_detection")
     if error:
         return error
     if annotated and frame is not None:
         return detect_players_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_players_json(frame, device=device)
-    return {"error": "frame_decode_failed"}
+    return {"error": "image_decode_failed", "boxes": []}
 
 
 def _tool_player_tracking(
-    frame_base64: str, device: str = "cpu", annotated: bool = False
+    image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    frame, error = _decode_frame_base64_safe(frame_base64, "player_tracking")
+    """Track players across frames.
+
+    Args:
+        image_bytes: Raw image bytes (Phase 12 contract)
+        device: Device to run on (cpu/cuda)
+        annotated: Include annotated frame in response
+
+    Returns:
+        Tracking result dict with 'boxes' key
+    """
+    frame, error = _decode_image_bytes(image_bytes, "player_tracking")
     if error:
         return error
     if annotated and frame is not None:
         return track_players_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return track_players_json(frame, device=device)
-    return {"error": "frame_decode_failed"}
+    return {"error": "image_decode_failed", "boxes": []}
 
 
 def _tool_ball_detection(
-    frame_base64: str, device: str = "cpu", annotated: bool = False
+    image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    frame, error = _decode_frame_base64_safe(frame_base64, "ball_detection")
+    """Detect ball in image.
+
+    Args:
+        image_bytes: Raw image bytes (Phase 12 contract)
+        device: Device to run on (cpu/cuda)
+        annotated: Include annotated frame in response
+
+    Returns:
+        Detection result dict with 'boxes' key
+    """
+    frame, error = _decode_image_bytes(image_bytes, "ball_detection")
     if error:
         return error
     if annotated and frame is not None:
         return detect_ball_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_ball_json(frame, device=device)
-    return {"error": "frame_decode_failed"}
+    return {"error": "image_decode_failed", "boxes": []}
 
 
 def _tool_pitch_detection(
-    frame_base64: str, device: str = "cpu", annotated: bool = False
+    image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
-    frame, error = _decode_frame_base64_safe(frame_base64, "pitch_detection")
+    """Detect pitch in image.
+
+    Args:
+        image_bytes: Raw image bytes (Phase 12 contract)
+        device: Device to run on (cpu/cuda)
+        annotated: Include annotated frame in response
+
+    Returns:
+        Detection result dict with 'boxes' key
+    """
+    frame, error = _decode_image_bytes(image_bytes, "pitch_detection")
     if error:
         return error
     if annotated and frame is not None:
         return detect_pitch_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return detect_pitch_json(frame, device=device)
-    return {"error": "frame_decode_failed"}
+    return {"error": "image_decode_failed", "boxes": []}
 
 
-def _tool_radar(frame_base64: str, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
-    frame, error = _decode_frame_base64_safe(frame_base64, "radar")
+def _tool_radar(
+    image_bytes: bytes, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Generate radar view of image.
+
+    Args:
+        image_bytes: Raw image bytes (Phase 12 contract)
+        device: Device to run on (cpu/cuda)
+        annotated: Include annotated frame in response
+
+    Returns:
+        Radar result dict with 'boxes' key
+    """
+    frame, error = _decode_image_bytes(image_bytes, "radar")
     if error:
         return error
     if annotated and frame is not None:
         return radar_json_with_annotated_frame(frame, device=device)
     if frame is not None:
         return radar_json(frame, device=device)
-    return {"error": "frame_decode_failed"}
+    return {"error": "image_decode_failed", "boxes": []}
 
 
 def _tool_player_detection_video(
@@ -225,11 +269,12 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
     # CLASS-LEVEL tools dict (required by ForgeSyte loader contract)
     # Handler values are callables (no magic getattr resolution)
+    # Phase 12: All tools use image_bytes (bytes) input, not base64
     tools: Dict[str, Dict[str, Any]] = {
         "player_detection": {
             "description": "Detect players in a frame",
             "input_schema": {
-                "frame_base64": {"type": "string"},
+                "image_bytes": {"type": "string", "format": "binary"},
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
             },
@@ -239,7 +284,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         "player_tracking": {
             "description": "Track players across frames",
             "input_schema": {
-                "frame_base64": {"type": "string"},
+                "image_bytes": {"type": "string", "format": "binary"},
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
             },
@@ -249,7 +294,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         "ball_detection": {
             "description": "Detect the football",
             "input_schema": {
-                "frame_base64": {"type": "string"},
+                "image_bytes": {"type": "string", "format": "binary"},
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
             },
@@ -259,7 +304,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         "pitch_detection": {
             "description": "Detect pitch keypoints",
             "input_schema": {
-                "frame_base64": {"type": "string"},
+                "image_bytes": {"type": "string", "format": "binary"},
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
             },
@@ -269,7 +314,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         "radar": {
             "description": "Generate radar (bird's-eye) view",
             "input_schema": {
-                "frame_base64": {"type": "string"},
+                "image_bytes": {"type": "string", "format": "binary"},
                 "device": {"type": "string", "default": "cpu"},
                 "annotated": {"type": "boolean", "default": False},
             },
@@ -329,26 +374,21 @@ class Plugin(BasePlugin):  # type: ignore[misc]
     }
 
     # -------------------------------------------------------
-    # Dispatcher
+    # Dispatcher (Phase 12 contract: image_bytes, no fallbacks)
     # -------------------------------------------------------
     def run_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
         """Execute a tool by name with the given arguments.
 
         Args:
-            tool_name: Name of tool to execute. Accepts "default" as alias
-                for first available tool for backward compatibility (Issue #164).
+            tool_name: Name of tool to execute (must be from manifest, no aliases)
             args: Tool arguments dict
 
         Returns:
             Tool result (dict with detections/keypoints/etc)
 
         Raises:
-            ValueError: If tool name not found
+            ValueError: If tool name not found or invalid args
         """
-        # Accept "default" as alias for first tool (backward compatibility - Issue #164)
-        if tool_name == "default":
-            tool_name = next(iter(self.tools.keys()))
-
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
 
@@ -362,9 +402,17 @@ class Plugin(BasePlugin):  # type: ignore[misc]
                 device=args.get("device", "cpu"),
             )
 
-        # Frame tools use frame_base64
+        # Frame tools use image_bytes (Phase 12 contract)
+        image_bytes = args.get("image_bytes")
+        if not isinstance(image_bytes, (bytes, bytearray)):
+            return {
+                "error": "invalid_image_bytes",
+                "message": f"image_bytes must be bytes, got {type(image_bytes).__name__}",
+                "boxes": [],
+            }
+
         return handler(
-            frame_base64=args.get("frame_base64"),
+            image_bytes=image_bytes,
             device=args.get("device", "cpu"),
             annotated=args.get("annotated", False),
         )
