@@ -15,9 +15,9 @@ Validation rules:
 """
 
 import json
-import sys
 import os
 import re
+import sys
 from pathlib import Path
 
 DEFAULT_MANIFEST_PATH = (
@@ -47,7 +47,7 @@ def load_manifest(path: Path):
         sys.exit(1)
 
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     except json.JSONDecodeError as e:
         print(f"ERROR: Invalid JSON in manifest: {e}")

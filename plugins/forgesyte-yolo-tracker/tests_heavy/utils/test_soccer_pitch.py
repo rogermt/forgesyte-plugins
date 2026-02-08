@@ -9,8 +9,11 @@ import pytest
 import supervision as sv
 
 from forgesyte_yolo_tracker.utils.soccer_pitch import (
-    draw_paths_on_pitch, draw_pitch, draw_pitch_voronoi_diagram,
-    draw_points_on_pitch)
+    draw_paths_on_pitch,
+    draw_pitch,
+    draw_pitch_voronoi_diagram,
+    draw_points_on_pitch,
+)
 
 
 class SoccerPitchConfig:

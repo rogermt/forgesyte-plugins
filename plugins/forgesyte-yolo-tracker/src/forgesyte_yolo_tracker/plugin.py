@@ -12,7 +12,6 @@ import io
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-import cv2
 import numpy as np
 from PIL import Image
 
@@ -142,9 +141,7 @@ def _tool_pitch_detection(
     return {"error": "decode_failed"}
 
 
-def _tool_radar(
-    image_bytes: bytes, device: str = "cpu", annotated: bool = False
-) -> Dict[str, Any]:
+def _tool_radar(image_bytes: bytes, device: str = "cpu", annotated: bool = False) -> Dict[str, Any]:
     frame, error = _decode_image_bytes(image_bytes, "radar")
     if error:
         return error
