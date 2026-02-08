@@ -16,7 +16,7 @@ from forgesyte_plugin_template.plugin import Plugin
 class TestPlugin:
     """Test suite for the Template Plugin."""
 
-    @pytest.fixture  # type: ignore[untyped-decorator]
+    @pytest.fixture  # type: ignore
     def plugin(self) -> Plugin:
         """Create plugin instance for testing."""
         return Plugin()

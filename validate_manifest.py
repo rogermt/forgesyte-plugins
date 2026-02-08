@@ -15,10 +15,11 @@ Validation rules:
 """
 
 import json
-import sys
 import os
 import re
+import sys
 from pathlib import Path
+from typing import Any
 
 DEFAULT_MANIFEST_PATH = (
     Path(__file__).parent
@@ -30,7 +31,7 @@ DEFAULT_MANIFEST_PATH = (
 )
 
 
-def resolve_manifest_path():
+def resolve_manifest_path() -> Path:
     if len(sys.argv) > 1:
         return Path(sys.argv[1]).expanduser().resolve()
 
@@ -41,14 +42,15 @@ def resolve_manifest_path():
     return DEFAULT_MANIFEST_PATH
 
 
-def load_manifest(path: Path):
+def load_manifest(path: Path) -> dict[str, Any]:
     if not path.exists():
         print(f"ERROR: Manifest not found at {path}")
         sys.exit(1)
 
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
+        with open(path, encoding="utf-8") as f:
+            data: dict[str, Any] = json.load(f)
+            return data
     except json.JSONDecodeError as e:
         print(f"ERROR: Invalid JSON in manifest: {e}")
         sys.exit(1)
@@ -57,7 +59,7 @@ def load_manifest(path: Path):
         sys.exit(1)
 
 
-def validate_common_fields(manifest):
+def validate_common_fields(manifest: dict[str, Any]) -> None:
     required = ["id", "name", "version", "tools"]
     for field in required:
         if field not in manifest:
@@ -65,11 +67,11 @@ def validate_common_fields(manifest):
             sys.exit(1)
 
 
-def is_url_safe(name: str):
+def is_url_safe(name: str) -> bool:
     return re.match(r"^[a-z0-9_-]+$", name) is not None
 
 
-def detect_plugin_type(tools):
+def detect_plugin_type(tools: Any) -> str:
     """
     Decide plugin type based on tool input fields.
     """
@@ -92,7 +94,7 @@ def detect_plugin_type(tools):
     return "unknown"
 
 
-def validate_frame_plugin(tools):
+def validate_frame_plugin(tools: dict[str, Any]) -> None:
     if not isinstance(tools, dict):
         print("ERROR: Frame-based plugins must use dict-style tools")
         sys.exit(1)
@@ -108,7 +110,7 @@ def validate_frame_plugin(tools):
             sys.exit(1)
 
 
-def validate_ocr_plugin(tools):
+def validate_ocr_plugin(tools: list[dict[str, Any]]) -> None:
     if not isinstance(tools, list):
         print("ERROR: OCR plugins must use list-style tools")
         sys.exit(1)
@@ -125,7 +127,7 @@ def validate_ocr_plugin(tools):
             sys.exit(1)
 
 
-def main():
+def main() -> None:
     manifest_path = resolve_manifest_path()
     manifest = load_manifest(manifest_path)
 

@@ -10,6 +10,7 @@ Run with: RUN_MODEL_TESTS=1 pytest src/tests/test_inference_radar_refactored.py 
 import base64
 import os
 from io import BytesIO
+from typing import Any
 
 import numpy as np
 import pytest
@@ -27,14 +28,14 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def sample_frame() -> np.ndarray:
     """Create a sample frame."""
     return np.zeros((480, 640, 3), dtype=np.uint8)
 
 
-@pytest.fixture
-def sample_radar_points() -> list:
+@pytest.fixture  # type: ignore
+def sample_radar_points() -> list[dict[str, Any]]:
     """Create sample radar points."""
     return [
         {"xy": [300, 150], "tracking_id": 1, "team_id": 0, "type": "player"},

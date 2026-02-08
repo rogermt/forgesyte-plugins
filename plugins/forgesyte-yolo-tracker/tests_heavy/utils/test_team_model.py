@@ -81,9 +81,9 @@ class TestTeamClassifier:
             classifier = TeamClassifier(device="cpu")
             crops = [np.zeros((224, 224, 3), dtype=np.uint8)]
 
-            classifier.extract_features = MagicMock(return_value=np.random.rand(1, 512))
-            classifier.reducer.fit_transform = MagicMock(return_value=np.random.rand(1, 3))
-            classifier.cluster_model.fit = MagicMock()
+            classifier.extract_features = MagicMock(return_value=np.random.rand(1, 512))  # type: ignore[method-assign]
+            classifier.reducer.fit_transform = MagicMock(return_value=np.random.rand(1, 3))  # type: ignore[method-assign]
+            classifier.cluster_model.fit = MagicMock()  # type: ignore[method-assign]
 
             classifier.fit(crops)
 
@@ -112,9 +112,9 @@ class TestTeamClassifier:
         ):
             classifier = TeamClassifier(device="cpu")
 
-            classifier.extract_features = MagicMock(return_value=np.random.rand(1, 512))
-            classifier.reducer.transform = MagicMock(return_value=np.random.rand(1, 3))
-            classifier.cluster_model.predict = MagicMock(return_value=np.array([0]))
+            classifier.extract_features = MagicMock(return_value=np.random.rand(1, 512))  # type: ignore[method-assign]
+            classifier.reducer.transform = MagicMock(return_value=np.random.rand(1, 3))  # type: ignore[method-assign]
+            classifier.cluster_model.predict = MagicMock(return_value=np.array([0]))  # type: ignore[method-assign]
 
             crops = [np.zeros((224, 224, 3), dtype=np.uint8)]
             result = classifier.predict(crops)

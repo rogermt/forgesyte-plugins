@@ -44,10 +44,10 @@ class TestRadarJSONWithAnnotated:
     def test_returns_radar_base64(self) -> None:
         """Verify returns base64 encoded radar image."""
         from forgesyte_yolo_tracker.inference.radar import \
-            generate_radar_json_with_annotated
+            radar_json_with_annotated_frame
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
-        result = generate_radar_json_with_annotated(frame, device="cpu")
+        result = radar_json_with_annotated_frame(frame, device="cpu")
 
         assert "radar_base64" in result
         assert isinstance(result["radar_base64"], str)

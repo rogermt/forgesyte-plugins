@@ -6,6 +6,7 @@ include = '\.pyi?$'
 [tool.ruff]
 line-length = 88
 target-version = "py310"
+exclude = ["plugins/forgesyte-yolo-tracker/tests_heavy"]
 
 [tool.ruff.lint]
 select = [
@@ -24,3 +25,4 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+exclude = ["plugins/forgesyte-yolo-tracker/tests_heavy"]

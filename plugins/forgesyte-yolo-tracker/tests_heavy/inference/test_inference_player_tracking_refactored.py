@@ -21,13 +21,13 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def sample_frame() -> np.ndarray:
     """Create a sample frame."""
     return np.zeros((480, 640, 3), dtype=np.uint8)
 
 
-@pytest.fixture
+@pytest.fixture  # type: ignore
 def sample_frame_with_content() -> np.ndarray:
     """Create a frame with some content."""
     frame = np.zeros((480, 640, 3), dtype=np.uint8)

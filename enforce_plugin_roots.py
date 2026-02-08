@@ -8,19 +8,20 @@ It prevents duplicate package structures like:
 Both would create ambiguous imports.
 """
 
-from mypy.plugin import Plugin
-from mypy.errors import CompileError
+from typing import Any
+
 from mypy.options import Options
+from mypy.plugin import Plugin
 
 
-class EnforcePluginRootsPlugin(Plugin):
+class EnforcePluginRootsPlugin(Plugin):  # type: ignore
     """Enforces one canonical package root per plugin."""
 
     def __init__(self, options: Options) -> None:
         """Initialize plugin."""
         self.options = options
 
-    def get_type_analyze_hook(self, fullname: str):
+    def get_type_analyze_hook(self, fullname: str) -> Any:
         """Check that imports are from canonical plugin roots only."""
 
         def hook(ctx):  # type: ignore

@@ -1,6 +1,7 @@
 """Pytest configuration and fixtures for Moderation plugin tests.
 
-Sets up PYTHONPATH to include forgesyte server for importing app.models and app.plugins.base
+Sets up PYTHONPATH to include forgesyte server for importing app.models
+and app.plugins.base
 """
 
 import sys
