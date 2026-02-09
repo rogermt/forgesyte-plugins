@@ -6,73 +6,66 @@
   "author": "Roger",
   "license": "MIT",
   "entrypoint": "forgesyte_yolo_tracker.plugin",
+  "mode": "image",
   "capabilities": [
     "player_detection",
-    "player_tracking",
     "ball_detection",
     "pitch_detection",
     "radar_visualization"
   ],
-  "tools": {
-    "player_detection": {
-      "description": "Detect players in a single frame.",
+  "tools": [
+    {
+      "name": "player_detection",
+      "description": "Detect players in a single image.",
       "inputs": {
-        "frame_base64": "string",
+        "image_base64": "string",
         "device": "string",
         "annotated": "boolean"
       },
       "outputs": {
         "detections": "array",
-        "annotated_frame_base64": "string?"
+        "annotated_image_base64": "string?"
       }
     },
-    "player_tracking": {
-      "description": "Track players across frames using ByteTrack.",
+    {
+      "name": "ball_detection",
+      "description": "Detect the football in a single image.",
       "inputs": {
-        "frame_base64": "string",
+        "image_base64": "string",
         "device": "string",
         "annotated": "boolean"
       },
       "outputs": {
         "detections": "array",
-        "annotated_frame_base64": "string?"
+        "annotated_image_base64": "string?"
       }
     },
-    "ball_detection": {
-      "description": "Detect the football in a single frame.",
-      "inputs": {
-        "frame_base64": "string",
-        "device": "string",
-        "annotated": "boolean"
-      },
-      "outputs": {
-        "detections": "array",
-        "annotated_frame_base64": "string?"
-      }
-    },
-    "pitch_detection": {
+    {
+      "name": "pitch_detection",
       "description": "Detect pitch keypoints for homography mapping.",
       "inputs": {
-        "frame_base64": "string",
+        "image_base64": "string",
         "device": "string",
         "annotated": "boolean"
       },
       "outputs": {
         "keypoints": "array",
-        "annotated_frame_base64": "string?"
+        "annotated_image_base64": "string?"
       }
     },
-    "radar": {
+    {
+      "name": "radar",
       "description": "Generate radar (bird's-eye) view of player positions.",
       "inputs": {
-        "frame_base64": "string",
+        "image_base64": "string",
         "device": "string",
         "annotated": "boolean"
       },
       "outputs": {
         "radar_points": "array",
-        "annotated_frame_base64": "string?"
+        "annotated_image_base64": "string?"
       }
     }
-  }
+  ]
 }
+

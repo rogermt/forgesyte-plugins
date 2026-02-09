@@ -2,8 +2,14 @@ name: ForgeSyte Plugins CI
 
 on:
   pull_request:
+    paths:
+      - "plugins/**/manifest.json"
+      - "validate_manifest.py"
   push:
     branches: [ main ]
+    paths:
+      - "plugins/**/manifest.json"
+      - "validate_manifest.py"
 
 jobs:
 
