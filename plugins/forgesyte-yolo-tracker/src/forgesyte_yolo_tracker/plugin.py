@@ -12,7 +12,6 @@ import io
 import logging
 from typing import Any, Dict, Optional, Tuple
 
-import cv2
 import numpy as np
 from PIL import Image
 
