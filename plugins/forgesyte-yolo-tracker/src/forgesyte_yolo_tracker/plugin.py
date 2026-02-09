@@ -38,6 +38,7 @@ except (ImportError, ModuleNotFoundError):
             pass
 
 
+from forgesyte_yolo_tracker.configs import get_device, ConfigError
 from forgesyte_yolo_tracker.inference.ball_detection import (
     detect_ball_json,
     detect_ball_json_with_annotated_frame,
@@ -58,6 +59,38 @@ from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------
+# Device resolution — Phase 12 strict governance
+# ---------------------------------------------------------
+def _resolve_device(options: Dict[str, Any]) -> str:
+    """Resolve device for inference.
+
+    Phase 12 governance:
+    - If options contains 'device' and it's not None, use it
+    - Else fall back to models.yaml device
+    - If models.yaml missing or invalid, raise ConfigError
+
+    Args:
+        options: Options dict from API/server
+
+    Returns:
+        Device string: 'cpu' or 'cuda'
+
+    Raises:
+        ConfigError: If device resolution fails
+    """
+    # Explicit device in options takes priority
+    if "device" in options and options["device"]:
+        return str(options["device"])
+
+    # Fall back to config-level device (models.yaml)
+    try:
+        return get_device()
+    except ConfigError as e:
+        logger.error(f"Device resolution failed: {e}")
+        raise
 
 
 # ---------------------------------------------------------
@@ -328,6 +361,12 @@ class Plugin(BasePlugin):  # type: ignore[misc]
     def run_tool(self, tool_name: str, args: Dict[str, Any]) -> Any:
         """Execute a tool by name with the given arguments.
 
+        Phase 12 governance:
+        - Device is resolved strictly: options → models.yaml
+        - If neither provided, raise ConfigError
+        - Device mismatch with inference modules is acceptable
+          (inference modules keep device="cpu" default for backward compat)
+
         Args:
             tool_name: Name of tool to execute (must be from manifest)
             args: Tool arguments dict
@@ -343,12 +382,24 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         handler = self.tools[tool_name]["handler"]
 
+        # Resolve device strictly (Phase 12)
+        try:
+            device = _resolve_device(args)
+        except ConfigError as e:
+            logger.error(f"Device resolution failed: {e}")
+            return {
+                "error": "device_resolution_failed",
+                "message": str(e),
+                "plugin": "yolo-tracker",
+                "tool": tool_name,
+            }
+
         # Video tools use different args
         if "video" in tool_name:
             return handler(
                 video_path=args.get("video_path"),
                 output_path=args.get("output_path"),
-                device=args.get("device", "cpu"),
+                device=device,
             )
 
         # Frame tools use image_bytes (Phase 12 contract)
@@ -361,7 +412,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         return handler(
             image_bytes=image_bytes,
-            device=args.get("device", "cpu"),
+            device=device,
             annotated=args.get("annotated", False),
         )
 
