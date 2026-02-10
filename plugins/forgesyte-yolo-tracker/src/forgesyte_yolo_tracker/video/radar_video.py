@@ -98,7 +98,9 @@ def run_radar_video_frames(
     radar_w, radar_h = CONFIG.radar_resolution
 
     for frame in frame_generator:
-        player_result = player_model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
+        player_result = player_model(frame, imgsz=1280, conf=confidence, verbose=False)[
+            0
+        ]
         pitch_result = pitch_model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
 
         player_detections = sv.Detections.from_ultralytics(player_result)
@@ -137,7 +139,9 @@ def run_radar_video_frames(
                         transformed = transformer.transform_points(
                             np.array([[center_x, center_y]], dtype=np.float32)
                         )
-                        rx, ry = CONFIG.world_to_radar(transformed[0][0], transformed[0][1])
+                        rx, ry = CONFIG.world_to_radar(
+                            transformed[0][0], transformed[0][1]
+                        )
 
                         radar_points.append(
                             {

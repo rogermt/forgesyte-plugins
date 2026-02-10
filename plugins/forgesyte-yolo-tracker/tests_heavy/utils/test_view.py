@@ -11,10 +11,13 @@ class TestViewTransformer:
 
     def test_initialization_valid(self) -> None:
         """Test ViewTransformer initialization with valid inputs."""
-        source = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], dtype=np.float32)
+        source = np.array(
+            [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]], dtype=np.float32
+        )
 
         target = np.array(
-            [[10.0, 10.0], [110.0, 10.0], [10.0, 110.0], [110.0, 110.0]], dtype=np.float32
+            [[10.0, 10.0], [110.0, 10.0], [10.0, 110.0], [110.0, 110.0]],
+            dtype=np.float32,
         )
 
         transformer = ViewTransformer(source, target)

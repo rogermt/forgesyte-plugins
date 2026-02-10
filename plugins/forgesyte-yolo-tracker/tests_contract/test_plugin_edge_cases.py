@@ -70,7 +70,9 @@ class TestBase64Validation:
         b64_data = base64.b64encode(frame_bytes.getvalue()).decode("utf-8")
 
         # Add newlines (common in multi-line base64)
-        b64_with_newlines = "\n".join([b64_data[i : i + 80] for i in range(0, len(b64_data), 80)])
+        b64_with_newlines = "\n".join(
+            [b64_data[i : i + 80] for i in range(0, len(b64_data), 80)]
+        )
 
         result = plugin.run_tool(
             "player_detection",
@@ -187,7 +189,10 @@ class TestAllToolFunctions:
         """
         with patch(
             "forgesyte_yolo_tracker.plugin.detect_ball_json_with_annotated_frame",
-            return_value={"ball": {"x": 320, "y": 240}, "annotated_frame_base64": "iVBOR..."},
+            return_value={
+                "ball": {"x": 320, "y": 240},
+                "annotated_frame_base64": "iVBOR...",
+            },
         ):
             result = plugin.run_tool(
                 "ball_detection",
@@ -254,7 +259,9 @@ class TestAllToolFunctions:
         assert "error" in result
 
     # === RADAR ===
-    def test_radar_tool_no_annotated(self, plugin: Plugin, sample_frame_base64: str) -> None:
+    def test_radar_tool_no_annotated(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
         """Test _tool_radar without annotated frame."""
         with patch(
             "forgesyte_yolo_tracker.plugin.radar_json",
@@ -266,7 +273,9 @@ class TestAllToolFunctions:
             )
             assert isinstance(result, dict)
 
-    def test_radar_tool_with_annotated(self, plugin: Plugin, sample_frame_base64: str) -> None:
+    def test_radar_tool_with_annotated(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
         """Test _tool_radar with annotated=True.
 
         Triggers lines 149-154: annotated path in _tool_radar
@@ -307,7 +316,7 @@ class TestErrorPropagation:
 
     def test_error_dict_structure(self, plugin: Plugin) -> None:
         """Test error dict has required fields (Phase 12 contract).
-        
+
         When image_bytes is invalid, dispatcher returns error dict.
         """
         result = plugin.run_tool(

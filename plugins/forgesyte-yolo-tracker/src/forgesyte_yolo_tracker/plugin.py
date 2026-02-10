@@ -200,7 +200,9 @@ def _tool_radar(
 def _tool_player_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_detection_video import run_player_detection_video
+    from forgesyte_yolo_tracker.video.player_detection_video import (
+        run_player_detection_video,
+    )
 
     run_player_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -209,7 +211,9 @@ def _tool_player_detection_video(
 def _tool_player_tracking_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_tracking_video import run_player_tracking_video
+    from forgesyte_yolo_tracker.video.player_tracking_video import (
+        run_player_tracking_video,
+    )
 
     run_player_tracking_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -218,7 +222,9 @@ def _tool_player_tracking_video(
 def _tool_ball_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.ball_detection_video import run_ball_detection_video
+    from forgesyte_yolo_tracker.video.ball_detection_video import (
+        run_ball_detection_video,
+    )
 
     run_ball_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
@@ -227,13 +233,17 @@ def _tool_ball_detection_video(
 def _tool_pitch_detection_video(
     video_path: str, output_path: str, device: str = "cpu"
 ) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.pitch_detection_video import run_pitch_detection_video
+    from forgesyte_yolo_tracker.video.pitch_detection_video import (
+        run_pitch_detection_video,
+    )
 
     run_pitch_detection_video(video_path, output_path, device=device)
     return {"status": "success", "output_path": output_path}
 
 
-def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu") -> Dict[str, str]:
+def _tool_radar_video(
+    video_path: str, output_path: str, device: str = "cpu"
+) -> Dict[str, str]:
     from forgesyte_yolo_tracker.video.radar_video import run_radar_video
 
     run_radar_video(video_path, output_path, device=device)

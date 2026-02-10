@@ -79,21 +79,26 @@ def detect_pitch_json(
             keypoints_xy = keypoints_data[0]
             keypoints_conf = (
                 result.keypoints.conf.cpu().numpy()[0]
-                if result.keypoints.conf is not None and result.keypoints.conf.numel() > 0
+                if result.keypoints.conf is not None
+                and result.keypoints.conf.numel() > 0
                 else None
             )
 
             for i, (x, y) in enumerate(keypoints_xy):
                 kp: Dict[str, Any] = {
                     "xy": [float(x), float(y)],
-                    "confidence": (float(keypoints_conf[i]) if keypoints_conf is not None else 1.0),
+                    "confidence": (
+                        float(keypoints_conf[i]) if keypoints_conf is not None else 1.0
+                    ),
                     "name": CONFIG.keypoint_names.get(i, f"keypoint_{i}"),
                 }
                 keypoint_list.append(kp)
 
     # Extract pitch corners
     pitch_polygon: list[list[float]] = []
-    valid_keypoints = [kp for kp in keypoint_list if kp["confidence"] > confidence * 0.5]
+    valid_keypoints = [
+        kp for kp in keypoint_list if kp["confidence"] > confidence * 0.5
+    ]
     if len(valid_keypoints) >= 4:
         corner_names = [
             "bottom_left_corner",
@@ -200,7 +205,9 @@ def get_pitch_detection_model(device: str = "cpu") -> Any:
     return PITCH_DETECTOR.get_model(device=device)
 
 
-def run_pitch_detection(frame: np.ndarray[Any, Any], config: Dict[str, Any]) -> Dict[str, Any]:
+def run_pitch_detection(
+    frame: np.ndarray[Any, Any], config: Dict[str, Any]
+) -> Dict[str, Any]:
     """Legacy function for plugin.py compatibility.
 
     Delegates to either detect_pitch_json or detect_pitch_json_with_annotated_frame
@@ -221,5 +228,7 @@ def run_pitch_detection(frame: np.ndarray[Any, Any], config: Dict[str, Any]) -> 
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return detect_pitch_json_with_annotated_frame(frame, device=device, confidence=confidence)
+        return detect_pitch_json_with_annotated_frame(
+            frame, device=device, confidence=confidence
+        )
     return detect_pitch_json(frame, device=device, confidence=confidence)

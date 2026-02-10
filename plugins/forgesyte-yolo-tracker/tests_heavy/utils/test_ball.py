@@ -152,7 +152,9 @@ class TestBallTracker:
 
         # Add first detection at (100, 100)
         det1 = sv.Detections(
-            xyxy=np.array([[75, 75, 125, 125]]), confidence=np.array([1.0]), class_id=np.array([0])
+            xyxy=np.array([[75, 75, 125, 125]]),
+            confidence=np.array([1.0]),
+            class_id=np.array([0]),
         )
         result1 = tracker.update(det1)
         assert len(result1) == 1

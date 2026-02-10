@@ -48,7 +48,9 @@ class TestTeamClassifierPrediction:
 
         assert isinstance(result, np.ndarray)
 
-    def test_predict_returns_binary_labels(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_returns_binary_labels(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() returns only 0 or 1 labels."""
         mock_classifier.extract_features = MagicMock(return_value=np.random.rand(4, 512))  # type: ignore[method-assign]
         mock_classifier.reducer.transform = MagicMock(return_value=np.random.rand(4, 3))  # type: ignore[method-assign]
@@ -60,7 +62,9 @@ class TestTeamClassifierPrediction:
         assert len(result) == 4
         assert all(label in [0, 1] for label in result)
 
-    def test_predict_calls_extract_features(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_calls_extract_features(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() calls extract_features()."""
         mock_classifier.extract_features = MagicMock(return_value=np.random.rand(2, 512))  # type: ignore[method-assign]
         mock_classifier.reducer.transform = MagicMock(return_value=np.random.rand(2, 3))  # type: ignore[method-assign]
@@ -70,7 +74,9 @@ class TestTeamClassifierPrediction:
 
         mock_classifier.extract_features.assert_called_once_with(crops)
 
-    def test_predict_calls_reducer_transform(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_calls_reducer_transform(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() calls reducer.transform()."""
         mock_classifier.extract_features = MagicMock(return_value=np.random.rand(2, 512))  # type: ignore[method-assign]
         mock_classifier.reducer.transform = MagicMock(return_value=np.random.rand(2, 3))  # type: ignore[method-assign]
@@ -80,7 +86,9 @@ class TestTeamClassifierPrediction:
 
         mock_classifier.reducer.transform.assert_called_once()
 
-    def test_predict_calls_cluster_predict(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_calls_cluster_predict(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() calls cluster_model.predict()."""
         mock_classifier.extract_features = MagicMock(return_value=np.random.rand(2, 512))  # type: ignore[method-assign]
         mock_classifier.reducer.transform = MagicMock(return_value=np.random.rand(2, 3))  # type: ignore[method-assign]
@@ -135,27 +143,34 @@ class TestTeamClassifierPrediction:
         assert len(result) == 10
         mock_classifier.extract_features.assert_called_once()
 
-    def test_predict_empty_crops_returns_empty_array(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_empty_crops_returns_empty_array(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() with empty crops returns empty numpy array."""
         result = mock_classifier.predict([])
 
         assert isinstance(result, np.ndarray)
         assert len(result) == 0
 
-    def test_predict_result_shape_matches_input(self, mock_classifier: TeamClassifier) -> None:
+    def test_predict_result_shape_matches_input(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify predict() returns array with same length as input crops."""
         num_crops = 7
         mock_classifier.extract_features = MagicMock(return_value=np.random.rand(num_crops, 512))  # type: ignore[method-assign]
         mock_classifier.reducer.transform = MagicMock(return_value=np.random.rand(num_crops, 3))  # type: ignore[method-assign]
-        mock_classifier.cluster_model.predict.return_value = np.random.randint(0, 2, size=num_crops)
+        mock_classifier.cluster_model.predict.return_value = np.random.randint(
+            0, 2, size=num_crops
+        )
 
         crops = [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(num_crops)]
         result = mock_classifier.predict(crops)
 
         assert len(result) == num_crops
 
-
-    def test_cluster_model_n_clusters_is_2(self, mock_classifier: TeamClassifier) -> None:
+    def test_cluster_model_n_clusters_is_2(
+        self, mock_classifier: TeamClassifier
+    ) -> None:
         """Verify cluster_model is configured with 2 clusters."""
         mock_classifier.cluster_model.n_clusters = 2
         assert mock_classifier.cluster_model.n_clusters == 2

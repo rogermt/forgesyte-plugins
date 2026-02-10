@@ -24,36 +24,31 @@ class TestPitchDetectorConfiguration:
 
     def test_pitch_detector_name_is_correct(self) -> None:
         """Verify detector name is 'pitch'."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            PITCH_DETECTOR
+        from forgesyte_yolo_tracker.inference.pitch_detection import PITCH_DETECTOR
 
         assert PITCH_DETECTOR.detector_name == "pitch"
 
     def test_pitch_default_confidence_is_0_25(self) -> None:
         """Verify default confidence is 0.25."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            PITCH_DETECTOR
+        from forgesyte_yolo_tracker.inference.pitch_detection import PITCH_DETECTOR
 
         assert PITCH_DETECTOR.default_confidence == 0.25
 
     def test_pitch_imgsz_is_1280(self) -> None:
         """Verify imgsz is 1280 for pitch."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            PITCH_DETECTOR
+        from forgesyte_yolo_tracker.inference.pitch_detection import PITCH_DETECTOR
 
         assert PITCH_DETECTOR.imgsz == 1280
 
     def test_pitch_class_names_is_none(self) -> None:
         """Verify class_names is None (uses keypoints)."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            PITCH_DETECTOR
+        from forgesyte_yolo_tracker.inference.pitch_detection import PITCH_DETECTOR
 
         assert PITCH_DETECTOR.class_names is None
 
     def test_pitch_colors_defined(self) -> None:
         """Verify colors defined for pitch detector."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            PITCH_DETECTOR
+        from forgesyte_yolo_tracker.inference.pitch_detection import PITCH_DETECTOR
 
         assert PITCH_DETECTOR.colors is not None
 
@@ -63,8 +58,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_dict(self) -> None:
         """Verify detect_pitch_json returns dictionary."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -73,8 +67,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_keypoints_key(self) -> None:
         """Verify keypoints key in result."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -84,8 +77,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_count(self) -> None:
         """Verify count key in result."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -95,8 +87,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_pitch_polygon(self) -> None:
         """Verify pitch_polygon key in result."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -106,8 +97,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_pitch_detected_boolean(self) -> None:
         """Verify pitch_detected boolean key."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -117,8 +107,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_returns_homography(self) -> None:
         """Verify homography key in result."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -127,8 +116,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_pitch_detected_true_when_4_corners(self) -> None:
         """Verify pitch_detected is true when >= 4 corners."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -137,8 +125,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_keypoints_have_xy(self) -> None:
         """Verify each keypoint has xy coordinates."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -149,8 +136,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_keypoints_have_confidence(self) -> None:
         """Verify each keypoint has confidence."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -161,8 +147,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_keypoints_have_name(self) -> None:
         """Verify each keypoint has name."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -173,8 +158,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_count_matches_keypoints_length(self) -> None:
         """Verify count matches length of keypoints list."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -183,8 +167,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_respects_confidence_parameter(self) -> None:
         """Verify confidence parameter is respected."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result_low = detect_pitch_json(frame, device="cpu", confidence=0.10)
@@ -195,8 +178,7 @@ class TestDetectPitchJSON:
 
     def test_detect_pitch_json_accepts_device_parameter(self) -> None:
         """Verify device parameter is accepted."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json
+        from forgesyte_yolo_tracker.inference.pitch_detection import detect_pitch_json
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json(frame, device="cpu")
@@ -209,8 +191,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_returns_dict(self) -> None:
         """Verify returns dictionary."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -219,8 +202,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_includes_keypoints(self) -> None:
         """Verify includes keypoints key."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -230,8 +214,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_includes_count(self) -> None:
         """Verify includes count key."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -241,8 +226,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_includes_pitch_detected(self) -> None:
         """Verify includes pitch_detected boolean."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -252,8 +238,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_returns_base64(self) -> None:
         """Verify returns annotated_frame_base64 key."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -263,8 +250,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_base64_is_valid(self) -> None:
         """Verify annotated_frame_base64 is valid base64."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -277,8 +265,9 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_respects_device(self) -> None:
         """Verify respects device parameter."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = detect_pitch_json_with_annotated_frame(frame, device="cpu")
@@ -287,11 +276,14 @@ class TestDetectPitchJSONWithAnnotated:
 
     def test_detect_pitch_with_annotated_respects_confidence(self) -> None:
         """Verify respects confidence parameter."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            detect_pitch_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            detect_pitch_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
-        result = detect_pitch_json_with_annotated_frame(frame, device="cpu", confidence=0.50)
+        result = detect_pitch_json_with_annotated_frame(
+            frame, device="cpu", confidence=0.50
+        )
 
         assert result is not None
         assert "annotated_frame_base64" in result
@@ -302,16 +294,18 @@ class TestPitchDetectionModelCaching:
 
     def test_get_pitch_detection_model_returns_instance(self) -> None:
         """Verify get_pitch_detection_model returns model."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            get_pitch_detection_model
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            get_pitch_detection_model,
+        )
 
         model = get_pitch_detection_model(device="cpu")
         assert model is not None
 
     def test_get_pitch_detection_model_cached(self) -> None:
         """Verify model is cached after first call."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            get_pitch_detection_model
+        from forgesyte_yolo_tracker.inference.pitch_detection import (
+            get_pitch_detection_model,
+        )
 
         model1 = get_pitch_detection_model(device="cpu")
         model2 = get_pitch_detection_model(device="cpu")
@@ -324,8 +318,7 @@ class TestRunPitchDetection:
 
     def test_run_pitch_detection_returns_dict(self) -> None:
         """Verify run_pitch_detection returns dictionary."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            run_pitch_detection
+        from forgesyte_yolo_tracker.inference.pitch_detection import run_pitch_detection
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config: Dict[str, Any] = {"device": "cpu", "include_annotated": False}
@@ -335,8 +328,7 @@ class TestRunPitchDetection:
 
     def test_run_pitch_detection_json_mode(self) -> None:
         """Verify JSON mode returns keypoints without base64."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            run_pitch_detection
+        from forgesyte_yolo_tracker.inference.pitch_detection import run_pitch_detection
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config: Dict[str, Any] = {"device": "cpu", "include_annotated": False}
@@ -347,8 +339,7 @@ class TestRunPitchDetection:
 
     def test_run_pitch_detection_annotated_mode(self) -> None:
         """Verify annotated mode includes base64."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            run_pitch_detection
+        from forgesyte_yolo_tracker.inference.pitch_detection import run_pitch_detection
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config: Dict[str, Any] = {"device": "cpu", "include_annotated": True}
@@ -359,8 +350,7 @@ class TestRunPitchDetection:
 
     def test_run_pitch_detection_respects_config_device(self) -> None:
         """Verify config device parameter is respected."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            run_pitch_detection
+        from forgesyte_yolo_tracker.inference.pitch_detection import run_pitch_detection
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config: Dict[str, Any] = {"device": "cpu"}
@@ -370,8 +360,7 @@ class TestRunPitchDetection:
 
     def test_run_pitch_detection_respects_config_confidence(self) -> None:
         """Verify config confidence parameter is respected."""
-        from forgesyte_yolo_tracker.inference.pitch_detection import \
-            run_pitch_detection
+        from forgesyte_yolo_tracker.inference.pitch_detection import run_pitch_detection
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         config: Dict[str, Any] = {"device": "cpu", "confidence": 0.30}

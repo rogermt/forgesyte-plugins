@@ -33,8 +33,8 @@ sys.modules["ByteTrack"] = MagicMock()
 sys.modules["forgesyte_yolo_tracker.inference.player_detection"] = create_mock_module(
     "forgesyte_yolo_tracker.inference.player_detection"
 )
-sys.modules["forgesyte_yolo_tracker.inference.player_detection"].detect_players_json = MagicMock(
-    return_value={"detections": [], "count": 0}
+sys.modules["forgesyte_yolo_tracker.inference.player_detection"].detect_players_json = (
+    MagicMock(return_value={"detections": [], "count": 0})
 )
 sys.modules[
     "forgesyte_yolo_tracker.inference.player_detection"
@@ -57,8 +57,8 @@ sys.modules["forgesyte_yolo_tracker.inference.player_detection"].TEAM_COLORS = {
 sys.modules["forgesyte_yolo_tracker.inference.ball_detection"] = create_mock_module(
     "forgesyte_yolo_tracker.inference.ball_detection"
 )
-sys.modules["forgesyte_yolo_tracker.inference.ball_detection"].detect_ball_json = MagicMock(
-    return_value={"detections": [], "count": 0}
+sys.modules["forgesyte_yolo_tracker.inference.ball_detection"].detect_ball_json = (
+    MagicMock(return_value={"detections": [], "count": 0})
 )
 sys.modules[
     "forgesyte_yolo_tracker.inference.ball_detection"
@@ -69,8 +69,8 @@ sys.modules[
 sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"] = create_mock_module(
     "forgesyte_yolo_tracker.inference.pitch_detection"
 )
-sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"].detect_pitch_json = MagicMock(
-    return_value={"pitch": None}
+sys.modules["forgesyte_yolo_tracker.inference.pitch_detection"].detect_pitch_json = (
+    MagicMock(return_value={"pitch": None})
 )
 sys.modules[
     "forgesyte_yolo_tracker.inference.pitch_detection"
@@ -81,8 +81,8 @@ sys.modules[
 sys.modules["forgesyte_yolo_tracker.inference.player_tracking"] = create_mock_module(
     "forgesyte_yolo_tracker.inference.player_tracking"
 )
-sys.modules["forgesyte_yolo_tracker.inference.player_tracking"].track_players_json = MagicMock(
-    return_value={"tracks": [], "count": 0}
+sys.modules["forgesyte_yolo_tracker.inference.player_tracking"].track_players_json = (
+    MagicMock(return_value={"tracks": [], "count": 0})
 )
 sys.modules[
     "forgesyte_yolo_tracker.inference.player_tracking"
@@ -96,6 +96,8 @@ sys.modules["forgesyte_yolo_tracker.inference.radar"] = create_mock_module(
 sys.modules["forgesyte_yolo_tracker.inference.radar"].generate_radar_json = MagicMock(
     return_value={"radar": None}
 )
-sys.modules["forgesyte_yolo_tracker.inference.radar"].radar_json_with_annotated_frame = MagicMock(
+sys.modules[
+    "forgesyte_yolo_tracker.inference.radar"
+].radar_json_with_annotated_frame = MagicMock(
     return_value={"radar": None, "annotated_frame": ""}
 )

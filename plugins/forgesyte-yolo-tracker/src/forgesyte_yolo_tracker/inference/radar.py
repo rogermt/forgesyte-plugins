@@ -170,8 +170,12 @@ def generate_radar_json(
                 valid_kp_indices.append(i)
 
         if len(valid_kp_indices) >= 4:
-            src_pts = np.array([keypoints_xy[i] for i in valid_kp_indices[:4]], dtype=np.float32)
-            tgt_pts = np.array([CONFIG.vertices[i] for i in valid_kp_indices[:4]], dtype=np.float32)
+            src_pts = np.array(
+                [keypoints_xy[i] for i in valid_kp_indices[:4]], dtype=np.float32
+            )
+            tgt_pts = np.array(
+                [CONFIG.vertices[i] for i in valid_kp_indices[:4]], dtype=np.float32
+            )
 
             try:
                 transformer = get_view_transformer(src_pts, tgt_pts)
@@ -249,8 +253,12 @@ def radar_json_with_annotated_frame(
                 valid_kp_indices.append(i)
 
         if len(valid_kp_indices) >= 4:
-            src_pts = np.array([keypoints_xy[i] for i in valid_kp_indices[:4]], dtype=np.float32)
-            tgt_pts = np.array([CONFIG.vertices[i] for i in valid_kp_indices[:4]], dtype=np.float32)
+            src_pts = np.array(
+                [keypoints_xy[i] for i in valid_kp_indices[:4]], dtype=np.float32
+            )
+            tgt_pts = np.array(
+                [CONFIG.vertices[i] for i in valid_kp_indices[:4]], dtype=np.float32
+            )
 
             try:
                 transformer = get_view_transformer(src_pts, tgt_pts)
@@ -298,5 +306,7 @@ def run_radar(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, Any]:
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return radar_json_with_annotated_frame(frame, device=device, confidence=confidence)
+        return radar_json_with_annotated_frame(
+            frame, device=device, confidence=confidence
+        )
     return generate_radar_json(frame, device=device, confidence=confidence)

@@ -43,8 +43,9 @@ class TestRadarJSONWithAnnotated:
 
     def test_returns_radar_base64(self) -> None:
         """Verify returns base64 encoded radar image."""
-        from forgesyte_yolo_tracker.inference.radar import \
-            radar_json_with_annotated_frame
+        from forgesyte_yolo_tracker.inference.radar import (
+            radar_json_with_annotated_frame,
+        )
 
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
         result = radar_json_with_annotated_frame(frame, device="cpu")

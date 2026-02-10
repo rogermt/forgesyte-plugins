@@ -105,19 +105,17 @@ class TestPhase12InputContract:
         assert "error" in result
         assert "invalid_image_bytes" in result["error"]
 
-    def test_schema_declares_image_bytes_not_frame_base64(
-        self, plugin: Plugin
-    ) -> None:
+    def test_schema_declares_image_bytes_not_frame_base64(self, plugin: Plugin) -> None:
         """Verify tool schema declares image_bytes, not frame_base64."""
         for tool_name, tool_def in plugin.tools.items():
             if "video" not in tool_name:
                 schema = tool_def["input_schema"]
-                assert "image_bytes" in schema, (
-                    f"Tool {tool_name} must have 'image_bytes' in schema"
-                )
-                assert "frame_base64" not in schema, (
-                    f"Tool {tool_name} must NOT have 'frame_base64' in schema"
-                )
+                assert (
+                    "image_bytes" in schema
+                ), f"Tool {tool_name} must have 'image_bytes' in schema"
+                assert (
+                    "frame_base64" not in schema
+                ), f"Tool {tool_name} must NOT have 'frame_base64' in schema"
 
     def test_no_default_tool_alias(self, plugin: Plugin) -> None:
         """Verify 'default' tool name is rejected (Phase 12 forbids fallback)."""

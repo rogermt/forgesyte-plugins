@@ -51,7 +51,9 @@ class TestTeamClassifierIntegration:
     def test_batch_inference_performance(self) -> None:
         """Test batch processing with real model."""
         classifier = TeamClassifier(device="cpu", batch_size=8)
-        crops = [np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8) for _ in range(10)]
+        crops = [
+            np.random.randint(0, 255, (224, 224, 3), dtype=np.uint8) for _ in range(10)
+        ]
 
         embeddings = classifier.extract_features(crops)
         assert embeddings.shape[0] == 10

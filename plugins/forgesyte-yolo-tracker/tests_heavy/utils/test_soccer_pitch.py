@@ -9,8 +9,11 @@ import pytest
 import supervision as sv
 
 from forgesyte_yolo_tracker.utils.soccer_pitch import (
-    draw_paths_on_pitch, draw_pitch, draw_pitch_voronoi_diagram,
-    draw_points_on_pitch)
+    draw_paths_on_pitch,
+    draw_pitch,
+    draw_pitch_voronoi_diagram,
+    draw_points_on_pitch,
+)
 
 
 class SoccerPitchConfig:
@@ -47,21 +50,27 @@ def soccer_pitch_config() -> SoccerPitchConfig:
 class TestDrawPitchValidation:
     """Tests that validate actual drawing output for draw_pitch."""
 
-    def test_pitch_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_pitch_returns_numpy_array(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify draw_pitch returns numpy array."""
         result = draw_pitch(soccer_pitch_config)
         assert isinstance(result, np.ndarray)
         assert result.dtype == np.uint8
         assert len(result.shape) == 3
 
-    def test_pitch_has_green_background(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_pitch_has_green_background(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify pitch background is green (34, 139, 34 BGR)."""
         result = draw_pitch(soccer_pitch_config)
         # Sample corner area (not on lines)
         corner_pixel = result[10, 10]
         assert corner_pixel[1] == 139
 
-    def test_pitch_has_white_lines(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_pitch_has_white_lines(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify pitch lines are white (255, 255, 255)."""
         result = draw_pitch(soccer_pitch_config)
         # Check that white pixels exist on the image (from lines)
@@ -79,7 +88,9 @@ class TestDrawPitchValidation:
         assert result.shape == default_result.shape
         assert isinstance(result, np.ndarray)
 
-    def test_pitch_centre_circle_exists(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_pitch_centre_circle_exists(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify centre circle is drawn (white pixels at center area)."""
         result = draw_pitch(soccer_pitch_config)
         center_y, center_x = result.shape[0] // 2, result.shape[1] // 2
@@ -94,13 +105,17 @@ class TestDrawPitchValidation:
 class TestDrawPointsOnPitchValidation:
     """Tests for draw_points_on_pitch with real validation."""
 
-    def test_points_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_points_returns_numpy_array(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify draw_points_on_pitch returns numpy array."""
         points = np.array([[50.0, 30.0]])
         result = draw_points_on_pitch(soccer_pitch_config, points)
         assert isinstance(result, np.ndarray)
 
-    def test_points_scaled_correctly(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_points_scaled_correctly(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify points are drawn at scaled coordinates."""
         pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
         points = np.array([[100.0, 100.0]])
@@ -110,7 +125,9 @@ class TestDrawPointsOnPitchValidation:
         point_pixel = result[60, 60]
         assert point_pixel[2] == 255
 
-    def test_points_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_points_with_existing_pitch(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify points can be drawn on existing pitch."""
         existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
         points = np.array([[55.0, 53.0]])  # Point on boundary line
@@ -138,7 +155,9 @@ class TestDrawPointsOnPitchValidation:
         pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
         points = np.array([[100.0, 100.0]])
 
-        result = draw_points_on_pitch(soccer_pitch_config, points, pitch=pitch, radius=15)
+        result = draw_points_on_pitch(
+            soccer_pitch_config, points, pitch=pitch, radius=15
+        )
 
         center_area = result[45:76, 45:76]
         red_count = np.sum(center_area[:, :, 2] == 255)
@@ -148,7 +167,9 @@ class TestDrawPointsOnPitchValidation:
 class TestDrawPathsOnPitchValidation:
     """Tests for draw_paths_on_pitch with real validation."""
 
-    def test_paths_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_paths_returns_numpy_array(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify draw_paths_on_pitch returns numpy array."""
         paths = [np.array([[50.0, 30.0], [60.0, 40.0]])]
         result = draw_paths_on_pitch(soccer_pitch_config, paths)
@@ -168,13 +189,18 @@ class TestDrawPathsOnPitchValidation:
     def test_multiple_paths(self, soccer_pitch_config: SoccerPitchConfig) -> None:
         """Verify multiple paths are drawn."""
         pitch = np.ones((200, 200, 3), dtype=np.uint8) * 34
-        paths = [np.array([[50.0, 30.0], [60.0, 40.0]]), np.array([[70.0, 50.0], [80.0, 60.0]])]
+        paths = [
+            np.array([[50.0, 30.0], [60.0, 40.0]]),
+            np.array([[70.0, 50.0], [80.0, 60.0]]),
+        ]
 
         result = draw_paths_on_pitch(soccer_pitch_config, paths, pitch=pitch)
 
         assert np.any(result[:, :, 0] == 255)
 
-    def test_path_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_path_with_existing_pitch(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify paths can be drawn on existing pitch."""
         existing_pitch = np.ones((200, 200, 3), dtype=np.uint8) * 50
         path = np.array([[50.0, 30.0], [60.0, 40.0]])
@@ -187,7 +213,9 @@ class TestDrawPathsOnPitchValidation:
 class TestDrawVoronoiDiagramValidation:
     """Tests for draw_pitch_voronoi_diagram with real validation."""
 
-    def test_voronoi_returns_numpy_array(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_voronoi_returns_numpy_array(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify draw_pitch_voronoi_diagram returns numpy array."""
         team_1 = np.array([[50.0, 30.0]])
         team_2 = np.array([[60.0, 40.0]])
@@ -195,7 +223,9 @@ class TestDrawVoronoiDiagramValidation:
         result = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1, team_2)
         assert isinstance(result, np.ndarray)
 
-    def test_voronoi_has_team_colors(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_voronoi_has_team_colors(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify Voronoi diagram has team colors (red and white)."""
         team_1 = np.array([[50.0, 30.0]])
         team_2 = np.array([[60.0, 40.0]])
@@ -212,25 +242,33 @@ class TestDrawVoronoiDiagramValidation:
         has_white = np.any(result == 255)
         assert has_red or has_white
 
-    def test_voronoi_opacity_blending(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_voronoi_opacity_blending(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify opacity affects blending."""
         team_1 = np.array([[50.0, 30.0]])
         team_2 = np.array([[80.0, 50.0]])
 
-        result_opaque = draw_pitch_voronoi_diagram(soccer_pitch_config, team_1, team_2, opacity=1.0)
+        result_opaque = draw_pitch_voronoi_diagram(
+            soccer_pitch_config, team_1, team_2, opacity=1.0
+        )
         result_transparent = draw_pitch_voronoi_diagram(
             soccer_pitch_config, team_1, team_2, opacity=0.5
         )
 
         assert not np.array_equal(result_opaque, result_transparent)
 
-    def test_voronoi_with_existing_pitch(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_voronoi_with_existing_pitch(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify Voronoi can be drawn on existing pitch."""
         padding = 50
         scale = 0.1
         expected_height = int(soccer_pitch_config.width * scale) + 2 * padding
         expected_width = int(soccer_pitch_config.length * scale) + 2 * padding
-        existing_pitch = np.ones((expected_height, expected_width, 3), dtype=np.uint8) * 50
+        existing_pitch = (
+            np.ones((expected_height, expected_width, 3), dtype=np.uint8) * 50
+        )
         team_1 = np.array([[50.0, 30.0]])
         team_2 = np.array([[60.0, 40.0]])
 
@@ -240,7 +278,9 @@ class TestDrawVoronoiDiagramValidation:
 
         assert result.shape == existing_pitch.shape
 
-    def test_voronoi_different_team_positions(self, soccer_pitch_config: SoccerPitchConfig) -> None:
+    def test_voronoi_different_team_positions(
+        self, soccer_pitch_config: SoccerPitchConfig
+    ) -> None:
         """Verify Voronoi changes with different team positions."""
         team_1_a = np.array([[30.0, 30.0]])
         team_2_a = np.array([[70.0, 30.0]])

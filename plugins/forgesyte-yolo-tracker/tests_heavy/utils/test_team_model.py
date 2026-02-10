@@ -16,7 +16,8 @@ from forgesyte_yolo_tracker.utils import TeamClassifier
 RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
 
 pytestmark = pytest.mark.skipif(
-    not RUN_MODEL_TESTS, reason="Set RUN_MODEL_TESTS=1 to run (requires network for model loading)"
+    not RUN_MODEL_TESTS,
+    reason="Set RUN_MODEL_TESTS=1 to run (requires network for model loading)",
 )
 
 
@@ -49,7 +50,9 @@ class TestTeamClassifier:
 
     @patch("forgesyte_yolo_tracker.utils.team.tqdm")
     @patch("forgesyte_yolo_tracker.utils.team.torch")
-    def test_extract_features_basic(self, mock_torch: MagicMock, mock_tqdm: MagicMock) -> None:
+    def test_extract_features_basic(
+        self, mock_torch: MagicMock, mock_tqdm: MagicMock
+    ) -> None:
         """Test feature extraction from image crops."""
         with (
             patch("forgesyte_yolo_tracker.utils.team.SiglipVisionModel"),

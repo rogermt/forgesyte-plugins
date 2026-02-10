@@ -69,7 +69,9 @@ def run_player_detection_video_frames(
         result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
         detections = sv.Detections.from_ultralytics(result)
 
-        labels = [CLASS_NAMES.get(int(cls), f"class_{cls}") for cls in detections.class_id]
+        labels = [
+            CLASS_NAMES.get(int(cls), f"class_{cls}") for cls in detections.class_id
+        ]
 
         annotated = frame.copy()
         annotated = box_annotator.annotate(annotated, detections)

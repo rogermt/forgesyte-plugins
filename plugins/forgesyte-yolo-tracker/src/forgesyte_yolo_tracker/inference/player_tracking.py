@@ -105,7 +105,9 @@ def track_players_json(
         xyxy = detections.xyxy[i]
         conf = float(detections.confidence[i])
         cls = int(detections.class_id[i])
-        track_id = int(detections.track_id[i]) if detections.track_id is not None else -1
+        track_id = (
+            int(detections.track_id[i]) if detections.track_id is not None else -1
+        )
 
         class_name = CLASS_NAMES.get(cls, f"class_{cls}")
 
@@ -159,7 +161,9 @@ def track_players_json_with_annotated_frame(
         xyxy = detections.xyxy[i]
         conf = float(detections.confidence[i])
         cls = int(detections.class_id[i])
-        track_id = int(detections.track_id[i]) if detections.track_id is not None else -1
+        track_id = (
+            int(detections.track_id[i]) if detections.track_id is not None else -1
+        )
 
         class_name = CLASS_NAMES.get(cls, f"class_{cls}")
 
@@ -181,7 +185,9 @@ def track_players_json_with_annotated_frame(
 
     labels = [
         f"#{track_id if track_id >= 0 else '?'} {CLASS_NAMES.get(int(cls), f'class_{cls}')}"
-        for track_id, cls in zip(detections.track_id or [-1] * len(detections), detections.class_id)
+        for track_id, cls in zip(
+            detections.track_id or [-1] * len(detections), detections.class_id
+        )
     ]
 
     annotated = frame.copy()
@@ -203,5 +209,7 @@ def run_player_tracking(frame: np.ndarray, config: Dict[str, Any]) -> Dict[str, 
     include_annotated = config.get("include_annotated", False)
 
     if include_annotated:
-        return track_players_json_with_annotated_frame(frame, device=device, confidence=confidence)
+        return track_players_json_with_annotated_frame(
+            frame, device=device, confidence=confidence
+        )
     return track_players_json(frame, device=device, confidence=confidence)

@@ -4,8 +4,12 @@ import os
 
 import pytest
 
-from forgesyte_yolo_tracker.configs import (MODEL_CONFIG_PATH, get_confidence,
-                                            get_model_path, load_model_config)
+from forgesyte_yolo_tracker.configs import (
+    MODEL_CONFIG_PATH,
+    get_confidence,
+    get_model_path,
+    load_model_config,
+)
 
 
 class TestLoadModelConfig:

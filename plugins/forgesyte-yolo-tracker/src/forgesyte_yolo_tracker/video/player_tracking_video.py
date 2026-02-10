@@ -69,7 +69,9 @@ def run_player_tracking_video_frames(
 
         labels = [
             f"#{int(tid) if tid else '?'} {CLASS_NAMES.get(int(cls), f'class_{cls}')}"
-            for tid, cls in zip(detections.track_id or [-1] * len(detections), detections.class_id)
+            for tid, cls in zip(
+                detections.track_id or [-1] * len(detections), detections.class_id
+            )
         ]
 
         annotated = frame.copy()

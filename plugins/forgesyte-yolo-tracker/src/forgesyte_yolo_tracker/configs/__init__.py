@@ -35,7 +35,7 @@ class ConfigError(RuntimeError):
 
 def _reset_config_cache_for_tests() -> None:
     """Reset config cache for test isolation.
-    
+
     Tests that modify models.yaml at runtime must call this to reload.
     Not needed if tests use fixed config or mocks.
     """
@@ -45,7 +45,7 @@ def _reset_config_cache_for_tests() -> None:
 
 def load_model_config(config_path: Path = MODEL_CONFIG_PATH) -> Dict[str, Any]:
     """Load model configuration from YAML file.
-    
+
     Phase 12 strict governance:
     - YAML is required to exist
     - All required keys (models, confidence, device) must be present
@@ -86,7 +86,9 @@ def load_model_config(config_path: Path = MODEL_CONFIG_PATH) -> Dict[str, Any]:
     # Validate device value
     device = config.get("device")
     if device not in ("cpu", "cuda"):
-        raise ConfigError(f"Invalid device in models.yaml: {device!r} (expected 'cpu' or 'cuda')")
+        raise ConfigError(
+            f"Invalid device in models.yaml: {device!r} (expected 'cpu' or 'cuda')"
+        )
 
     _CONFIG_CACHE = config
     return config
@@ -135,15 +137,15 @@ def get_confidence(task: str) -> float:
 
 def get_device() -> str:
     """Get configured device for inference.
-    
+
     Phase 12: Strict governance.
     - Device must be present in models.yaml
     - Valid values: 'cpu' or 'cuda'
     - No fallback; if missing, raises ConfigError
-    
+
     Returns:
         Device string: either 'cpu' or 'cuda'
-        
+
     Raises:
         ConfigError: If device is missing or invalid in models.yaml
     """
@@ -159,7 +161,7 @@ def get_default_detections() -> list:
 
     Returns:
         List of detection types to run (e.g., ['players', 'pitch']).
-        
+
     Raises:
         ConfigError: If default_detections is missing or invalid.
     """

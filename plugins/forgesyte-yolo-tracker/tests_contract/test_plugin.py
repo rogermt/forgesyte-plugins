@@ -186,7 +186,9 @@ class TestPluginAnalyzeBehavior:
         img.save(img_bytes, format="PNG")
         return base64.b64encode(img_bytes.getvalue()).decode("utf-8")
 
-    def test_run_tool_handles_rgb_image(self, plugin: Plugin, sample_frame_base64: str) -> None:
+    def test_run_tool_handles_rgb_image(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
         """Test tool handles RGB images correctly."""
         with patch(
             "forgesyte_yolo_tracker.plugin.detect_players_json",
@@ -219,7 +221,9 @@ class TestPluginAnalyzeBehavior:
             )
             assert isinstance(result, dict)
 
-    def test_run_tool_handles_rgba_image(self, plugin: Plugin, rgba_frame_base64: str) -> None:
+    def test_run_tool_handles_rgba_image(
+        self, plugin: Plugin, rgba_frame_base64: str
+    ) -> None:
         """Test tool handles RGBA images (with alpha channel)."""
         with patch(
             "forgesyte_yolo_tracker.plugin.detect_players_json",
@@ -248,7 +252,9 @@ class TestPluginAnalyzeBehavior:
         assert isinstance(result, dict)
         assert "error" in result
 
-    def test_run_tool_respects_options(self, plugin: Plugin, sample_frame_base64: str) -> None:
+    def test_run_tool_respects_options(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
         """Test tool respects options parameter."""
         with patch(
             "forgesyte_yolo_tracker.plugin.detect_players_json_with_annotated_frame",
@@ -264,14 +270,18 @@ class TestPluginAnalyzeBehavior:
             )
             assert isinstance(result, dict)
 
-    def test_run_tool_output_is_json_safe(self, plugin: Plugin, sample_frame_base64: str) -> None:
+    def test_run_tool_output_is_json_safe(
+        self, plugin: Plugin, sample_frame_base64: str
+    ) -> None:
         """Test tool output is JSON-serializable."""
         import json
 
         with patch(
             "forgesyte_yolo_tracker.plugin.detect_players_json",
             return_value={
-                "detections": [{"x1": 100, "y1": 200, "x2": 150, "y2": 350, "confidence": 0.92}]
+                "detections": [
+                    {"x1": 100, "y1": 200, "x2": 150, "y2": 350, "confidence": 0.92}
+                ]
             },
         ):
             result = plugin.run_tool(

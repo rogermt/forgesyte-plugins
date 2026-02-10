@@ -46,11 +46,11 @@ packages = ["forgesyte_yolo_tracker"]
 package-dir = {"" = "src"}
 
 [tool.black]
-line-length = 100
+line-length = 88
 target-version = ["py39"]
 
 [tool.ruff]
-line-length = 100
+line-length = 88
 target-version = "py39"
 
 [tool.coverage.run]

@@ -13,7 +13,9 @@ import yaml
 MODELS_DIR = Path(__file__).parents[2] / "forgesyte_yolo_tracker" / "models"
 
 # Path to config file
-CONFIG_PATH = Path(__file__).parents[2] / "forgesyte_yolo_tracker" / "configs" / "models.yaml"
+CONFIG_PATH = (
+    Path(__file__).parents[2] / "forgesyte_yolo_tracker" / "configs" / "models.yaml"
+)
 
 
 # Load model names from config
@@ -43,7 +45,9 @@ BALL_MODEL_PATH = MODELS_DIR / BALL_MODEL
 PITCH_MODEL_PATH = MODELS_DIR / PITCH_MODEL
 
 # Check if any model exists
-MODELS_EXIST = PLAYER_MODEL_PATH.exists() or BALL_MODEL_PATH.exists() or PITCH_MODEL_PATH.exists()
+MODELS_EXIST = (
+    PLAYER_MODEL_PATH.exists() or BALL_MODEL_PATH.exists() or PITCH_MODEL_PATH.exists()
+)
 
 # Environment flag
 RUN_MODEL_TESTS = os.getenv("RUN_MODEL_TESTS", "0") == "1"
