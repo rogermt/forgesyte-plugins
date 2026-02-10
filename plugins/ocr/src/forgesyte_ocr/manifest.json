@@ -6,13 +6,14 @@
   "author": "Roger",
   "license": "MIT",
   "entrypoint": "forgesyte_ocr.plugin",
-  "mode": "image",
+  "type": "ocr",
   "capabilities": [
     "text_extraction"
   ],
   "tools": [
     {
-      "name": "analyze",
+      "id": "analyze",
+      "title": "Extract Text",
       "description": "Extract text and text blocks from an uploaded image.",
       "inputs": {
         "image_base64": "string",

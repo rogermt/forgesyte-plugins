@@ -1,0 +1,24 @@
+{
+  "id": "plugin_template",
+  "name": "plugin_template",
+  "version": "1.0.0",
+  "description": "Template plugin for new plugin development",
+  "author": "Roger",
+  "license": "MIT",
+  "entrypoint": "forgesyte_plugin_template.plugin",
+  "type": "custom",
+  "capabilities": [],
+  "tools": [
+    {
+      "id": "example_tool",
+      "title": "Example Tool",
+      "description": "Demonstration tool for plugin authors",
+      "inputs": {
+        "image_base64": "string"
+      },
+      "outputs": {
+        "result": "string"
+      }
+    }
+  ]
+}

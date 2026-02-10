@@ -1,20 +1,12 @@
 #!/usr/bin/env python3
 """
-Unified validator for ForgeSyte plugin manifests.
-
-Supports:
-- Frame-based plugins (e.g., YOLO tracker)
-- Image-based plugins (e.g., OCR)
+Unified validator for ForgeSyte plugin manifests (Phase 12).
 
 Validation rules:
-1. Manifest must contain: id, name, version, tools, mode
-2. Tools may be a dict (frame-based) or list (OCR-style)
-3. Frame-based tools must accept 'frame_base64'
-4. OCR tools must accept 'image_base64'
-5. Tool names must be URL-safe
-6. mode must be consistent with tools:
-   - mode == "image" → list tools + image_base64
-   - mode == "frame" → dict tools + frame_base64
+1. Manifest must contain: id, name, version, tools, type
+2. type must be one of: yolo, ocr, custom
+3. Tools must be a list of dicts with 'id' field
+4. Tool ids must be URL-safe
 """
 
 from __future__ import annotations
@@ -25,6 +17,8 @@ import re
 import sys
 from pathlib import Path
 from typing import Any, cast
+
+ALLOWED_PLUGIN_TYPES = {"yolo", "ocr", "custom"}
 
 DEFAULT_MANIFEST_PATH = (
     Path(__file__).parent
@@ -63,108 +57,44 @@ def load_manifest(path: Path) -> dict[str, Any]:
         sys.exit(1)
 
 
-def validate_common_fields(manifest: dict[str, Any]) -> None:
-    required = ["id", "name", "version", "tools", "mode"]
+def is_url_safe(name: str) -> bool:
+    return re.match(r"^[a-z0-9_-]+$", name) is not None
+
+
+def validate_manifest(manifest: dict[str, Any]) -> None:
+    required = ["id", "name", "version", "tools", "type"]
     for field in required:
         if field not in manifest:
             print(f"ERROR: Manifest missing required field '{field}'")
             sys.exit(1)
 
-    mode = manifest["mode"]
-    if mode not in ("image", "frame"):
-        print(f"ERROR: mode must be 'image' or 'frame', got '{mode}'")
+    plugin_type = manifest["type"]
+    if plugin_type not in ALLOWED_PLUGIN_TYPES:
+        print(
+            f"ERROR: type must be one of {sorted(ALLOWED_PLUGIN_TYPES)}, "
+            f"got '{plugin_type}'"
+        )
         sys.exit(1)
 
-
-def is_url_safe(name: str) -> bool:
-    return re.match(r"^[a-z0-9_-]+$", name) is not None
-
-
-def detect_plugin_type(tools: dict[str, Any] | list[dict[str, Any]]) -> str:
-    """
-    Decide plugin type based on tool input fields.
-    """
-    # Dict-style tools (YOLO)
-    if isinstance(tools, dict):
-        for tool in tools.values():
-            inputs = tool.get("inputs", {})
-            if "frame_base64" in inputs:
-                return "frame"
-        return "unknown"
-
-    # List-style tools (OCR)
-    if isinstance(tools, list):
-        for tool in tools:
-            inputs = tool.get("inputs", {})
-            if "image_base64" in inputs:
-                return "ocr"
-        return "unknown"
-
-    return "unknown"
-
-
-def validate_frame_plugin(tools: dict[str, Any]) -> None:
-    if not isinstance(tools, dict):
-        print("ERROR: Frame-based plugins must use dict-style tools")
-        sys.exit(1)
-
-    for tool_name, tool in tools.items():
-        if not is_url_safe(tool_name):
-            print(f"ERROR: Tool name '{tool_name}' is not URL-safe")
-            sys.exit(1)
-
-        inputs = tool.get("inputs", {})
-        if "frame_base64" not in inputs:
-            print(f"ERROR: Tool '{tool_name}' missing required input 'frame_base64'")
-            sys.exit(1)
-
-
-def validate_ocr_plugin(tools: list[dict[str, Any]]) -> None:
+    tools = manifest["tools"]
     if not isinstance(tools, list):
-        print("ERROR: OCR plugins must use list-style tools")
+        print("ERROR: tools must be a list")
         sys.exit(1)
 
     for tool in tools:
-        name = tool.get("name")
-        if not name or not is_url_safe(name):
-            print(f"ERROR: Tool name '{name}' is invalid or not URL-safe")
+        tool_id = tool.get("id")
+        if not tool_id:
+            print(f"ERROR: Tool missing required 'id' field: {tool}")
             sys.exit(1)
-
-        inputs = tool.get("inputs", {})
-        if "image_base64" not in inputs:
-            print(f"ERROR: OCR tool '{name}' missing required input 'image_base64'")
+        if not is_url_safe(tool_id):
+            print(f"ERROR: Tool id '{tool_id}' is not URL-safe")
             sys.exit(1)
 
 
 def main() -> None:
     manifest_path = resolve_manifest_path()
     manifest = load_manifest(manifest_path)
-
-    validate_common_fields(manifest)
-
-    tools = manifest["tools"]
-    mode = manifest["mode"]
-    plugin_type = detect_plugin_type(tools)
-
-    # Enforce consistency between mode and inferred type
-    if mode == "image":
-        if plugin_type != "ocr":
-            print(
-                f"ERROR: mode='image' but tools look like '{plugin_type}' "
-                "(expected list-style tools with image_base64)"
-            )
-            sys.exit(1)
-        validate_ocr_plugin(tools)
-
-    elif mode == "frame":
-        if plugin_type != "frame":
-            print(
-                f"ERROR: mode='frame' but tools look like '{plugin_type}' "
-                "(expected dict-style tools with frame_base64)"
-            )
-            sys.exit(1)
-        validate_frame_plugin(tools)
-
+    validate_manifest(manifest)
     print("OK")
     sys.exit(0)
 
