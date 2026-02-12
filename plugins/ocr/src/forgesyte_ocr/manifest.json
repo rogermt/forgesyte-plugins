@@ -15,6 +15,9 @@
       "id": "analyze",
       "title": "Extract Text",
       "description": "Extract text and text blocks from an uploaded image.",
+      "input_types": ["image_bytes"],
+      "output_types": ["text", "blocks"],
+      "capabilities": ["text_extraction"],
       "inputs": {
         "image_base64": "string",
         "language": "string",
