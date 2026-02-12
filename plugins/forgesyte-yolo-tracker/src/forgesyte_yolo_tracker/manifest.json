@@ -18,6 +18,9 @@
       "id": "player_detection",
       "title": "Player Detection",
       "description": "Detect players in a single image.",
+      "input_types": ["video_frame"],
+      "output_types": ["detections"],
+      "capabilities": ["player_detection"],
       "inputs": {
         "image_base64": "string",
         "device": "string",
@@ -32,6 +35,9 @@
       "id": "ball_detection",
       "title": "Ball Detection",
       "description": "Detect the football in a single image.",
+      "input_types": ["video_frame"],
+      "output_types": ["detections"],
+      "capabilities": ["ball_detection"],
       "inputs": {
         "image_base64": "string",
         "device": "string",
@@ -46,6 +52,9 @@
       "id": "pitch_detection",
       "title": "Pitch Detection",
       "description": "Detect pitch keypoints for homography mapping.",
+      "input_types": ["video_frame"],
+      "output_types": ["keypoints"],
+      "capabilities": ["pitch_detection"],
       "inputs": {
         "image_base64": "string",
         "device": "string",
@@ -60,6 +69,9 @@
       "id": "radar",
       "title": "Radar View",
       "description": "Generate radar (bird's-eye) view of player positions.",
+      "input_types": ["video_frame"],
+      "output_types": ["radar_points"],
+      "capabilities": ["radar_visualization"],
       "inputs": {
         "image_base64": "string",
         "device": "string",
