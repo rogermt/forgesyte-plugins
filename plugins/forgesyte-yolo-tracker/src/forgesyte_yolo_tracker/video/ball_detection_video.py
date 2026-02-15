@@ -57,6 +57,11 @@ def run_ball_detection_video(
     confidence: float = DEFAULT_CONFIDENCE,
 ) -> None:
     """Process video and save ball detection output."""
+    if not source_video_path:
+        return {
+            "error": "missing_video_path",
+            "detail": "video_path must be provided"
+        }
     video_info = sv.VideoInfo.from_video_path(source_video_path)
     with sv.VideoSink(target_video_path, video_info) as sink:
         for frame in run_ball_detection_video_frames(
