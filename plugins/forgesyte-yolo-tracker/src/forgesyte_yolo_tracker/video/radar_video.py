@@ -91,6 +91,11 @@ def run_radar_video_frames(
     confidence: float = DEFAULT_CONFIDENCE,
 ) -> Iterator[np.ndarray]:
     """Generate frames with radar overlay from video."""
+    if not source_video_path:
+        return {
+            "error": "missing_video_path",
+            "detail": "video_path must be provided"
+        }
     player_model = get_player_model(device)
     pitch_model = get_pitch_model(device)
     frame_generator = sv.get_video_frames_generator(source_path=source_video_path)
