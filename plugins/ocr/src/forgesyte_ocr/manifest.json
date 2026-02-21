@@ -19,7 +19,7 @@
       "output_types": ["text", "blocks"],
       "capabilities": ["text_extraction"],
       "inputs": {
-        "image_base64": "string",
+        "image_bytes": "string",
         "language": "string",
         "psm": "integer"
       },
