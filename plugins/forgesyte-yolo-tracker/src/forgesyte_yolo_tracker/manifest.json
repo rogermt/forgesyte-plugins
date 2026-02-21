@@ -22,7 +22,7 @@
       "output_types": ["detections"],
       "capabilities": ["player_detection"],
       "inputs": {
-        "image_base64": "string",
+        "image_bytes": "string",
         "device": "string",
         "annotated": "boolean"
       },
@@ -39,7 +39,7 @@
       "output_types": ["detections"],
       "capabilities": ["ball_detection"],
       "inputs": {
-        "image_base64": "string",
+        "image_bytes": "string",
         "device": "string",
         "annotated": "boolean"
       },
@@ -56,7 +56,7 @@
       "output_types": ["keypoints"],
       "capabilities": ["pitch_detection"],
       "inputs": {
-        "image_base64": "string",
+        "image_bytes": "string",
         "device": "string",
         "annotated": "boolean"
       },
@@ -73,7 +73,7 @@
       "output_types": ["radar_points"],
       "capabilities": ["radar_visualization"],
       "inputs": {
-        "image_base64": "string",
+        "image_bytes": "string",
         "device": "string",
         "annotated": "boolean"
       },
