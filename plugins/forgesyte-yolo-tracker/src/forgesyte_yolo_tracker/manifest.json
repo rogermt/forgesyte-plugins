@@ -81,6 +81,23 @@
         "radar_points": "array",
         "annotated_image_base64": "string?"
       }
+    },
+    {
+      "id": "video_player_detection",
+      "title": "Video Player Detection",
+      "description": "Run player detection on every frame of a video.",
+      "input_types": ["video"],
+      "output_types": ["video_detections"],
+      "capabilities": ["player_detection"],
+      "inputs": {
+        "video_path": "string",
+        "device": "string",
+        "annotated": "boolean"
+      },
+      "outputs": {
+        "frames": "array",
+        "summary": "object"
+      }
     }
   ]
 }
