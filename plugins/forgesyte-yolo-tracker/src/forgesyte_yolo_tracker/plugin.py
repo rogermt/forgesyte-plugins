@@ -211,7 +211,10 @@ def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu") ->
 # v0.9.5 Video Tool (JSON frame-level output)
 # ---------------------------------------------------------
 def _tool_video_player_detection(
-    video_path: str, device: str = "cpu", annotated: bool = False
+    video_path: str,
+    device: str = "cpu",
+    annotated: bool = False,
+    progress_callback=None,
 ) -> Dict[str, Any]:
     """Run player detection on video frames, returning JSON results.
 
@@ -236,6 +239,14 @@ def _tool_video_player_detection(
     # Construct model path
     MODEL_NAME = get_model_path("player_detection")
     MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+
+    # Get total frames using OpenCV (for progress tracking)
+    import cv2
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    if total_frames <= 0:
+        total_frames = 100  # Fallback heuristic
 
     # Load model and set device
     model = YOLO(MODEL_PATH).to(device=device)
@@ -276,6 +287,11 @@ def _tool_video_player_detection(
                 },
             }
         )
+
+        # Call progress callback if provided (v0.9.6)
+        if progress_callback:
+            progress_callback(frame_index + 1, total_frames)
+
         frame_index += 1
 
     # Calculate summary
@@ -441,11 +457,13 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         handler = self.tools[tool_name]["handler"]
 
         # v0.9.5 video tool (JSON frame-level output, no output_path)
+        # v0.9.6: Added progress_callback support
         if tool_name == "video_player_detection":
             return handler(
                 video_path=args.get("video_path"),
                 device=args.get("device", "cpu"),
                 annotated=args.get("annotated", False),
+                progress_callback=args.get("progress_callback"),
             )
 
         # Legacy video tools (output annotated video files)
