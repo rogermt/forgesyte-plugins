@@ -208,6 +208,89 @@ def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu") ->
 
 
 # ---------------------------------------------------------
+# v0.9.5 Video Tool (JSON frame-level output)
+# ---------------------------------------------------------
+def _tool_video_player_detection(
+    video_path: str, device: str = "cpu", annotated: bool = False
+) -> Dict[str, Any]:
+    """Run player detection on video frames, returning JSON results.
+
+    Uses YOLO streaming inference for memory efficiency.
+    Returns frame-level detections aggregated into a single JSON response.
+
+    Args:
+        video_path: Path to input video file
+        device: Device to run model on ('cpu' or 'cuda')
+        annotated: Whether to include annotated frames (not implemented in v0.9.5)
+
+    Returns:
+        Dict with 'frames' array and 'summary' object
+    """
+    from pathlib import Path
+
+    from forgesyte_yolo_tracker.configs import get_model_path
+
+    # Lazy import to avoid loading YOLO at module load time
+    from ultralytics import YOLO
+
+    # Construct model path
+    MODEL_NAME = get_model_path("player_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+
+    # Load model and set device
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    frame_results: list = []
+    frame_index = 0
+
+    # Use YOLO streaming inference for memory efficiency
+    results = model(video_path, stream=True, verbose=False)
+
+    for result in results:
+        # Extract detections from result
+        boxes = result.boxes
+
+        # Check if boxes has detections by examining xyxy shape
+        if boxes is not None:
+            xyxy_array = boxes.xyxy.cpu().numpy()
+            if len(xyxy_array) > 0:
+                xyxy = xyxy_array.tolist()
+                confidence = boxes.conf.cpu().numpy().tolist()
+                class_id = boxes.cls.cpu().numpy().tolist()
+            else:
+                xyxy = []
+                confidence = []
+                class_id = []
+        else:
+            xyxy = []
+            confidence = []
+            class_id = []
+
+        frame_results.append(
+            {
+                "frame_index": frame_index,
+                "detections": {
+                    "xyxy": xyxy,
+                    "confidence": confidence,
+                    "class_id": class_id,
+                },
+            }
+        )
+        frame_index += 1
+
+    # Calculate summary
+    total_detections = sum(len(f["detections"]["xyxy"]) for f in frame_results)
+
+    return {
+        "frames": frame_results,
+        "summary": {
+            "total_frames": frame_index,
+            "total_detections": total_detections,
+        },
+    }
+
+
+# ---------------------------------------------------------
 # Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
 # ---------------------------------------------------------
 class Plugin(BasePlugin):  # type: ignore[misc]
@@ -320,6 +403,20 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             "output_schema": {"status": {"type": "string"}},
             "handler": _tool_radar_video,
         },
+        # v0.9.5 Video Tool (JSON frame-level output)
+        "video_player_detection": {
+            "description": "Run player detection on video frames, returning JSON results",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+                "annotated": {"type": "boolean", "default": False},
+            },
+            "output_schema": {
+                "frames": {"type": "array"},
+                "summary": {"type": "object"},
+            },
+            "handler": _tool_video_player_detection,
+        },
     }
 
     # -------------------------------------------------------
@@ -343,7 +440,15 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         handler = self.tools[tool_name]["handler"]
 
-        # Video tools use different args
+        # v0.9.5 video tool (JSON frame-level output, no output_path)
+        if tool_name == "video_player_detection":
+            return handler(
+                video_path=args.get("video_path"),
+                device=args.get("device", "cpu"),
+                annotated=args.get("annotated", False),
+            )
+
+        # Legacy video tools (output annotated video files)
         if "video" in tool_name:
             return handler(
                 video_path=args.get("video_path"),
