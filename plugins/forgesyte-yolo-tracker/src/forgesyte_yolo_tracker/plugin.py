@@ -252,15 +252,12 @@ def _tool_video_player_detection(
     # Lazy import to avoid loading YOLO at module load time
     from ultralytics import YOLO
 
-    logger.info("[YOLO-PROGRESS] Starting video_player_detection")
-    logger.info(f"[YOLO-PROGRESS] video_path={video_path}")
-    logger.info(f"[YOLO-PROGRESS] device={device}, annotated={annotated}")
-    logger.info(f"[YOLO-PROGRESS] progress_callback={'PROVIDED' if progress_callback else 'NONE'}")
+    logger.info(f"Starting video_player_detection: device={device}")
 
     # Construct model path
     MODEL_NAME = get_model_path("player_detection")
     MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
-    logger.info(f"[YOLO-PROGRESS] Model path: {MODEL_PATH}")
+
 
     # Get total frames using OpenCV (for progress tracking)
     import cv2
@@ -271,18 +268,16 @@ def _tool_video_player_detection(
     if total_frames <= 0:
         total_frames = 100  # Fallback heuristic
 
-    logger.info(f"[YOLO-PROGRESS] Video info: total_frames={total_frames}, fps={fps}")
+    logger.info(f"Video: {total_frames} frames at {fps} fps")
 
     # Load model and set device
-    logger.info(f"[YOLO-PROGRESS] Loading YOLO model on device={device}...")
     model = YOLO(MODEL_PATH).to(device=device)
-    logger.info("[YOLO-PROGRESS] Model loaded successfully")
 
     frame_results: list = []
     frame_index = 0
 
     # Use YOLO streaming inference for memory efficiency
-    logger.info("[YOLO-PROGRESS] Starting inference stream...")
+
     results = model(video_path, stream=True, verbose=False)
 
     for result in results:
@@ -319,17 +314,14 @@ def _tool_video_player_detection(
         # Call progress callback if provided (v0.9.6)
         if progress_callback:
             progress_callback(frame_index + 1, total_frames)
-            # Log every 50 frames or at milestones
-            if (frame_index + 1) % 50 == 0 or frame_index == total_frames - 1:
-                pct = int((frame_index + 1) / total_frames * 100)
-                logger.info(f"[YOLO-PROGRESS] Frame {frame_index + 1}/{total_frames} ({pct}%) - callback invoked")
+
 
         frame_index += 1
 
     # Calculate summary
     total_detections = sum(len(f["detections"]["xyxy"]) for f in frame_results)
 
-    logger.info(f"[YOLO-PROGRESS] Completed: {frame_index} frames, {total_detections} total detections")
+    logger.info(f"Completed: {frame_index} frames, {total_detections} detections")
 
     return {
         "frames": frame_results,
@@ -485,9 +477,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         Raises:
             ValueError: If tool name not found or invalid args
         """
-        logger.info(f"[YOLO-PROGRESS] run_tool called: tool_name={tool_name}")
-        logger.info(f"[YOLO-PROGRESS] args keys: {list(args.keys())}")
-        logger.info(f"[YOLO-PROGRESS] progress_callback in args: {'progress_callback' in args}")
+        logger.info(f"run_tool: {tool_name}")
 
         if tool_name not in self.tools:
             raise ValueError(f"Unknown tool: {tool_name}")
@@ -497,8 +487,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
         # v0.9.5 video tool (JSON frame-level output, no output_path)
         # v0.9.6: Added progress_callback support
         if tool_name == "video_player_detection":
-            logger.info("[YOLO-PROGRESS] Dispatching to video_player_detection handler")
-            logger.info(f"[YOLO-PROGRESS] progress_callback value: {args.get('progress_callback')}")
+
             return handler(
                 video_path=args.get("video_path"),
                 device=args.get("device", _get_default_device()),
