@@ -56,8 +56,22 @@ from forgesyte_yolo_tracker.inference.player_tracking import (
 )
 from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_json
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
+from forgesyte_yolo_tracker.configs import load_model_config
 
 logger = logging.getLogger(__name__)
+
+
+def _get_default_device() -> str:
+    """Get default device from config file.
+
+    Returns:
+        Device string from config (e.g., 'cuda' or 'cpu'), defaults to 'cpu'.
+    """
+    try:
+        config = load_model_config()
+        return config.get("device", "cpu")
+    except Exception:
+        return "cpu"
 
 
 # ---------------------------------------------------------
@@ -487,7 +501,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             logger.info(f"[YOLO-PROGRESS] progress_callback value: {args.get('progress_callback')}")
             return handler(
                 video_path=args.get("video_path"),
-                device=args.get("device", "cpu"),
+                device=args.get("device", _get_default_device()),
                 annotated=args.get("annotated", False),
                 progress_callback=args.get("progress_callback"),
             )
@@ -497,7 +511,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             return handler(
                 video_path=args.get("video_path"),
                 output_path=args.get("output_path"),
-                device=args.get("device", "cpu"),
+                device=args.get("device", _get_default_device()),
             )
 
         # Frame tools use image_bytes (Phase 12 contract)
@@ -510,7 +524,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         return handler(
             image_bytes=image_bytes,
-            device=args.get("device", "cpu"),
+            device=args.get("device", _get_default_device()),
             annotated=args.get("annotated", False),
         )
 
