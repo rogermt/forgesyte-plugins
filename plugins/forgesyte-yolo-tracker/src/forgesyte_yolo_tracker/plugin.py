@@ -335,6 +335,235 @@ def _tool_video_player_detection(
 # ---------------------------------------------------------
 # Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
 # ---------------------------------------------------------
+
+# ---------------------------------------------------------
+# v0.9.7: Shared video tool helper
+# ---------------------------------------------------------
+def _run_video_tool(
+    model,
+    video_path: str,
+    progress_callback=None,
+    frame_handler=None,
+    device: str = "cpu",
+) -> Dict[str, Any]:
+    """Shared helper for video tools with progress tracking."""
+    import cv2
+
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    if total_frames <= 0:
+        total_frames = 100
+
+    logger.info(f"Video: {total_frames} frames")
+
+    frame_results = []
+    frame_index = 0
+
+    results = model(video_path, stream=True, verbose=False)
+
+    for result in results:
+        if frame_handler:
+            frame_data = frame_handler(result)
+        else:
+            boxes = result.boxes
+            if boxes is not None and len(boxes.xyxy) > 0:
+                frame_data = {
+                    "xyxy": boxes.xyxy.cpu().numpy().tolist(),
+                    "confidence": boxes.conf.cpu().numpy().tolist(),
+                    "class_id": boxes.cls.cpu().numpy().tolist(),
+                }
+            else:
+                frame_data = {"xyxy": [], "confidence": [], "class_id": []}
+
+        frame_results.append({
+            "frame_index": frame_index,
+            "detections": frame_data,
+        })
+
+        if progress_callback:
+            progress_callback(frame_index + 1, total_frames)
+
+        frame_index += 1
+
+    logger.info(f"Completed: {frame_index} frames")
+
+    return {
+        "total_frames": frame_index,
+        "frames": frame_results,
+    }
+
+
+def _tool_video_ball_detection(
+    video_path: str,
+    device: str = "cpu",
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """Run ball detection on video frames, returning JSON results."""
+    from pathlib import Path
+    from forgesyte_yolo_tracker.configs import get_model_path
+    from ultralytics import YOLO
+
+    MODEL_NAME = get_model_path("ball_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    def handle_frame(result):
+        boxes = result.boxes
+        if boxes is not None and len(boxes.xyxy) > 0:
+            return {
+                "xyxy": boxes.xyxy.cpu().numpy().tolist(),
+                "confidence": boxes.conf.cpu().numpy().tolist(),
+                "class_id": boxes.cls.cpu().numpy().tolist(),
+            }
+        return {"xyxy": [], "confidence": [], "class_id": []}
+
+    return _run_video_tool(
+        model=model,
+        video_path=video_path,
+        progress_callback=progress_callback,
+        frame_handler=handle_frame,
+        device=device,
+    )
+
+
+def _tool_video_pitch_detection(
+    video_path: str,
+    device: str = "cpu",
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """Run pitch detection on video frames, returning JSON results."""
+    from pathlib import Path
+    from forgesyte_yolo_tracker.configs import get_model_path
+    from ultralytics import YOLO
+
+    MODEL_NAME = get_model_path("pitch_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    def handle_frame(result):
+        keypoints = result.keypoints
+        if keypoints is not None and keypoints.xy is not None:
+            xy = keypoints.xy.cpu().numpy()
+            conf = keypoints.conf.cpu().numpy() if keypoints.conf is not None else None
+            return {
+                "keypoints_xy": xy.tolist() if len(xy) > 0 else [],
+                "keypoints_conf": conf.tolist() if conf is not None and len(conf) > 0 else [],
+            }
+        return {"keypoints_xy": [], "keypoints_conf": []}
+
+    return _run_video_tool(
+        model=model,
+        video_path=video_path,
+        progress_callback=progress_callback,
+        frame_handler=handle_frame,
+        device=device,
+    )
+
+
+def _tool_video_radar(
+    video_path: str,
+    device: str = "cpu",
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """Run radar generation on video frames, returning JSON results."""
+    from pathlib import Path
+    from forgesyte_yolo_tracker.configs import get_model_path
+    from ultralytics import YOLO
+
+    MODEL_NAME = get_model_path("player_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    def handle_frame(result):
+        boxes = result.boxes
+        if boxes is not None and len(boxes.xyxy) > 0:
+            xyxy = boxes.xyxy.cpu().numpy()
+            centers = [[(b[0] + b[2]) / 2, (b[1] + b[3]) / 2] for b in xyxy]
+            return {
+                "xyxy": xyxy.tolist(),
+                "centers": centers,
+                "confidence": boxes.conf.cpu().numpy().tolist(),
+                "class_id": boxes.cls.cpu().numpy().tolist(),
+            }
+        return {"xyxy": [], "centers": [], "confidence": [], "class_id": []}
+
+    return _run_video_tool(
+        model=model,
+        video_path=video_path,
+        progress_callback=progress_callback,
+        frame_handler=handle_frame,
+        device=device,
+    )
+
+
+def _tool_video_player_tracking(
+    video_path: str,
+    device: str = "cpu",
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """Run player tracking on video frames with ByteTrack."""
+    from pathlib import Path
+    import cv2
+    import supervision as sv
+    from forgesyte_yolo_tracker.configs import get_model_path
+    from ultralytics import YOLO
+
+    MODEL_NAME = get_model_path("player_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    tracker = sv.ByteTrack(
+        track_thresh=0.25,
+        track_buffer=30,
+        match_thresh=0.8,
+        frame_rate=30,
+    )
+
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    if total_frames <= 0:
+        total_frames = 100
+
+    frame_results = []
+    frame_index = 0
+
+    results = model(video_path, stream=True, verbose=False)
+    for result in results:
+        detections = sv.Detections.from_ultralytics(result)
+        detections = tracker.update_with_detections(detections)
+
+        tracked_objects = []
+        for tid, cls, xyxy in zip(
+            detections.track_id or [],
+            detections.class_id,
+            detections.xyxy
+        ):
+            center = [(xyxy[0] + xyxy[2]) / 2, (xyxy[1] + xyxy[3]) / 2]
+            tracked_objects.append({
+                "track_id": int(tid) if tid else -1,
+                "class_id": int(cls),
+                "xyxy": xyxy.tolist(),
+                "center": center,
+            })
+
+        frame_results.append({
+            "frame_index": frame_index,
+            "detections": {"tracked_objects": tracked_objects},
+        })
+
+        if progress_callback:
+            progress_callback(frame_index + 1, total_frames)
+
+        frame_index += 1
+
+    return {
+        "total_frames": frame_index,
+        "frames": frame_results,
+    }
+
+
 class Plugin(BasePlugin):  # type: ignore[misc]
     """YOLO Tracker plugin with BasePlugin architecture."""
 
@@ -459,6 +688,55 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             },
             "handler": _tool_video_player_detection,
         },
+        # v0.9.7 Video Tools (JSON frame-level output + progress_callback)
+        "video_ball_detection": {
+            "description": "Run ball detection on video frames, returning JSON results",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {
+                "frames": {"type": "array"},
+                "total_frames": {"type": "integer"},
+            },
+            "handler": _tool_video_ball_detection,
+        },
+        "video_pitch_detection": {
+            "description": "Run pitch detection on video frames, returning JSON results",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {
+                "frames": {"type": "array"},
+                "total_frames": {"type": "integer"},
+            },
+            "handler": _tool_video_pitch_detection,
+        },
+        "video_radar": {
+            "description": "Run radar generation on video frames, returning JSON results",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {
+                "frames": {"type": "array"},
+                "total_frames": {"type": "integer"},
+            },
+            "handler": _tool_video_radar,
+        },
+        "video_player_tracking": {
+            "description": "Run player tracking on video frames with ByteTrack, returning JSON results",
+            "input_schema": {
+                "video_path": {"type": "string"},
+                "device": {"type": "string", "default": "cpu"},
+            },
+            "output_schema": {
+                "frames": {"type": "array"},
+                "total_frames": {"type": "integer"},
+            },
+            "handler": _tool_video_player_tracking,
+        },
     }
 
     # -------------------------------------------------------
@@ -484,19 +762,23 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         handler = self.tools[tool_name]["handler"]
 
-        # v0.9.5 video tool (JSON frame-level output, no output_path)
-        # v0.9.6: Added progress_callback support
-        if tool_name == "video_player_detection":
-
+        # v0.9.7 video tools (JSON frame-level output + progress_callback)
+        v097_video_tools = {
+            "video_player_detection",
+            "video_ball_detection",
+            "video_pitch_detection",
+            "video_radar",
+            "video_player_tracking",
+        }
+        if tool_name in v097_video_tools:
             return handler(
                 video_path=args.get("video_path"),
                 device=args.get("device", _get_default_device()),
-                annotated=args.get("annotated", False),
                 progress_callback=args.get("progress_callback"),
             )
 
         # Legacy video tools (output annotated video files)
-        if "video" in tool_name:
+        if tool_name.endswith("_video"):
             return handler(
                 video_path=args.get("video_path"),
                 output_path=args.get("output_path"),

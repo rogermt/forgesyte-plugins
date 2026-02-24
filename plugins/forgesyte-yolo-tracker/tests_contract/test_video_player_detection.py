@@ -202,7 +202,7 @@ class TestVideoPlayerDetectionDevice:
     """Tests for device parameter handling."""
 
     def test_default_device_is_cpu(self) -> None:
-        """Verify device defaults to 'cpu'."""
+        """Verify device defaults to config value (cuda).."""
         plugin = Plugin()
 
         mock_model = MockYOLOModel(frame_results=[[]])
@@ -215,7 +215,7 @@ class TestVideoPlayerDetectionDevice:
             )
 
         # Verify to() was called with 'cpu'
-        mock_model.to.assert_called_with(device="cpu")
+        mock_model.to.assert_called_with(device="cuda")
 
     def test_cuda_device_passed_to_model(self) -> None:
         """Verify device='cuda' is passed to model."""
