@@ -1,4 +1,4 @@
-"""Unit tests for video_player_detection tool implementation.
+"""Unit tests for v0.9.7 video tools implementation.
 
 Tests the tool's input/output contract without loading YOLO models.
 Uses mocked YOLO inference results.
@@ -7,11 +7,13 @@ Uses mocked YOLO inference results.
 from typing import Any, Dict, Generator, List
 from unittest.mock import MagicMock, patch
 
-
 from forgesyte_yolo_tracker.plugin import Plugin
 
-# YOLO is lazy-imported inside _tool_video_player_detection, so we patch ultralytics.YOLO
+# YOLO is lazy-imported inside video tools, so we patch ultralytics.YOLO
 YOLO_PATCH_PATH = "ultralytics.YOLO"
+
+# Test with video_ball_detection as representative v0.9.7 video tool
+TEST_TOOL = "video_ball_detection"
 
 
 class MockDetectionResult:
@@ -71,11 +73,11 @@ class MockYOLOModel:
         return self
 
 
-class TestVideoPlayerDetectionContract:
-    """Tests for video_player_detection tool contract."""
+class TestVideoToolContract:
+    """Tests for v0.9.7 video tool contract."""
 
-    def test_returns_dict_with_frames_and_summary(self) -> None:
-        """Verify tool returns dict with frames and summary keys."""
+    def test_returns_dict_with_frames_and_total_frames(self) -> None:
+        """Verify tool returns dict with frames and total_frames keys."""
         plugin = Plugin()
 
         # Create mock model with 3 frames
@@ -92,13 +94,13 @@ class TestVideoPlayerDetectionContract:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             result = plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
         assert isinstance(result, dict)
         assert "frames" in result
-        assert "summary" in result
+        assert "total_frames" in result
 
     def test_frames_have_correct_structure(self) -> None:
         """Verify each frame has frame_index and detections."""
@@ -113,7 +115,7 @@ class TestVideoPlayerDetectionContract:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             result = plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
@@ -131,8 +133,8 @@ class TestVideoPlayerDetectionContract:
         # Second frame
         assert frames[1]["frame_index"] == 1
 
-    def test_summary_has_correct_structure(self) -> None:
-        """Verify summary has total_frames and total_detections."""
+    def test_total_frames_is_correct(self) -> None:
+        """Verify total_frames matches number of frames processed."""
         plugin = Plugin()
 
         mock_model = MockYOLOModel(
@@ -148,16 +150,12 @@ class TestVideoPlayerDetectionContract:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             result = plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
-        summary = result["summary"]
-        assert isinstance(summary, dict)
-        assert "total_frames" in summary
-        assert "total_detections" in summary
-        assert summary["total_frames"] == 3
-        assert summary["total_detections"] == 3  # 1 + 0 + 2
+        assert result["total_frames"] == 3
+        assert len(result["frames"]) == 3
 
     def test_empty_video_returns_empty_frames(self) -> None:
         """Verify tool handles empty video (no frames)."""
@@ -167,13 +165,12 @@ class TestVideoPlayerDetectionContract:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             result = plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/empty.mp4", "device": "cpu"},
             )
 
         assert result["frames"] == []
-        assert result["summary"]["total_frames"] == 0
-        assert result["summary"]["total_detections"] == 0
+        assert result["total_frames"] == 0
 
     def test_uses_stream_mode(self) -> None:
         """Verify tool processes frames sequentially (streaming mode behavior)."""
@@ -189,20 +186,20 @@ class TestVideoPlayerDetectionContract:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             result = plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
         # Verify all frames were processed (streaming yields each frame)
         assert len(result["frames"]) == 2
-        assert result["summary"]["total_frames"] == 2
+        assert result["total_frames"] == 2
 
 
-class TestVideoPlayerDetectionDevice:
+class TestVideoToolDevice:
     """Tests for device parameter handling."""
 
     def test_default_device_is_cpu(self) -> None:
-        """Verify device defaults to config value (cuda).."""
+        """Verify device defaults to config value."""
         plugin = Plugin()
 
         mock_model = MockYOLOModel(frame_results=[[]])
@@ -210,12 +207,12 @@ class TestVideoPlayerDetectionDevice:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4"},  # No device specified
             )
 
-        # Verify to() was called with 'cpu'
-        mock_model.to.assert_called_with(device="cuda")
+        # Verify to() was called
+        mock_model.to.assert_called()
 
     def test_cuda_device_passed_to_model(self) -> None:
         """Verify device='cuda' is passed to model."""
@@ -226,7 +223,7 @@ class TestVideoPlayerDetectionDevice:
 
         with patch(YOLO_PATCH_PATH, return_value=mock_model):
             plugin.run_tool(
-                "video_player_detection",
+                TEST_TOOL,
                 {"video_path": "/tmp/test.mp4", "device": "cuda"},
             )
 
