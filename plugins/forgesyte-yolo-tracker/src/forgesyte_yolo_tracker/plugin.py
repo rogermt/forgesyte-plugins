@@ -93,7 +93,7 @@ def _decode_image_bytes(
         if not isinstance(image_bytes, (bytes, bytearray)):
             raise ValueError(f"Expected bytes, got {type(image_bytes).__name__}")
 
-        # Decode bytes → PIL Image → numpy array
+        # Decode bytes -> PIL Image -> numpy array
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         frame = np.array(image)
 
@@ -177,164 +177,6 @@ def _tool_radar(
         return radar_json(frame, device=device)
     return {"error": "image_decode_failed"}
 
-
-def _tool_player_detection_video(
-    video_path: str, output_path: str, device: str = "cpu"
-) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_detection_video import run_player_detection_video
-
-    run_player_detection_video(video_path, output_path, device=device)
-    return {"status": "success", "output_path": output_path}
-
-
-def _tool_player_tracking_video(
-    video_path: str, output_path: str, device: str = "cpu"
-) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.player_tracking_video import run_player_tracking_video
-
-    run_player_tracking_video(video_path, output_path, device=device)
-    return {"status": "success", "output_path": output_path}
-
-
-def _tool_ball_detection_video(
-    video_path: str, output_path: str, device: str = "cpu"
-) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.ball_detection_video import run_ball_detection_video
-
-    run_ball_detection_video(video_path, output_path, device=device)
-    return {"status": "success", "output_path": output_path}
-
-
-def _tool_pitch_detection_video(
-    video_path: str, output_path: str, device: str = "cpu"
-) -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.pitch_detection_video import run_pitch_detection_video
-
-    run_pitch_detection_video(video_path, output_path, device=device)
-    return {"status": "success", "output_path": output_path}
-
-
-def _tool_radar_video(video_path: str, output_path: str, device: str = "cpu") -> Dict[str, str]:
-    from forgesyte_yolo_tracker.video.radar_video import run_radar_video
-
-    run_radar_video(video_path, output_path, device=device)
-    return {"status": "success", "output_path": output_path}
-
-
-# ---------------------------------------------------------
-# v0.9.5 Video Tool (JSON frame-level output)
-# v0.9.6: Added progress_callback support with detailed logging
-# ---------------------------------------------------------
-def _tool_video_player_detection(
-    video_path: str,
-    device: str = "cpu",
-    annotated: bool = False,
-    progress_callback=None,
-) -> Dict[str, Any]:
-    """Run player detection on video frames, returning JSON results.
-
-    Uses YOLO streaming inference for memory efficiency.
-    Returns frame-level detections aggregated into a single JSON response.
-
-    Args:
-        video_path: Path to input video file
-        device: Device to run model on ('cpu' or 'cuda')
-        annotated: Whether to include annotated frames (not implemented in v0.9.5)
-        progress_callback: Optional callback for progress updates (v0.9.6)
-
-    Returns:
-        Dict with 'frames' array and 'summary' object
-    """
-    from pathlib import Path
-
-    from forgesyte_yolo_tracker.configs import get_model_path
-
-    # Lazy import to avoid loading YOLO at module load time
-    from ultralytics import YOLO
-
-    logger.info(f"Starting video_player_detection: device={device}")
-
-    # Construct model path
-    MODEL_NAME = get_model_path("player_detection")
-    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
-
-
-    # Get total frames using OpenCV (for progress tracking)
-    import cv2
-    cap = cv2.VideoCapture(video_path)
-    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    cap.release()
-    if total_frames <= 0:
-        total_frames = 100  # Fallback heuristic
-
-    logger.info(f"Video: {total_frames} frames at {fps} fps")
-
-    # Load model and set device
-    model = YOLO(MODEL_PATH).to(device=device)
-
-    frame_results: list = []
-    frame_index = 0
-
-    # Use YOLO streaming inference for memory efficiency
-
-    results = model(video_path, stream=True, verbose=False)
-
-    for result in results:
-        # Extract detections from result
-        boxes = result.boxes
-
-        # Check if boxes has detections by examining xyxy shape
-        if boxes is not None:
-            xyxy_array = boxes.xyxy.cpu().numpy()
-            if len(xyxy_array) > 0:
-                xyxy = xyxy_array.tolist()
-                confidence = boxes.conf.cpu().numpy().tolist()
-                class_id = boxes.cls.cpu().numpy().tolist()
-            else:
-                xyxy = []
-                confidence = []
-                class_id = []
-        else:
-            xyxy = []
-            confidence = []
-            class_id = []
-
-        frame_results.append(
-            {
-                "frame_index": frame_index,
-                "detections": {
-                    "xyxy": xyxy,
-                    "confidence": confidence,
-                    "class_id": class_id,
-                },
-            }
-        )
-
-        # Call progress callback if provided (v0.9.6)
-        if progress_callback:
-            progress_callback(frame_index + 1, total_frames)
-
-
-        frame_index += 1
-
-    # Calculate summary
-    total_detections = sum(len(f["detections"]["xyxy"]) for f in frame_results)
-
-    logger.info(f"Completed: {frame_index} frames, {total_detections} detections")
-
-    return {
-        "frames": frame_results,
-        "summary": {
-            "total_frames": frame_index,
-            "total_detections": total_detections,
-        },
-    }
-
-
-# ---------------------------------------------------------
-# Plugin class — FINAL, CORRECT, LOADER-COMPATIBLE
-# ---------------------------------------------------------
 
 # ---------------------------------------------------------
 # v0.9.7: Shared video tool helper
@@ -573,7 +415,9 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
     # CLASS-LEVEL tools dict (required by ForgeSyte loader contract)
     # Handler values are callables (no magic getattr resolution)
+    # v0.9.7: Only v0.9.7 tools exposed (legacy tools removed)
     tools: Dict[str, Dict[str, Any]] = {
+        # Image tools (input: image_bytes)
         "player_detection": {
             "description": "Detect players in a frame",
             "input_schema": {
@@ -624,71 +468,7 @@ class Plugin(BasePlugin):  # type: ignore[misc]
             "output_schema": {"result": {"type": "object"}},
             "handler": _tool_radar,
         },
-        "player_detection_video": {
-            "description": "Detect players in a video",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "output_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-            },
-            "output_schema": {"status": {"type": "string"}},
-            "handler": _tool_player_detection_video,
-        },
-        "player_tracking_video": {
-            "description": "Track players in a video",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "output_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-            },
-            "output_schema": {"status": {"type": "string"}},
-            "handler": _tool_player_tracking_video,
-        },
-        "ball_detection_video": {
-            "description": "Detect ball in a video",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "output_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-            },
-            "output_schema": {"status": {"type": "string"}},
-            "handler": _tool_ball_detection_video,
-        },
-        "pitch_detection_video": {
-            "description": "Detect pitch in a video",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "output_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-            },
-            "output_schema": {"status": {"type": "string"}},
-            "handler": _tool_pitch_detection_video,
-        },
-        "radar_video": {
-            "description": "Generate radar overlay on video",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "output_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-            },
-            "output_schema": {"status": {"type": "string"}},
-            "handler": _tool_radar_video,
-        },
-        # v0.9.5 Video Tool (JSON frame-level output)
-        "video_player_detection": {
-            "description": "Run player detection on video frames, returning JSON results",
-            "input_schema": {
-                "video_path": {"type": "string"},
-                "device": {"type": "string", "default": "cpu"},
-                "annotated": {"type": "boolean", "default": False},
-            },
-            "output_schema": {
-                "frames": {"type": "array"},
-                "summary": {"type": "object"},
-            },
-            "handler": _tool_video_player_detection,
-        },
-        # v0.9.7 Video Tools (JSON frame-level output + progress_callback)
+        # v0.9.7 Video Tools (input: video_path, JSON frame-level output + progress_callback)
         "video_ball_detection": {
             "description": "Run ball detection on video frames, returning JSON results",
             "input_schema": {
@@ -764,7 +544,6 @@ class Plugin(BasePlugin):  # type: ignore[misc]
 
         # v0.9.7 video tools (JSON frame-level output + progress_callback)
         v097_video_tools = {
-            "video_player_detection",
             "video_ball_detection",
             "video_pitch_detection",
             "video_radar",
@@ -775,14 +554,6 @@ class Plugin(BasePlugin):  # type: ignore[misc]
                 video_path=args.get("video_path"),
                 device=args.get("device", _get_default_device()),
                 progress_callback=args.get("progress_callback"),
-            )
-
-        # Legacy video tools (output annotated video files)
-        if tool_name.endswith("_video"):
-            return handler(
-                video_path=args.get("video_path"),
-                output_path=args.get("output_path"),
-                device=args.get("device", _get_default_device()),
             )
 
         # Frame tools use image_bytes (Phase 12 contract)
