@@ -55,6 +55,7 @@ from forgesyte_yolo_tracker.inference.player_tracking import (
     track_players_json_with_annotated_frame,
 )
 from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_json
+from forgesyte_yolo_tracker.tracking import ByteTrackFactory
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 from forgesyte_yolo_tracker.configs import load_model_config
 
@@ -355,12 +356,7 @@ def _tool_video_player_tracking(
     MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
     model = YOLO(MODEL_PATH).to(device=device)
 
-    tracker = sv.ByteTrack(
-        track_thresh=0.25,
-        track_buffer=30,
-        match_thresh=0.8,
-        frame_rate=30,
-    )
+    tracker = ByteTrackFactory.get()
 
     cap = cv2.VideoCapture(video_path)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
