@@ -6,6 +6,10 @@ Handles supervision version compatibility:
 """
 
 import inspect
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import numpy as np
 import logging
 
 import supervision as sv
@@ -120,3 +124,24 @@ class ByteTrackFactory:
         """
         logger.debug("Resetting ByteTrack singleton instance")
         cls._instance = None
+
+
+def get_tracker_ids(detections) -> "np.ndarray | None":
+    """Get tracker IDs from sv.Detections, handling both old and new supervision APIs.
+
+    supervision < 0.25: detections.track_id
+    supervision >= 0.25: detections.tracker_id
+
+    Args:
+        detections: sv.Detections object
+
+    Returns:
+        numpy array of tracker IDs, or None if not available
+    """
+    # Try new API first (tracker_id)
+    if hasattr(detections, 'tracker_id') and detections.tracker_id is not None:
+        return detections.tracker_id
+    # Fallback to old API (track_id)
+    if hasattr(detections, 'track_id') and detections.track_id is not None:
+        return detections.track_id
+    return None
