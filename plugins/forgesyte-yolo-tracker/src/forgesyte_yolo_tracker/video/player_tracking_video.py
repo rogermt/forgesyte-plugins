@@ -13,6 +13,7 @@ import supervision as sv
 from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs import get_model_path
+from forgesyte_yolo_tracker.tracking import ByteTrackFactory
 
 MODEL_NAME = get_model_path("player_detection")
 MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
@@ -22,7 +23,6 @@ TRACK_COLORS = sv.ColorPalette.from_hex(["#00BFFF", "#FFD700", "#FF6347"])
 DEFAULT_CONFIDENCE = 0.25
 
 _model: Optional[YOLO] = None
-_tracker: Optional[sv.ByteTrack] = None
 
 
 def get_model(device: str = "cpu") -> YOLO:
@@ -32,18 +32,6 @@ def get_model(device: str = "cpu") -> YOLO:
     return _model
 
 
-def get_tracker() -> sv.ByteTrack:
-    global _tracker
-    if _tracker is None:
-        _tracker = sv.ByteTrack(
-            track_thresh=DEFAULT_CONFIDENCE,
-            track_buffer=30,
-            match_thresh=0.8,
-            frame_rate=30,
-        )
-    return _tracker
-
-
 def run_player_tracking_video_frames(
     source_video_path: str,
     device: str = "cpu",
@@ -51,7 +39,7 @@ def run_player_tracking_video_frames(
 ) -> Iterator[np.ndarray]:
     """Generate tracked frames from video."""
     model = get_model(device)
-    tracker = get_tracker()
+    tracker = ByteTrackFactory.get()
     frame_generator = sv.get_video_frames_generator(source_path=source_video_path)
 
     box_annotator = sv.BoxAnnotator(color=TRACK_COLORS, thickness=2)

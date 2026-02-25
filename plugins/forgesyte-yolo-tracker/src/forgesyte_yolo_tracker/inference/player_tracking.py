@@ -16,6 +16,7 @@ from ultralytics import YOLO
 
 from forgesyte_yolo_tracker.configs import get_confidence, get_model_path
 from forgesyte_yolo_tracker.configs.soccer import SoccerPitchConfiguration
+from forgesyte_yolo_tracker.tracking import ByteTrackFactory
 
 MODEL_NAME = get_model_path("player_detection")
 MODEL_PATH = str(Path(__file__).parent.parent / "models" / MODEL_NAME)
@@ -27,7 +28,6 @@ TRACK_COLORS = sv.ColorPalette.from_hex(["#00BFFF", "#FFD700", "#FF6347"])
 DEFAULT_NMS = 0.45
 
 _model: Optional[YOLO] = None
-_tracker: Optional[sv.ByteTrack] = None
 
 
 def get_player_detection_model(device: str = "cpu") -> YOLO:
@@ -36,19 +36,6 @@ def get_player_detection_model(device: str = "cpu") -> YOLO:
     if _model is None:
         _model = YOLO(MODEL_PATH).to(device=device)
     return _model
-
-
-def get_tracker() -> sv.ByteTrack:
-    """Get or create ByteTrack instance."""
-    global _tracker
-    if _tracker is None:
-        _tracker = sv.ByteTrack(
-            track_thresh=DEFAULT_CONFIDENCE,
-            track_buffer=30,
-            match_thresh=0.8,
-            frame_rate=30,
-        )
-    return _tracker
 
 
 def _encode_frame_to_base64(frame: np.ndarray) -> str:
@@ -91,7 +78,7 @@ def track_players_json(
         - track_ids: List of unique tracking IDs
     """
     model = get_player_detection_model(device=device)
-    tracker = get_tracker()
+    tracker = ByteTrackFactory.get()
 
     result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
     detections = sv.Detections.from_ultralytics(result)
@@ -145,7 +132,7 @@ def track_players_json_with_annotated_frame(
         Dictionary with detections, count, track_ids, and annotated_frame_base64
     """
     model = get_player_detection_model(device=device)
-    tracker = get_tracker()
+    tracker = ByteTrackFactory.get()
 
     result = model(frame, imgsz=1280, conf=confidence, verbose=False)[0]
     detections = sv.Detections.from_ultralytics(result)
