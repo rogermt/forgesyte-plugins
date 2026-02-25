@@ -11,7 +11,7 @@
     "player_detection",
     "ball_detection",
     "pitch_detection",
-    "radar_visualization"
+    "radar"
   ],
   "tools": [
     {
@@ -71,7 +71,7 @@
       "description": "Generate radar (bird's-eye) view of player positions.",
       "input_types": ["image_bytes"],
       "output_types": ["radar_points"],
-      "capabilities": ["radar_visualization"],
+      "capabilities": ["radar"],
       "inputs": {
         "image_bytes": "string",
         "device": "string",
@@ -120,7 +120,7 @@
       "description": "Generate radar view from video frames.",
       "input_types": ["video"],
       "output_types": ["frames"],
-      "capabilities": ["radar_visualization"],
+      "capabilities": ["radar"],
       "inputs": {
         "video_path": "string",
         "device": "string"
