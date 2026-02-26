@@ -185,9 +185,12 @@ def _tool_video_player_tracking(
             detections.class_id,
             detections.xyxy
         ):
-            center = [(xyxy[0] + xyxy[2]) / 2, (xyxy[1] + xyxy[3]) / 2]
+            center = [
+                float((xyxy[0] + xyxy[2]) / 2),
+                float((xyxy[1] + xyxy[3]) / 2)
+            ]
             tracked_objects.append({
-                "track_id": int(tid),
+                "track_id": int(tid) if tid is not None else -1,
                 "class_id": int(cls),
                 "xyxy": xyxy.tolist(),
                 "center": center,
@@ -451,7 +454,10 @@ def _tool_video_player_tracking(
             detections.class_id,
             detections.xyxy
         ):
-            center = [(xyxy[0] + xyxy[2]) / 2, (xyxy[1] + xyxy[3]) / 2]
+            center = [
+                float((xyxy[0] + xyxy[2]) / 2),
+                float((xyxy[1] + xyxy[3]) / 2)
+            ]
             tracked_objects.append({
                 "track_id": int(tid) if tid is not None else -1,
                 "class_id": int(cls),
