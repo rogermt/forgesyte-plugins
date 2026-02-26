@@ -58,6 +58,7 @@ from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_
 from forgesyte_yolo_tracker.tracking import ByteTrackFactory, get_tracker_ids
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 from forgesyte_yolo_tracker.configs import load_model_config
+from forgesyte_yolo_tracker.utils.json_sanitize import sanitize_json
 
 logger = logging.getLogger(__name__)
 
@@ -304,10 +305,11 @@ def _run_video_tool(
 
     logger.info(f"Completed: {frame_index} frames")
 
-    return {
+    # v0.10.0: Sanitize output for JSON serialization
+    return sanitize_json({
         "total_frames": frame_index,
         "frames": frame_results,
-    }
+    })
 
 
 def _tool_video_ball_detection(
@@ -475,10 +477,11 @@ def _tool_video_player_tracking(
 
         frame_index += 1
 
-    return {
+    # v0.10.0: Sanitize output for JSON serialization
+    return sanitize_json({
         "total_frames": frame_index,
         "frames": frame_results,
-    }
+    })
 
 
 class Plugin(BasePlugin):  # type: ignore[misc]
