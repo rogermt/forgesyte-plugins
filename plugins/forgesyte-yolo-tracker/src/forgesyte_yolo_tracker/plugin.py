@@ -127,9 +127,11 @@ def _tool_player_detection(
     return {"error": "image_decode_failed"}
 
 
+
 def _tool_player_tracking(
     image_bytes: bytes, device: str = "cpu", annotated: bool = False
 ) -> Dict[str, Any]:
+    """Track players in a single frame with ByteTrack."""
     frame, error = _decode_image_bytes(image_bytes, "player_tracking")
     if error:
         return error
@@ -138,6 +140,72 @@ def _tool_player_tracking(
     if frame is not None:
         return track_players_json(frame, device=device)
     return {"error": "image_decode_failed"}
+
+
+def _tool_video_player_tracking(
+    video_path: str,
+    device: str = "cpu",
+    progress_callback=None,
+) -> Dict[str, Any]:
+    """Run player tracking on video frames with ByteTrack."""
+    from pathlib import Path
+    import cv2
+    import supervision as sv
+    from forgesyte_yolo_tracker.configs import get_model_path
+    from ultralytics import YOLO
+    from forgesyte_yolo_tracker.tracking import ByteTrackFactory, get_tracker_ids
+
+    MODEL_NAME = get_model_path("player_detection")
+    MODEL_PATH = str(Path(__file__).parent / "models" / MODEL_NAME)
+    model = YOLO(MODEL_PATH).to(device=device)
+
+    tracker = ByteTrackFactory.get()
+
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+    if total_frames <= 0:
+        total_frames = 100
+
+    frame_results = []
+    frame_index = 0
+
+    results = model(video_path, stream=True, verbose=False)
+    for result in results:
+        detections = sv.Detections.from_ultralytics(result)
+        detections = tracker.update_with_detections(detections)
+
+        tracker_ids = get_tracker_ids(detections) or []
+
+        tracked_objects = []
+        for tid, cls, xyxy in zip(
+            tracker_ids,
+            detections.class_id,
+            detections.xyxy
+        ):
+            center = [(xyxy[0] + xyxy[2]) / 2, (xyxy[1] + xyxy[3]) / 2]
+            tracked_objects.append({
+                "track_id": int(tid) if tid is not None else -1,
+                "class_id": int(cls),
+                "xyxy": xyxy.tolist(),
+                "center": center,
+            })
+
+        frame_results.append({
+            "frame_index": frame_index,
+            "detections": {"tracked_objects": tracked_objects},
+        })
+
+        if progress_callback:
+            progress_callback(frame_index + 1, total_frames)
+
+        frame_index += 1
+
+    return {
+        "total_frames": frame_index,
+        "frames": frame_results,
+    }
+
 
 
 def _tool_ball_detection(
