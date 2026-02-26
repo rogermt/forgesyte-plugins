@@ -175,7 +175,9 @@ def _tool_video_player_tracking(
         detections = sv.Detections.from_ultralytics(result)
         detections = tracker.update_with_detections(detections)
 
-        tracker_ids = get_tracker_ids(detections) or []
+        tracker_ids = get_tracker_ids(detections)
+        if tracker_ids is None:
+            tracker_ids = []
 
         tracked_objects = []
         for tid, cls, xyxy in zip(
@@ -441,7 +443,9 @@ def _tool_video_player_tracking(
         detections = tracker.update_with_detections(detections)
 
         tracked_objects = []
-        tracker_ids = get_tracker_ids(detections) or []
+        tracker_ids = get_tracker_ids(detections)
+        if tracker_ids is None:
+            tracker_ids = []
         for tid, cls, xyxy in zip(
             tracker_ids,
             detections.class_id,
