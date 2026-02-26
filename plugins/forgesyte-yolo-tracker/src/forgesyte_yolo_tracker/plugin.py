@@ -55,7 +55,7 @@ from forgesyte_yolo_tracker.inference.player_tracking import (
     track_players_json_with_annotated_frame,
 )
 from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_json
-from forgesyte_yolo_tracker.tracking import ByteTrackFactory
+from forgesyte_yolo_tracker.tracking import ByteTrackFactory, get_tracker_ids
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 from forgesyte_yolo_tracker.configs import load_model_config
 
@@ -441,8 +441,9 @@ def _tool_video_player_tracking(
         detections = tracker.update_with_detections(detections)
 
         tracked_objects = []
+        tracker_ids = get_tracker_ids(detections) or []
         for tid, cls, xyxy in zip(
-            detections.track_id or [],
+            tracker_ids,
             detections.class_id,
             detections.xyxy
         ):
