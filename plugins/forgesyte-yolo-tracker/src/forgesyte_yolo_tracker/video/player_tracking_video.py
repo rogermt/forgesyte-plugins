@@ -56,8 +56,8 @@ def run_player_tracking_video_frames(
         detections = tracker.update_with_detections(detections)
 
         labels = [
-            f"#{int(tid) if tid else '?'} {CLASS_NAMES.get(int(cls), f'class_{cls}')}"
-            for tid, cls in zip(detections.track_id or [-1] * len(detections), detections.class_id)
+            f"#{int(tid) if tid is not None else '?'} {CLASS_NAMES.get(int(cls), f'class_{cls}')}"
+            for tid, cls in zip(detections.track_id if detections.track_id is not None else [-1] * len(detections), detections.class_id)
         ]
 
         annotated = frame.copy()

@@ -449,7 +449,7 @@ def _tool_video_player_tracking(
         ):
             center = [(xyxy[0] + xyxy[2]) / 2, (xyxy[1] + xyxy[3]) / 2]
             tracked_objects.append({
-                "track_id": int(tid) if tid else -1,
+                "track_id": int(tid) if tid is not None else -1,
                 "class_id": int(cls),
                 "xyxy": xyxy.tolist(),
                 "center": center,
