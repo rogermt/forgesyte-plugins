@@ -122,10 +122,10 @@ def _tool_player_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_players_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_players_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_players_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_players_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 
@@ -137,10 +137,10 @@ def _tool_player_tracking(
     if error:
         return error
     if annotated and frame is not None:
-        return track_players_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": track_players_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return track_players_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": track_players_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_video_player_tracking(
@@ -221,10 +221,10 @@ def _tool_ball_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_ball_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_ball_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_ball_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_ball_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_pitch_detection(
@@ -234,10 +234,10 @@ def _tool_pitch_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_pitch_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_pitch_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_pitch_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_pitch_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_radar(
@@ -247,10 +247,10 @@ def _tool_radar(
     if error:
         return error
     if annotated and frame is not None:
-        return radar_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": radar_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return radar_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": radar_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 # ---------------------------------------------------------
@@ -306,10 +306,13 @@ def _run_video_tool(
     logger.info(f"Completed: {frame_index} frames")
 
     # v0.10.0: Sanitize output for JSON serialization
-    return sanitize_json({
-        "total_frames": frame_index,
-        "frames": frame_results,
-    })
+    return {
+        "success": True,
+        "result": sanitize_json({
+            "total_frames": frame_index,
+            "frames": frame_results,
+        })
+    }
 
 
 def _tool_video_ball_detection(
@@ -336,13 +339,13 @@ def _tool_video_ball_detection(
             }
         return {"xyxy": [], "confidence": [], "class_id": []}
 
-    return _run_video_tool(
+    return {"success": True, "result": _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )
+    )}
 
 
 def _tool_video_pitch_detection(
@@ -370,13 +373,13 @@ def _tool_video_pitch_detection(
             }
         return {"keypoints_xy": [], "keypoints_conf": []}
 
-    return _run_video_tool(
+    return {"success": True, "result": _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )
+    )}
 
 
 def _tool_video_radar(
@@ -406,13 +409,13 @@ def _tool_video_radar(
             }
         return {"xyxy": [], "centers": [], "confidence": [], "class_id": []}
 
-    return _run_video_tool(
+    return {"success": True, "result": _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )
+    )}
 
 
 def _tool_video_player_tracking(
