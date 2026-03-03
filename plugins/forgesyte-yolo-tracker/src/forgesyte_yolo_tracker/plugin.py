@@ -339,13 +339,13 @@ def _tool_video_ball_detection(
             }
         return {"xyxy": [], "confidence": [], "class_id": []}
 
-    return {"success": True, "result": _run_video_tool(
+    return _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )}
+    )
 
 
 def _tool_video_pitch_detection(
@@ -373,13 +373,13 @@ def _tool_video_pitch_detection(
             }
         return {"keypoints_xy": [], "keypoints_conf": []}
 
-    return {"success": True, "result": _run_video_tool(
+    return _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )}
+    )
 
 
 def _tool_video_radar(
@@ -409,13 +409,13 @@ def _tool_video_radar(
             }
         return {"xyxy": [], "centers": [], "confidence": [], "class_id": []}
 
-    return {"success": True, "result": _run_video_tool(
+    return _run_video_tool(
         model=model,
         video_path=video_path,
         progress_callback=progress_callback,
         frame_handler=handle_frame,
         device=device,
-    )}
+    )
 
 
 def _tool_video_player_tracking(

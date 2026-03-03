@@ -99,8 +99,10 @@ class TestVideoToolContract:
             )
 
         assert isinstance(result, dict)
-        assert "frames" in result
-        assert "total_frames" in result
+        assert result.get("success") is True
+        data = result.get("result", {})
+        assert "frames" in data
+        assert "total_frames" in data
 
     def test_frames_have_correct_structure(self) -> None:
         """Verify each frame has frame_index and detections."""
@@ -119,7 +121,9 @@ class TestVideoToolContract:
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
-        frames = result["frames"]
+        # Unwrap the result envelope
+        data = result.get("result", {})
+        frames = data["frames"]
         assert isinstance(frames, list)
         assert len(frames) == 2
 
@@ -154,8 +158,10 @@ class TestVideoToolContract:
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
-        assert result["total_frames"] == 3
-        assert len(result["frames"]) == 3
+        # Unwrap the result envelope
+        data = result.get("result", {})
+        assert data["total_frames"] == 3
+        assert len(data["frames"]) == 3
 
     def test_empty_video_returns_empty_frames(self) -> None:
         """Verify tool handles empty video (no frames)."""
@@ -169,8 +175,10 @@ class TestVideoToolContract:
                 {"video_path": "/tmp/empty.mp4", "device": "cpu"},
             )
 
-        assert result["frames"] == []
-        assert result["total_frames"] == 0
+        # Unwrap the result envelope
+        data = result.get("result", {})
+        assert data["frames"] == []
+        assert data["total_frames"] == 0
 
     def test_uses_stream_mode(self) -> None:
         """Verify tool processes frames sequentially (streaming mode behavior)."""
@@ -190,9 +198,11 @@ class TestVideoToolContract:
                 {"video_path": "/tmp/test.mp4", "device": "cpu"},
             )
 
+        # Unwrap the result envelope
+        data = result.get("result", {})
         # Verify all frames were processed (streaming yields each frame)
-        assert len(result["frames"]) == 2
-        assert result["total_frames"] == 2
+        assert len(data["frames"]) == 2
+        assert data["total_frames"] == 2
 
 
 class TestVideoToolDevice:
