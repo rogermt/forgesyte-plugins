@@ -1,3 +1,18 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forgesyte-plugins"
+version = "0.1.0"
+description = "Plugin collection for ForgeSyte AI-vision platform"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "ForgeSyte Contributors", email = "info@forgesyte.dev"}
+]
+requires-python = ">=3.9"
+
 [tool.black]
 line-length = 88
 target-version = ["py310", "py311", "py312"]

@@ -50,3 +50,8 @@ logs/
 
 # Scratch
 scratch/
+
+#Yolo-Trcker Models
+train_ball_detector.pt
+train_pitch_keypoint_detector.pt
+train_player_detector.pt
