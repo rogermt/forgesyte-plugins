@@ -1,8 +1,8 @@
 {
   "id": "yolo-tracker",
   "name": "YOLO Tracker",
-  "version": "1.0.0",
-  "description": "ForgeSyte plugin for football player, ball, pitch, and radar analysis using YOLO + Supervision.",
+  "version": "0.10.0",
+  "description": "YOLO + Supervision plugin with streaming video analysis.",
   "author": "Roger",
   "license": "MIT",
   "entrypoint": "forgesyte_yolo_tracker.plugin",
@@ -11,7 +11,8 @@
     "player_detection",
     "ball_detection",
     "pitch_detection",
-    "radar"
+    "radar",
+    "streaming_video_analysis"
   ],
   "tools": [
     {
@@ -88,7 +89,7 @@
       "description": "Run ball detection on video frames.",
       "input_types": ["video"],
       "output_types": ["frames"],
-      "capabilities": ["ball_detection"],
+      "capabilities": ["ball_detection", "streaming_video_analysis"],
       "inputs": {
         "video_path": "string",
         "device": "string"
@@ -104,7 +105,7 @@
       "description": "Run pitch detection on video frames.",
       "input_types": ["video"],
       "output_types": ["frames"],
-      "capabilities": ["pitch_detection"],
+      "capabilities": ["pitch_detection", "streaming_video_analysis"],
       "inputs": {
         "video_path": "string",
         "device": "string"
@@ -120,7 +121,7 @@
       "description": "Generate radar view from video frames.",
       "input_types": ["video"],
       "output_types": ["frames"],
-      "capabilities": ["radar"],
+      "capabilities": ["radar", "streaming_video_analysis"],
       "inputs": {
         "video_path": "string",
         "device": "string"
@@ -136,7 +137,7 @@
       "description": "Track players across video frames.",
       "input_types": ["video"],
       "output_types": ["frames"],
-      "capabilities": ["player_detection"],
+      "capabilities": ["player_detection", "streaming_video_analysis"],
       "inputs": {
         "video_path": "string",
         "device": "string"

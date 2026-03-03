@@ -58,6 +58,7 @@ from forgesyte_yolo_tracker.inference.radar import generate_radar_json as radar_
 from forgesyte_yolo_tracker.tracking import ByteTrackFactory, get_tracker_ids
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 from forgesyte_yolo_tracker.configs import load_model_config
+from forgesyte_yolo_tracker.utils.json_sanitize import sanitize_json
 
 logger = logging.getLogger(__name__)
 
@@ -121,10 +122,10 @@ def _tool_player_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_players_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_players_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_players_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_players_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 
@@ -136,10 +137,10 @@ def _tool_player_tracking(
     if error:
         return error
     if annotated and frame is not None:
-        return track_players_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": track_players_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return track_players_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": track_players_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_video_player_tracking(
@@ -220,10 +221,10 @@ def _tool_ball_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_ball_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_ball_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_ball_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_ball_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_pitch_detection(
@@ -233,10 +234,10 @@ def _tool_pitch_detection(
     if error:
         return error
     if annotated and frame is not None:
-        return detect_pitch_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": detect_pitch_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return detect_pitch_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": detect_pitch_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 def _tool_radar(
@@ -246,10 +247,10 @@ def _tool_radar(
     if error:
         return error
     if annotated and frame is not None:
-        return radar_json_with_annotated_frame(frame, device=device)
+        return {"success": True, "result": radar_json_with_annotated_frame(frame, device=device)}
     if frame is not None:
-        return radar_json(frame, device=device)
-    return {"error": "image_decode_failed"}
+        return {"success": True, "result": radar_json(frame, device=device)}
+    return {"success": False, "error": "image_decode_failed"}
 
 
 # ---------------------------------------------------------
@@ -304,9 +305,13 @@ def _run_video_tool(
 
     logger.info(f"Completed: {frame_index} frames")
 
+    # v0.10.0: Sanitize output for JSON serialization
     return {
-        "total_frames": frame_index,
-        "frames": frame_results,
+        "success": True,
+        "result": sanitize_json({
+            "total_frames": frame_index,
+            "frames": frame_results,
+        })
     }
 
 
@@ -475,10 +480,11 @@ def _tool_video_player_tracking(
 
         frame_index += 1
 
-    return {
+    # v0.10.0: Sanitize output for JSON serialization
+    return sanitize_json({
         "total_frames": frame_index,
         "frames": frame_results,
-    }
+    })
 
 
 class Plugin(BasePlugin):  # type: ignore[misc]

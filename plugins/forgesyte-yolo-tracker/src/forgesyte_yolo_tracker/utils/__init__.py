@@ -13,8 +13,20 @@ Custom forgeSYTE modules:
 """
 
 from . import ball, soccer_pitch
-from .team import TeamClassifier, create_batches
-from .view import ViewTransformer
+
+# Lazy import to avoid torch/transformers at module load time
+def __getattr__(name: str):
+    """Lazy load heavy dependencies to avoid import errors in tests."""
+    if name == "TeamClassifier":
+        from .team import TeamClassifier
+        return TeamClassifier
+    elif name == "create_batches":
+        from .team import create_batches
+        return create_batches
+    elif name == "ViewTransformer":
+        from .view import ViewTransformer
+        return ViewTransformer
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 __all__ = [
     # From local implementations
