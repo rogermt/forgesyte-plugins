@@ -62,6 +62,9 @@ from forgesyte_yolo_tracker.utils.json_sanitize import sanitize_json
 
 logger = logging.getLogger(__name__)
 
+# Class names for video player tracking (player, goalkeeper, referee)
+CLASS_NAMES = {0: "player", 1: "goalkeeper", 2: "referee"}
+
 
 def _get_default_device() -> str:
     """Get default device from config file.
@@ -193,6 +196,7 @@ def _tool_video_player_tracking(
             tracked_objects.append({
                 "track_id": int(tid) if tid is not None else -1,
                 "class_id": int(cls),
+                "class": CLASS_NAMES.get(int(cls), f"class_{cls}"),
                 "xyxy": xyxy.tolist(),
                 "center": center,
             })
@@ -466,6 +470,7 @@ def _tool_video_player_tracking(
             tracked_objects.append({
                 "track_id": int(tid) if tid is not None else -1,
                 "class_id": int(cls),
+                "class": CLASS_NAMES.get(int(cls), f"class_{cls}"),
                 "xyxy": xyxy.tolist(),
                 "center": center,
             })
