@@ -50,4 +50,6 @@ logs/
 
 # Scratch
 scratch/
+
+#Yolo-Trcker Models
 plugins/forgesyte-yolo-tracker/src/forgesyte_yolo_tracker/models/train_*.pt
