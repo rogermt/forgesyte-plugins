@@ -3,9 +3,9 @@
 
 # Model file names (relative to the models/ directory)
 models:
-  player_detection: "football-player-detection-v3.pt"
-  ball_detection: "football-ball-detection-v2.pt"
-  pitch_detection: "football-pitch-detection-v1.pt"
+  player_detection: "train_player_detector.pt"
+  ball_detection: "train_ball_detector.pt"
+  pitch_detection: "train_pitch_keypoint_detector.pt"
 
 # Confidence thresholds for detection
 confidence:
@@ -14,7 +14,7 @@ confidence:
   pitch: 0.25
 
 # Default device for inference
-device: "cuda"
+device: "cpu"
 
 # Default detections to run in analyze()
 # Enable/disable each detection type. Set to true/false to control which run.
