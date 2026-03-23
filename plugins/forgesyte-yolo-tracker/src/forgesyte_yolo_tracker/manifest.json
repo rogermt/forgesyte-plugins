@@ -96,7 +96,8 @@
       },
       "outputs": {
         "frames": "array",
-        "total_frames": "integer"
+        "total_frames": "integer",
+        "summary": "object"
       }
     },
     {

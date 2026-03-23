@@ -10,9 +10,11 @@ Core Classes:
 Custom forgeSYTE modules:
 - ball.py - Ball tracking (not annotating)
 - soccer_pitch.py - Soccer pitch drawing utilities
+- summary.py - Video summary computation utilities
 """
 
 from . import ball, soccer_pitch
+from .summary import compute_video_summary
 
 # Lazy import to avoid torch/transformers at module load time
 def __getattr__(name: str):
@@ -33,6 +35,8 @@ __all__ = [
     "create_batches",
     "TeamClassifier",
     "ViewTransformer",
+    # Video summary
+    "compute_video_summary",
     # Custom forgeSYTE modules
     "ball",
     "soccer_pitch",
