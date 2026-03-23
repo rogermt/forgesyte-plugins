@@ -59,6 +59,7 @@ from forgesyte_yolo_tracker.tracking import ByteTrackFactory, get_tracker_ids
 from forgesyte_yolo_tracker.inference.radar import radar_json_with_annotated_frame
 from forgesyte_yolo_tracker.configs import load_model_config
 from forgesyte_yolo_tracker.utils.json_sanitize import sanitize_json
+from forgesyte_yolo_tracker.utils.summary import compute_video_summary
 
 logger = logging.getLogger(__name__)
 
@@ -310,12 +311,14 @@ def _run_video_tool(
     logger.info(f"Completed: {frame_index} frames")
 
     # v0.10.0: Sanitize output for JSON serialization
+    sanitized = sanitize_json({
+        "total_frames": frame_index,
+        "frames": frame_results,
+    })
+    sanitized["summary"] = compute_video_summary(sanitized["frames"])
     return {
         "success": True,
-        "result": sanitize_json({
-            "total_frames": frame_index,
-            "frames": frame_results,
-        })
+        "result": sanitized,
     }
 
 
@@ -486,10 +489,12 @@ def _tool_video_player_tracking(
         frame_index += 1
 
     # v0.10.0: Sanitize output for JSON serialization
-    return sanitize_json({
+    sanitized = sanitize_json({
         "total_frames": frame_index,
         "frames": frame_results,
     })
+    sanitized["summary"] = compute_video_summary(sanitized["frames"])
+    return sanitized
 
 
 class Plugin(BasePlugin):  # type: ignore[misc]

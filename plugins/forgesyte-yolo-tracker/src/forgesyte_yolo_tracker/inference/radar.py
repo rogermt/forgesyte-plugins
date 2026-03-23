@@ -206,6 +206,7 @@ def generate_radar_json(
     return {
         "radar_points": radar_points,
         "radar_size": [radar_w, radar_h],
+        "detection_count": len(radar_points),
     }
 
 
@@ -287,6 +288,7 @@ def radar_json_with_annotated_frame(
     return {
         "radar_points": radar_points,
         "radar_size": [radar_w, radar_h],
+        "detection_count": len(radar_points),
         "radar_base64": _encode_radar_to_base64(radar_image),
     }
 
